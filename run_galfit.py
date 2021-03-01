@@ -5,6 +5,7 @@
 
 
 #galaxy class is adapted from Rose's code.
+#only added vfid arg to galaxy class and edited get_wise_image to grab cutouts with corrected oversubtraction halos
 
 ###########################################################################################################################
 
@@ -39,7 +40,7 @@ import plot_cutouts_ha as cutouts #This code has all the defined functions that 
 
        
 class galaxy():
-   def __init__(self,ra,dec,size,name='galname',band='3'):
+   def __init__(self,ra,dec,size,name='galname',vfid='VFID',band='3'):
         '''
         galaxy for wise analysis
 
@@ -64,6 +65,7 @@ class galaxy():
         self.radius = size#*u.arcsec
         self.band = band
         self.galname = name
+        self.vfid = vfid
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
 
@@ -80,7 +82,25 @@ class galaxy():
         output=open(self.logfilename,'w')
         output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsrsic_err BA BA_err PA PA_err sky sky_err error chi2nu \n')
         # close log file
-        output.close()
+        output.close()    
+        
+        
+#obsolete, but I will keep for documentation purposes
+   
+   def get_wise_image_59(self,makeplots=False):
+        base_dir = homedir+'/github/unwise_fixed/'
+        
+        self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
+        self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
+        temp = fits.getdata(self.image)
+        print(temp.shape)
+        self.ximagesize,self.yimagesize=temp.shape
+
+
+
+# Definition modified such that if galaxy VFID is in list containing the 59 subsample, then grab corrected fits image from 
+# directories created by Dustin.
+# Else...use Rose's routine. :-)
 
    def get_wise_image(self,makeplots=False):
         '''
@@ -91,73 +111,42 @@ class galaxy():
         OUTPUT: Name of file to retrieve from
 
         '''
-
-
-        baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-        imsize = self.radius*2
-
-        imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
+        vfmain = Table.read(homedir+'/github/research/sample_main.fits')
+        base_dir = homedir+'/github/unwise_fixed/'
+        vfmain_list = []
+        for i in range(0,len(vfmain)):
+            vfmain_list.append(vfmain['VFID'][i])
         
-        self.image = imagenames[0]
+        if str(self.vfid) in vfmain_list: 
+            self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
+            self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
+            temp = fits.getdata(self.image)
+            print(temp.shape)
+            self.ximagesize,self.yimagesize=temp.shape
+        else:
+            baseurl = 'http://unwise.me/cutout_fits?version=allwise'
+            imsize = self.radius*2
+
+            imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
         
-        self.sigma_image = weightnames[0]
-
-        # read in image and get image size
-
-        temp = fits.getdata(self.image)
-        print(temp.shape)
-        self.ximagesize,self.yimagesize = temp.shape
+            self.image = imagenames[0]
         
-        #print(self.sigma_image)
-        #print(imagenames)
-   def get_wise_image_old(self):
-        '''
-        GOAL: Get the unWISE image from the unWISE catalog
+            self.sigma_image = weightnames[0]
 
-        INPUT: nsaid used to grab unwise image information
+            # read in image and get image size
 
-        OUTPUT: Name of file to retrieve from
+            temp = fits.getdata(self.image)
+            print(temp.shape)
+            self.ximagesize,self.yimagesize = temp.shape
+        
+            #print(self.sigma_image)
+            #print(imagenames)
 
-        '''
-
-
-        baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-        imsize = self.radius*2
-        imurl = baseurl +'&ra=%.5f&dec=%.5f&size=%s&bands=%s'%(self.ra,self.dec,imsize,self.band)
-        wisetar = wget.download(imurl)
-        tartemp = tarfile.open(wisetar,mode='r:gz') #mode='r:gz'
-        wnames = tartemp.getnames()
-        self.wnames = wnames
-        print(wnames)
-        # check for multiple pointings - means galaxy is split between images
-        self.multiframe = False
-        if len(wnames) > 4:
-            self.multiframe = True
-            os.remove(wisetar)
-            return
-
-        wmembers = tartemp.getmembers()
-        tartemp.extractall()
-        for fname in wnames:
-           t = fname.split('-')
-           self.rename = self.galname+'-'+t[0]+'-'+t[2]+'-'+t[3]+'-'+t[4]
-
-           #print self.rename
-           if os.path.exists(self.rename): # this should only occur if multiple images are returned from wise
-               os.remove(self.rename)
-           os.rename(fname, self.rename)
-           if self.rename.find('.gz') > -1:
-              os.system('gunzip '+self.rename)
-           if fname.find('img') > -1:
-              self.inputimage = self.rename
-        os.remove(wisetar)
-        print('self.rename = ',self.rename)
-
-        ##### DISPLAY IMAGE
-        im = fits.getdata(self.rename)
-        norm = simple_norm(im, stretch='asinh',percent=99)
-        plt.imshow(im, norm=norm)
-        plt.show()
+        
+              
+        
+        
+        
    def set_image_names(self):
         '''
         GOAL:
@@ -400,6 +389,7 @@ class galaxy():
             ax.set_yticks([])
          plt.title(titles[i],fontsize=16)
       plt.savefig(pngname)
+      plt.close()
    def print_galfit_results(self):
       #self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
       self.filename = self.gal1.output_image
@@ -550,8 +540,9 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
     for n in range(0,len(galaxy_sample)):
         
         try:
+            vfid = galaxy_sample['VFID'][n]
             g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
-                      galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n], band='3')
+                      galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
             print(galaxy_sample['prefix'][n])
             ###
             g.set_sersic_manual()
@@ -615,7 +606,7 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
         
         try:
             g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
-                      galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n], band='3')
+                      galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],band='3')
             print(galaxy_sample['prefix'][n])
             
             ###
