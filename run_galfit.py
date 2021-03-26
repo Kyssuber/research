@@ -111,15 +111,16 @@ class galaxy():
         OUTPUT: Name of file to retrieve from
 
         '''
-        vfmain = Table.read(homedir+'/github/research/sample_main.fits')
-        base_dir = homedir+'/github/unwise_fixed/'
+        vf = Table.read(homedir+'/github/unwise_corrected_again/vf_four.fits')
+        #vfmain = Table.read(homedir+'/github/research/sample_main.fits')
+        base_dir = homedir+'/github/unwise_corrected_again/'
         vfmain_list = []
-        for i in range(0,len(vfmain)):
-            vfmain_list.append(vfmain['VFID'][i])
+        for i in range(0,len(vf)):
+            vfmain_list.append(vf['VFID'][i])
         
         if str(self.vfid) in vfmain_list: 
-            self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
-            self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
+            self.image = base_dir + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
+            self.sigma_image = base_dir + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
             temp = fits.getdata(self.image)
             print(temp.shape)
             self.ximagesize,self.yimagesize=temp.shape
@@ -390,10 +391,16 @@ class galaxy():
          plt.title(titles[i],fontsize=16)
       plt.savefig(pngname)
       plt.close()
+        
+      return xcenter, ycenter
+
+
+        
    def print_galfit_results(self):
       #self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
       self.filename = self.gal1.output_image
       rg.print_galfit_results(self.filename)
+        
    def run_dmc(self, N=100,convflag=True):
         '''
         GOAL: 
@@ -527,8 +534,8 @@ def readfile2(filename):
     words=fileobj.read().splitlines()
     header = words[0].split()
     fileobj.close()
-    return header
-
+    return header    
+    
 
 
 def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
@@ -594,7 +601,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
     data_array_plots = np.array(file_plots)
     np.savetxt(sample_txt_name_nopsf+'.txt',data_array,fmt="%s")                          #all
     np.savetxt(sample_txt_name_nopsf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
- 
+
     
     
 def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_psf):
@@ -662,3 +669,6 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     data_array_plots = np.array(file_plots)
     np.savetxt(sample_txt_name_psf+'.txt',data_array,fmt="%s")                          #all
     np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
+    
+    
+    
