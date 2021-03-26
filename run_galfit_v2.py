@@ -1,7 +1,4 @@
-#!/usr/bin/env python
 # coding: utf-8
-
-# In[ ]:
 
 
 #galaxy class is adapted from Rose's code.
@@ -16,17 +13,22 @@ import argparse
 from astropy.io import fits
 from astropy.visualization import simple_norm
 from astropy import units as u
+import warnings
 from astropy.wcs import WCS
+warnings.filterwarnings('ignore',category=DeprecationWarning)
 from astropy.table import Table
 from astropy.io import ascii
 from matplotlib import pyplot as plt
+
 from scipy.stats import scoreatpercentile
 import wget
 import tarfile
 import glob
 import gzip
 
+
 import astropy.wcs as wcs
+
 
 homedir = os.getenv("HOME")
 
@@ -102,14 +104,26 @@ class galaxy():
 # directories created by Dustin.
 # Else...use Rose's routine. :-)
 
+
    def get_wise_image(self,makeplots=False):
+      baseurl = 'http://unwise.me/cutout_fits?version=allwise'
+      imsize=self.radius*2
+      imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
+      self.image=imagenames[0]
+      self.sigma_image=weightnames[0]
+      temp = fits.getdata(self.image)
+      print(temp.shape)
+      self.ximagesize,self.yimagesize=temp.shape
+      
+      
+#if working with galaxies with a mix of corrected oversubtraction haloes and less-massive galaxies, use the following (switch function name to "get_wise_image" and the above to "get_wise_image_reg")
+
+   def get_wise_image_fixed(self,makeplots=False):
         '''
         GOAL: Get the unWISE image from the unWISE catalog
-
         INPUT: nsaid used to grab unwise image information
-
         OUTPUT: Name of file to retrieve from
-
+        if unwise_fixed_59, then grab image from that directory
         '''
         vfmain = Table.read(homedir+'/github/research/sample_main.fits')
         base_dir = homedir+'/github/unwise_fixed/'
@@ -272,7 +286,6 @@ class galaxy():
         * stores fit results in variables 
 
         '''
-
         self.filename = self.gal1.output_image
         #self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
         t = rg.parse_galfit_1comp(self.filename)
@@ -379,11 +392,11 @@ class galaxy():
       plt.figure(figsize=(14,6))
       plt.subplots_adjust(wspace=.0)
       for i,im in enumerate(images): 
-         plt.subplot(1,3,i+1,projection=wcs)
+         ax = plt.subplot(1,3,i+1,projection=wcs)
          plt.imshow(im,origin='lower',cmap=cmap,vmin=v1[i],vmax=v2[i],norm=norms[i])
-         plt.xlabel('RA')
+         ax.set_xlabel('RA')
          if i == 0:
-            plt.ylabel('DEC')
+            ax.set_ylabel('DEC')
          else:
             ax = plt.gca()
             ax.set_yticks([])
@@ -420,7 +433,6 @@ class galaxy():
         # download the wise images if the user requests this
         if args.getwise:
             self.get_wise_image()
-
         # define image names
         self.set_image_names()
 
@@ -496,7 +508,6 @@ class galaxy():
         # get the pixel coordinates of the galaxy
         # this uses the image header to translate RA and DEC into pixel coordinates
         self.getpix()
-
         # set up all of the inputs for galfit
         self.initialize_galfit(convflag=convflag)
         if sersic_start is not None:
@@ -532,63 +543,67 @@ def readfile2(filename):
 
 
 def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
-    
+
+    warnings.filterwarnings("ignore",category=DeprecationWarning)
     homedir = os.getenv('HOME')
     os.chdir(homedir+'/github/'+str(WISE_dir))
     get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
 
     for n in range(0,len(galaxy_sample)):
         
-        try:
-            vfid = galaxy_sample['VFID'][n]
-            g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
+       vfid = galaxy_sample['VFID'][n]
+       g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
                       galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
-            print(galaxy_sample['prefix'][n])
-            ###
+       print(galaxy_sample['prefix'][n])
+       ###
+       try:
             g.set_sersic_manual()
-            ###
-            g.run_simple(convflag=False)
+       except:
+          print(galaxy_sample['prefix'][n],"failed at get_sersic_manual")
+          continue
+       ###
+       try:
+          g.run_simple(convflag=False)
+          t = homedir+'/github/'+str(WISE_dir)+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
+          header,data = readfile(t)
+          header.pop(0)                                    #removes the pound_sign from the array
+          header.append('prefix')
+          header.append('success_flag')
             
-            t = homedir+'/github/'+str(WISE_dir)+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
-            header,data = readfile(t)
-            header.pop(0)                                    #removes the pound_sign from the array
-            header.append('prefix')
-            header.append('success_flag')
+          for i in range(0,len(data)):
+             data[i] = float(data[i])
+          data.append(galaxy_sample[n]['prefix'])
+          data.append(1)                                   #success_flag value of one
             
-            for i in range(0,len(data)):
-                data[i] = float(data[i])
-            data.append(galaxy_sample[n]['prefix'])
-            data.append(1)                                   #success_flag value of one
-            
-            if n == 0:                                       #if the galaxy is the first entry, then
-                file_test = [header,data]                    #append to the list both the header & data lists
-                file_plots = [header,data]                   #append to list for corner plots
+          if n == 0:                                       #if the galaxy is the first entry, then
+             file_test = [header,data]                    #append to the list both the header & data lists
+             file_plots = [header,data]                   #append to list for corner plots
                 
-            else:
-                file_test2 = [header,data]                   #otherwise, only include the data list
-                file_test.append(file_test2[1])
-                file_plots.append(file_test2[1])
+          else:
+             file_test2 = [header,data]                   #otherwise, only include the data list
+             file_test.append(file_test2[1])
+             file_plots.append(file_test2[1])
                     
-        except:
+       except:
             
-            t = homedir+'/github/'+WISE_dir+'/'+str(galaxy_sample['prefix'][n])+'-unwise-w3-log.txt'
-            header = readfile2(t)
-            header.pop(0)                                    #removes the pound_sign from the array
-            header.append('prefix')
-            header.append('success_flag')
+           t = homedir+'/github/'+WISE_dir+'/'+str(galaxy_sample['prefix'][n])+'-unwise-w3-log.txt'
+           header = readfile2(t)
+           header.pop(0)                                    #removes the pound_sign from the array
+           header.append('prefix')
+           header.append('success_flag')
             
-            data = []
-            for num in range(0,len(header)-2):
-                data.append(-999)
-            data.append(galaxy_sample[n]['prefix'])
-            data.append(0)                                   #success_flag value of zero
+           data = []
+           for num in range(0,len(header)-2):
+              data.append(-999)
+           data.append(galaxy_sample[n]['prefix'])
+           data.append(0)                                   #success_flag value of zero
                
-            file_test2 = [header,data]
-            file_test.append(file_test2[1])
+           file_test2 = [header,data]
+           file_test.append(file_test2[1])
 
             
-            print(galaxy_sample['prefix'][n], ' ' , 'was unsuccessful.')
-            continue
+           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
+           continue
         
     data_array = np.array(file_test)
     data_array_plots = np.array(file_plots)
@@ -598,7 +613,6 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
     
     
 def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_psf):
-    
     os.chdir(homedir+'/github/'+str(WISE_dir))
     get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
     
