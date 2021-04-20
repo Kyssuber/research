@@ -111,16 +111,16 @@ class galaxy():
         OUTPUT: Name of file to retrieve from
 
         '''
-        vf = Table.read(homedir+'/github/unwise_corrected_again/vf_four.fits')
+        vf = Table.read(homedir+'/sample_main.fits')
         #vfmain = Table.read(homedir+'/github/research/sample_main.fits')
-        base_dir = homedir+'/github/unwise_corrected_again/'
+        base_dir = homedir+'/github/unwise_100px_dstn'
         vfmain_list = []
         for i in range(0,len(vf)):
             vfmain_list.append(vf['VFID'][i])
         
         if str(self.vfid) in vfmain_list: 
-            self.image = base_dir + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
-            self.sigma_image = base_dir + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
+            self.image = base_dir + '/' + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
+            self.sigma_image = base_dir +'/' + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
             temp = fits.getdata(self.image)
             print(temp.shape)
             self.ximagesize,self.yimagesize=temp.shape
