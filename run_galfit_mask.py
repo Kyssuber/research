@@ -73,8 +73,9 @@ class galaxy():
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
 
-        self.mask_image = self.galname+'w3-coadd-mask.fits'
-        #self.mask_image = self.galname+'-unwise-mask.fits'
+
+        im_mask = glob.glob(self.galname+'*mask.fits')[0]
+        self.mask_image = im_mask
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
@@ -504,7 +505,12 @@ class galaxy():
         # define image names
         self.set_image_names()
 
-        get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image ' +str(self.galname)+'-unwise-w3-coadd.fits')
+
+
+
+        im = glob.glob(str(self.galname)+'*w3-img-m.fits')[0]
+        
+        get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
 
         # get the pixel coordinates of the galaxy
         # this uses the image header to translate RA and DEC into pixel coordinates
