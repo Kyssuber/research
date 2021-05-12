@@ -176,7 +176,8 @@ class galaxy():
         os.system('cp '+homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits .') 
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' 
         self.psf_oversampling = 8
-        mask_image = self.galname+'w3-coadd-mask.fits'  
+        im_mask = glob.glob(self.galname+'*mask.fits')[0]
+        mask_image = im_mask  
         self.xminfit=0
         self.yminfit=0
         self.xmaxfit=self.ximagesize
