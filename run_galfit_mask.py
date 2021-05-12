@@ -73,7 +73,8 @@ class galaxy():
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
 
-        self.mask_image = self.galname+'-unwise-mask.fits'
+        self.mask_image = self.galname+'w3-coadd-mask.fits'
+        #self.mask_image = self.galname+'-unwise-mask.fits'
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
@@ -118,7 +119,7 @@ class galaxy():
       self.ximagesize,self.yimagesize=temp.shape
       
       
-#if working with galaxies with a mix of corrected oversubtraction haloes and less-massive galaxies, use the following (switch function name to "get_wise_image" and the above to "get_wise_image_reg")
+#if working with galaxies with a mix of corrected oversubtraction haloes and less-massive galaxies, use the following (switch function name to "get_wise_image" and the above to "get_wise_image_reg", rather than having to switch ALL lines of code to accommodate the function change)
 
    def get_wise_image_fixed(self,makeplots=False):
         '''
@@ -154,13 +155,9 @@ class galaxy():
             temp = fits.getdata(self.image)
             print(temp.shape)
             self.ximagesize,self.yimagesize = temp.shape
-        
-            #print(self.sigma_image)
-            #print(imagenames)
 
-        
-              
-        
+
+
         
         
    def set_image_names(self):
@@ -178,7 +175,7 @@ class galaxy():
         os.system('cp '+homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits .') 
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' 
         self.psf_oversampling = 8
-        #mask_image = 'testimage_mask.fits' no mask image 
+        mask_image = self.galname+'w3-coadd-mask.fits'  
         self.xminfit=0
         self.yminfit=0
         self.xmaxfit=self.ximagesize
@@ -507,6 +504,8 @@ class galaxy():
         # define image names
         self.set_image_names()
 
+        get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image ' +str(self.galname)+'-unwise-w3-coadd.fits')
+
         # get the pixel coordinates of the galaxy
         # this uses the image header to translate RA and DEC into pixel coordinates
         self.getpix()
@@ -544,26 +543,26 @@ def readfile2(filename):
 
 
 
+
 def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
 
-    warnings.filterwarnings("ignore",category=DeprecationWarning)
     homedir = os.getenv('HOME')
     os.chdir(homedir+'/github/'+str(WISE_dir))
     get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
 
     for n in range(0,len(galaxy_sample)):
-        
+    
        vfid = galaxy_sample['VFID'][n]
        g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
                       galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
        print(galaxy_sample['prefix'][n])
-       ###
+       
        try:
             g.set_sersic_manual()
        except:
           print(galaxy_sample['prefix'][n],"failed at get_sersic_manual")
           continue
-       ###
+       
        try:
           g.run_simple(convflag=False)
           t = homedir+'/github/'+str(WISE_dir)+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
@@ -678,3 +677,4 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     data_array_plots = np.array(file_plots)
     np.savetxt(sample_txt_name_psf+'.txt',data_array,fmt="%s")                          #all
     np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
+    
