@@ -73,11 +73,15 @@ class galaxy():
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
 
-        try:
-           im_mask = glob.glob(self.galname+'*mask.fits')[0]
-           self.mask_image = im_mask
-        except:
-           pass
+        #try:
+        
+        os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        im = glob.glob('*w3-img-m.fits')[0]
+        get_ipython().run_line_magic('run','~/github/halphagui/maskwrapper.py'+' --image '+im)
+        im_mask = glob.glob('*mask.fits')[0]
+        self.mask_image = im_mask
+        
+        os.chdir(homedir+'/github/gal_output')
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
@@ -149,10 +153,11 @@ class galaxy():
 
 
    def get_wise_image(self,makeplots=False):
-      vfmain = Table.read(homedir+'/vf_north_main_v1.fits')
-      base_dir = homedir+'/mst/astrophysics/wisesize/'
+      vfmain = Table.read(homedir+'/vf_north_v1_main.fits')
+      base_dir = '/mnt/astrophysics/wisesize/'
       for i in vfmain['VFID']:
-         if str(self.vfid) == str(vfmain['VFID']):
+         if str(self.vfid) == i:
+            #os.chdir('/mnt/astrophysics/wisesize/')
             self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
             self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
             temp = fits.getdata(self.image)
@@ -179,11 +184,19 @@ class galaxy():
 
         '''
         #just using center til, doesn't matter usually
+        os.chdir(homedir+'/github/gal_output/')
         os.system('cp '+homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits .') 
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' 
         self.psf_oversampling = 8
-        im_mask = glob.glob(self.galname+'*mask.fits')[0]
+
+        
+        os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        print(os.getcwd())
+        im = glob.glob('*w3-img-m.fits')[0]
+        get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
+        im_mask = glob.glob('*mask.fits')[0]
         mask_image = im_mask  
+        os.chdir(homedir+'/github/gal_output/')
         self.xminfit=0
         self.yminfit=0
         self.xmaxfit=self.ximagesize
@@ -512,12 +525,6 @@ class galaxy():
         # define image names
         self.set_image_names()
 
-
-
-
-        im = glob.glob(str(self.galname)+'*w3-img-m.fits')[0]
-        
-        get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
 
         # get the pixel coordinates of the galaxy
         # this uses the image header to translate RA and DEC into pixel coordinates
