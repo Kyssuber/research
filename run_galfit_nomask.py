@@ -73,7 +73,13 @@ class galaxy():
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m.fits'
 
-        self.mask_image = self.galname+'-unwise-mask.fits'
+        try:
+           os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+           im_mask = glob.glob('*mask.fits')[0]
+           self.mask_image = im_mask
+           os.chdir(homedir+'/github/gal_output')
+        except:
+           pass
         self.sigma_image = self.image_rootname+'-std-m.fits'
         self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
@@ -89,25 +95,12 @@ class galaxy():
         output.close()    
         
         
-#obsolete, but I will keep for documentation purposes
-   
-   def get_wise_image_59(self,makeplots=False):
-        base_dir = homedir+'/github/unwise_fixed/'
-        
-        self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
-        self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
-        temp = fits.getdata(self.image)
-        print(temp.shape)
-        self.ximagesize,self.yimagesize=temp.shape
-
 
 
 # Definition modified such that if galaxy VFID is in list containing the 59 subsample, then grab corrected fits image from 
 # directories created by Dustin.
-# Else...use Rose's routine. :-)
 
-
-   def get_wise_image(self,makeplots=False):
+   def get_wise_image_default(self,makeplots=False):
       baseurl = 'http://unwise.me/cutout_fits?version=allwise'
       imsize=self.radius*2
       imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
@@ -118,7 +111,7 @@ class galaxy():
       self.ximagesize,self.yimagesize=temp.shape
       
       
-#if working with galaxies with a mix of corrected oversubtraction haloes and less-massive galaxies, use the following (switch function name to "get_wise_image" and the above to "get_wise_image_reg")
+#if working with galaxies with a mix of corrected oversubtraction haloes and less-massive galaxies, use the following (switch function name to "get_wise_image" and the above to "get_wise_image_reg", rather than having to switch ALL lines of code to accommodate the function change)
 
    def get_wise_image_fixed(self,makeplots=False):
         '''
@@ -154,13 +147,27 @@ class galaxy():
             temp = fits.getdata(self.image)
             print(temp.shape)
             self.ximagesize,self.yimagesize = temp.shape
-        
-            #print(self.sigma_image)
-            #print(imagenames)
 
-        
-              
-        
+
+
+   def get_wise_image(self,makeplots=False):
+      vfmain = Table.read(homedir+'/vf_north_v1_main.fits')
+      base_dir = '/mnt/astrophysics/wisesize/'
+      for i in vfmain['VFID']:
+         if str(self.vfid) == i:
+            #os.chdir('/mnt/astrophysics/wisesize/')
+            self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
+            self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
+            temp = fits.getdata(self.image)
+            print(temp.shape)
+            self.ximagesize, self.yimagesize = temp.shape
+            break
+         else:
+            continue
+
+
+   
+
         
         
    def set_image_names(self):
@@ -175,10 +182,19 @@ class galaxy():
 
         '''
         #just using center til, doesn't matter usually
+        os.chdir(homedir+'/github/gal_output/')
         os.system('cp '+homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits .') 
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' 
         self.psf_oversampling = 8
-        #mask_image = 'testimage_mask.fits' no mask image 
+
+        
+        os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        print(os.getcwd())
+        im = glob.glob('*w3-img-m.fits')[0]
+        get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
+        im_mask = glob.glob('*mask.fits')[0]
+        mask_image = im_mask  
+        os.chdir(homedir+'/github/gal_output/')
         self.xminfit=0
         self.yminfit=0
         self.xmaxfit=self.ximagesize
@@ -507,6 +523,13 @@ class galaxy():
         # define image names
         self.set_image_names()
 
+
+
+        #os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        #im = glob.glob(str(self.galname)+'*w3-img-m.fits')[0]
+        
+        #get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
+
         # get the pixel coordinates of the galaxy
         # this uses the image header to translate RA and DEC into pixel coordinates
         self.getpix()
@@ -544,26 +567,26 @@ def readfile2(filename):
 
 
 
+
 def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
 
-    warnings.filterwarnings("ignore",category=DeprecationWarning)
     homedir = os.getenv('HOME')
     os.chdir(homedir+'/github/'+str(WISE_dir))
     get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
 
     for n in range(0,len(galaxy_sample)):
-        
+    
        vfid = galaxy_sample['VFID'][n]
        g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
                       galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
        print(galaxy_sample['prefix'][n])
-       ###
+       
        try:
             g.set_sersic_manual()
        except:
           print(galaxy_sample['prefix'][n],"failed at get_sersic_manual")
           continue
-       ###
+       
        try:
           g.run_simple(convflag=False)
           t = homedir+'/github/'+str(WISE_dir)+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
@@ -678,3 +701,4 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     data_array_plots = np.array(file_plots)
     np.savetxt(sample_txt_name_psf+'.txt',data_array,fmt="%s")                          #all
     np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
+    
