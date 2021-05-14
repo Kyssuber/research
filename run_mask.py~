@@ -1,0 +1,31 @@
+import os
+import numpy as np
+import argparse
+from astropy.io import fits
+from astropy.table import Table
+from astropy.io import ascii
+from matplotlib import pyplot as plt
+import glob
+
+
+homedir = os.getenv('home')
+
+class galaxy():
+    def __init__(self,ra,dec,size,name='galname',vfid='VFID',band='3'):
+        self.ra = ra
+        self.dec = dec
+        self.radius = radius
+        self.band = band
+        self.galname = name
+        self.vfid = vfid
+        self.image_rootname = self.galname+'-unwise-w'+str(self.band)
+        self.image = self.image_rootname+'-img-m.fits'
+
+        #MASK
+        os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        im = glob.glob('*w3-img-m.fits')[0]
+        get_ipython().run_line_magic('run','~/github/halphagui/maskwrapper.py'+' --image '+im)
+        im_mask = glob.glob('*mask.fits')[0]
+        self.mask_image = im_mask
+        #copy mask image to empty directory '~/github/masks'
+        os.system('cp '+ im_mask + ' ' + homedir+'/github/masks')
