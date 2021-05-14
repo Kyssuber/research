@@ -190,13 +190,13 @@ class galaxy():
         self.psf_oversampling = 8
 
         
-        os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
-        print(os.getcwd())
-        im = glob.glob('*w3-img-m.fits')[0]
-        get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
-        im_mask = glob.glob('*mask.fits')[0]
-        mask_image = im_mask  
-        os.chdir(homedir+'/github/gal_output/')
+        #os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        #print(os.getcwd())
+        #im = glob.glob('*w3-img-m.fits')[0]
+        #get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
+        #im_mask = glob.glob('*mask.fits')[0]
+        #mask_image = im_mask  
+        #os.chdir(homedir+'/github/gal_output/')
         self.xminfit=0
         self.yminfit=0
         self.xmaxfit=self.ximagesize
