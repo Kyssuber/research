@@ -26,6 +26,9 @@ import tarfile
 import glob
 import gzip
 
+import csv
+import shutil
+
 import astropy.wcs as wcs
 
 homedir = os.getenv("HOME")
@@ -40,7 +43,7 @@ import plot_cutouts_ha as cutouts #This code has all the defined functions that 
 
        
 class galaxy():
-   def __init__(self,ra,dec,size,name='galname',vfid='VFID',band='3'):
+    def __init__(self,ra,dec,size,name='galname',vfid='VFID',band='3'):
         '''
         galaxy for wise analysis
 
@@ -87,7 +90,7 @@ class galaxy():
         
 #obsolete, but I will keep for documentation purposes
    
-   def get_wise_image_59(self,makeplots=False):
+    def get_wise_image_59(self,makeplots=False):
         base_dir = homedir+'/github/unwise_fixed/'
         
         self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
@@ -102,7 +105,7 @@ class galaxy():
 # directories created by Dustin.
 # Else...use Rose's routine. :-)
 
-   def get_wise_image(self,makeplots=False):
+    def get_wise_image(self,makeplots=False):
         '''
         GOAL: Get the unWISE image from the unWISE catalog
 
@@ -143,12 +146,86 @@ class galaxy():
             #print(self.sigma_image)
             #print(imagenames)
 
+    
+    
+    #this function is my comtribution...
+    
+    #grab cutout from allwise catalog
+    
+    def get_allwise_image(self):
+        ra_ex = self.ra
+        dec_ex = self.dec
+        size_ex = self.radius
+        name_ex = self.galname  
+
+        #the following yields a .csv file containing allwise four (w1-w4) data rows for the given coords.
+        irsa_call = '\"https://irsa.ipac.caltech.edu/ibe/search/wise/allwise/p3am_cdd?POS=' + str(ra_ex) + ',' + str(dec_ex) + '&ct=csv&mcen\"'
+        filename = homedir+'/github' + '/allwise.csv'
+        if os.path.exists(filename):
+            os.remove(filename)
+
+        #copies .csv to pathname (i.e., filename)
+        os.system("curl -o %s %s" % (filename, irsa_call))
+
+        #this .csv information is then extractable to acquire the desired .fits cutouts, like so:
+        outdir = homedir+'/github/allwise_cutouts/'
+
+        with open(filename) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for line in reader:
+                band = line['band']
+                if int(band) != 3:
+                    pass
+                else:
+                    coadd_id = line['coadd_id']
+                    coaddgrp = coadd_id[:2]
+                    coadd_ra = coadd_id[:4]
+                    #int for intensity, unc for uncertainty; only pulls w3 files
+                    filename_int = coadd_id + '-w3'+'-int-3.fits.gz'
+                    filename_unc = coadd_id + '-w3'+'-unc-3.fits.gz'
+                    #url dongxi
+                    irsa_url = "%s/%s/%s/" % (coaddgrp, coadd_ra, coadd_id)
+                    irsa_url_int = irsa_url + filename_int
+                    irsa_url_unc = irsa_url + filename_unc
+                    irsa_url_int = '\"https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/' + irsa_url_int +'?center=' + str(ra_ex) + ',' + str(dec_ex) +'&size=' + str(size_ex*2) + 'arcsec' + '\"'
+                    irsa_url_unc = '\"https://irsa.ipac.caltech.edu/ibe/data/wise/allwise/p3am_cdd/' + irsa_url_unc +'?center=' + str(ra_ex) + ',' + str(dec_ex) +'&size=' + str(size_ex*2) + 'arcsec' + '\"'
+                    filename_int = outdir + filename_int
+                    filename_unc = outdir + filename_unc
+                    #grab int .gz
+                    os.system("curl -o %s %s" % (filename_int, irsa_url_int))
+                    #rename file
+                    name_desired_int = outdir + str(name_ex) + '-int.fits.gz'
+                    os.rename(filename_int, name_desired_int)
+                    #grab unc .gz
+                    os.system("curl -o %s %s" % (filename_unc, irsa_url_unc))
+                    #rename file
+                    name_desired_unc = outdir + str(name_ex) + '-unc.fits.gz'
+                    os.rename(filename_unc, name_desired_unc)                       
         
-              
         
+        #decompress resulting gzip files (from Stackoverflow)
         
+        #int, name_desired_int, name_desired_int_nogz
+        name_desired_int_nogz = outdir + str(name_ex) + '-int.fits'
+        with gzip.open(name_desired_int,'rb') as f_in:
+            with open(name_desired_int_nogz,'wb') as f_out:
+                shutil.copyfileobj(f_in,f_out)
         
-   def set_image_names(self):
+        #unc, name_desired_unc, name_desired_unc_nogz
+        name_desired_unc_nogz = outdir + str(name_ex) + '-unc.fits'
+        with gzip.open(name_desired_unc,'rb') as f_in:
+            with open(name_desired_unc_nogz,'wb') as f_out:
+                shutil.copyfileobj(f_in,f_out)                  
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+                          
+        
+    def set_image_names(self):
         '''
         GOAL:
         * Set the psf image name and some additional parameters for galfit 
@@ -179,7 +256,7 @@ class galaxy():
         #self.fitallflag=0
         self.ncomp=1
 
-   def getpix(self):
+    def getpix(self):
         '''
         GOAL: Get pixel values that correspond to ra and dec
 
@@ -193,7 +270,7 @@ class galaxy():
         self.xc, self.yc = w.wcs_world2pix(self.ra, self.dec,1)
 
 
-   def set_sersic_params_random(self):
+    def set_sersic_params_random(self):
         '''
         GOAL: Set random parameters for galfit
 
@@ -208,7 +285,7 @@ class galaxy():
         self.BA = np.random.random()
         self.PA =181*np.random.random()-89.0
 
-   def set_sersic_manual(self,n=2,m=7,re=5,BA=1,PA=0):
+    def set_sersic_manual(self,n=2,m=7,re=5,BA=1,PA=0):
         '''
         GOAL: Set random parameters for galfit
 
@@ -223,7 +300,7 @@ class galaxy():
         self.BA = BA
         self.PA = PA
                 
-   def initialize_galfit(self,convflag=True):
+    def initialize_galfit(self,convflag=True):
         '''
         GOAL: Preparing file to be run in galfit. Initialize galfit image parameters 
 
@@ -236,7 +313,7 @@ class galaxy():
         
         self.gal1 = rg.galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
         
-   def run_galfit_wise(self,fitBA=1,fitPA=1):
+    def run_galfit_wise(self,fitBA=1,fitPA=1):
         '''
         GOAL: 
         * run galfit on one image
@@ -253,7 +330,7 @@ class galaxy():
         self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=self.BA,PA=self.PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
         self.gal1.set_sky(0)
         self.gal1.run_galfit()
-   def get_galfit_results(self,printflag = False):
+    def get_galfit_results(self,printflag = False):
         '''
         GOAL: 
         -----
@@ -292,7 +369,7 @@ class galaxy():
         self.error = t[8]
         self.chi2nu = t[9]
         
-   def write_results(self,printflag=False):
+    def write_results(self,printflag=False):
         '''
         GOAL: 
         * Put results from galfit into a logfile by appending values
@@ -311,7 +388,7 @@ class galaxy():
         s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
         output.write(s)
         output.close()
-   def display_galfit_model(self,percentile1=.5,percentile2=99.5,p1residual=5,p2residual=99,cmap='viridis',zoom=None):
+    def display_galfit_model(self,percentile1=.5,percentile2=99.5,p1residual=5,p2residual=99,cmap='viridis',zoom=None):
       '''
       ARGS:
       percentile1 = min percentile for stretch of image and model
@@ -396,12 +473,12 @@ class galaxy():
 
 
         
-   def print_galfit_results(self):
+    def print_galfit_results(self):
       #self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
       self.filename = self.gal1.output_image
       rg.print_galfit_results(self.filename)
         
-   def run_dmc(self, N=100,convflag=True):
+    def run_dmc(self, N=100,convflag=True):
         '''
         GOAL: 
         * Run galfit with monte carlo sampling to find all minima
@@ -481,7 +558,7 @@ class galaxy():
                     C = np.append(C,[1],axis=0)
         return X    
 
-   def run_simple(self, convflag=True,zoom=1,sersic_start=None):
+    def run_simple(self, convflag=True,zoom=1,sersic_start=None):
         '''
         GOAL: 
         * Run galfit once 
