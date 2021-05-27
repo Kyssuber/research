@@ -9,6 +9,7 @@ import glob
 
 
 homedir = os.getenv('HOME')
+vf = Table.read(homedir+'/vf_north_v1_main.fits')
 
 class galaxy():
     def __init__(self,name='galname',vfid='VFID',band='3'):
@@ -19,10 +20,11 @@ class galaxy():
         self.image = self.image_rootname+'-img-m.fits'
 
     #MASK
-    def mask(self,output_dir):
+    def mask_gui(self,output_dir):
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
         im = glob.glob('*w3-img-m.fits')[0]
-        get_ipython().run_line_magic('run','~/github/halphagui/maskwrapper.py'+' --image '+im)
+        print(im)
+        get_ipython().run_line_magic('run','/mnt/astrophysics/kconger_wisesize/github/halphagui/maskwrapper.py'+' --image '+im)
         im_mask = glob.glob('*mask.fits')[0]
         im_mask_inv = glob.glob('*mask.fits')[1]
         self.mask_image = im_mask
@@ -31,12 +33,47 @@ class galaxy():
         os.system('cp '+ im_mask_inv + ' ' + str(output_dir))
 
 
-#loop through galaxies in input fits file, generate masks and cp results to '~/github/masks' directory
-def run_mask_all(galaxy_sample):
-    output_dir = homedir+'/github/masks'
+    def mask_haim(self,output_dir):
+        os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        im = glob.glob('*w3-img-m.fits')[0]
+        print(im)
+        get_ipython().run_line_magic('run','/mnt/astrophysics/kconger_wisesize/github/HalphaImaging/python3/uat_mask.py --R '+ im +' --nods9')
+        im_mask = glob.glob('*mask.fits')[0]
+        im_mask_inv = glob.glob('*mask.fits')[1]
+        self.mask_image = im_mask
+        #copy mask image to output directory 'output_dir'
+        os.system('cp '+ im_mask + ' ' + str(output_dir))
+        os.system('cp '+ im_mask_inv + ' ' + str(output_dir))
+        
+
+        #loop through galaxies in input fits file, generate masks and cp results to '/mnt/astrophysics/kconger_wisesize/github/masks' directory
+
+def run_mask_one(galaxy_sample,type):
+    output_dir = '/mnt/astrophysics/kconger_wisesize/github/masks'
+    vfid = galaxy_sample['VFID']
+    name = galaxy_sample['prefix']
+    g = galaxy(name=name,vfid=vfid,band='3')
+    print(name)
+    if str(type) == 'haim':
+        g.mask_haim(output_dir == output_dir)
+    if str(type) == 'gui':
+        g.mask_gui(output_dir == output_dir)
+    else:
+        print('types: gui (for halphagui) or haim (for HalphaImaging)')
+
+    
+    
+def run_mask_all(galaxy_sample,type):
+    output_dir = '/mnt/astrophysics/kconger_wisesize/github/masks'
     for n in range(0,len(galaxy_sample)):
         vfid = galaxy_sample['VFID'][n]
         name = galaxy_sample['prefix'][n]
         g = galaxy(name=name,vfid=vfid,band='3')
         print(name)
-        g.mask(output_dir=output_dir)
+        if str(type) == 'haim':
+            g.mask_haim(output_dir == output_dir)
+        if str(type) == 'gui':
+            g.mask_gui(output_dir == output_dir)
+        else:
+            print('types: gui (for halphagui) or haim (for HalphaImaging)')
+
