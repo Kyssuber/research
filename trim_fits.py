@@ -15,9 +15,12 @@ def trim(gal_sample):
     for i in range(0,len(gal_sample)):
         galname = str(gal_sample['VFID'][i])
         #define filepaths
-        filepath_im = '/mnt/astrophysics/wisesize/'+galname+'/unwise-'+galname+'-w3-img-m.fits'
-        filepath_n = '/mnt/astrophysics/wisesize/'+galname+'/unwise-'+galname+'-w3-n-m.fits'
-        filepath_std = '/mnt/astrophysics/wisesize/'+galname+'/unwise-'+galname+'-w3-std-m.fits'
+        generic = '/mnt/astrophysics/wisesize/'+galname+'/unwise-'+galname+'-w3-'
+        filepath_im = generic + 'img-m.fits'
+        filepath_n = generic + 'n-m.fits'
+        filepath_std = generic + 'std-m.fits'
+        filepath_mask = generic + 'img-m-mask.fits'
+        filepath_inv = generic + 'img-m-inv-mask.fits'
 
         #open fits, define WCS coordinates for galaxy
         hdu1 = fits.open(filepath_im)[0]
@@ -26,6 +29,10 @@ def trim(gal_sample):
         wcs2 = WCS(hdu2.header)
         hdu3 = fits.open(filepath_std)[0]
         wcs3 = WCS(hdu3.header)
+        hdu4 = fits.open(filepath_mask)[0]
+        wcs4 = WCS(hdu4.header)
+        hdu5 = fits.open(filepath_inv)[0]
+        wcs5 = WCS(hdu5.header)
 
         #extract galaxy's radius (in arcsec) from vf table entry
         vf = gal_sample[i]
@@ -40,18 +47,28 @@ def trim(gal_sample):
         cutout1 = Cutout2D(hdu1.data, center, size, wcs=wcs1)
         cutout2 = Cutout2D(hdu2.data, center, size, wcs=wcs2)
         cutout3 = Cutout2D(hdu3.data, center, size, wcs=wcs3)
+        cutout4 = Cutout2D(hdu4.data, center, size, wcs=wcs4)
+        cutout5 = Cutout2D(hdu5.data, center, size, wcs=wcs5)
 
         #updating header information and saving the result
         hdu1.data = cutout1.data
         hdu2.data = cutout2.data
         hdu3.data = cutout3.data
+        hdu4.data = cutout4.data
+        hdu5.data = cutout5.data
         hdu1.header.update(cutout1.wcs.to_header())
         hdu2.header.update(cutout2.wcs.to_header())
         hdu3.header.update(cutout3.wcs.to_header())
+        hdu4.header.update(cutout4.wcs.to_header())
+        hdu5.header.update(cutout5.wcs.to_header())
         cutout_filename1 = 'unwise-'+galname+'-w3-img-m-trim.fits'
         cutout_filename2 = 'unwise-'+galname+'-w3-n-m-trim.fits'
         cutout_filename3 = 'unwise-'+galname+'-w3-std-m-trim.fits'
+        cutout_filename4 = 'unwise-'+galname+'-w3-img-m-mask-trim.fits'
+        cutout_filename5 = 'unwise-'+galname+'-w3-img-m-inv-mask-trim.fits'
 
         hdu1.writeto('/mnt/astrophysics/wisesize/'+galname+'/'+cutout_filename1)
         hdu2.writeto('/mnt/astrophysics/wisesize/'+galname+'/'+cutout_filename2)
         hdu3.writeto('/mnt/astrophysics/wisesize/'+galname+'/'+cutout_filename3)
+        hdu4.writeto('/mnt/astrophysics/wisesize/'+galname+'/'+cutout_filename4)
+        hdu5.writeto('/mnt/astrophysics/wisesize/'+galname+'/'+cutout_filename5)

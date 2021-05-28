@@ -17,16 +17,16 @@ class galaxy():
         self.galname = name
         self.vfid = vfid
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
-        self.image = self.image_rootname+'-img-m-trim.fits'
+        self.image = self.image_rootname+'-img-m.fits'
 
     #MASK
     def mask_gui(self,output_dir):
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
-        im = glob.glob('*w3-img-m-trim.fits')[0]
+        im = glob.glob('*w3-img-m.fits')[0]
         print(im)
         get_ipython().run_line_magic('run','/mnt/astrophysics/kconger_wisesize/github/halphagui/maskwrapper.py'+' --image '+im)
-        im_mask = glob.glob('*mask-trim.fits')[0]
-        im_mask_inv = glob.glob('*mask-trim.fits')[1]
+        im_mask = glob.glob('*mask.fits')[0]
+        im_mask_inv = glob.glob('*mask.fits')[1]
         self.mask_image = im_mask
         #copy mask image to output directory 'output_dir'
         os.system('cp '+ im_mask + ' ' + str(output_dir))
@@ -35,16 +35,15 @@ class galaxy():
 
     def mask_haim(self,output_dir):
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
-        im = glob.glob('*w3-img-m-trim.fits')[0]
+        im = glob.glob('*w3-img-m.fits')[0]
         print(im)
         get_ipython().run_line_magic('run','/mnt/astrophysics/kconger_wisesize/github/HalphaImaging/python3/uat_mask.py --R '+ im +' --nods9')
-        im_mask = glob.glob('*mask-trim.fits')[0]
-        im_mask_inv = glob.glob('*mask-trim.fits')[1]
+        im_mask = glob.glob('*mask.fits')[0]
+        im_mask_inv = glob.glob('*inv-mask.fits')[0]
         self.mask_image = im_mask
         #copy mask image to output directory 'output_dir'
         os.system('cp '+ im_mask + ' ' + str(output_dir))
         os.system('cp '+ im_mask_inv + ' ' + str(output_dir))
-        
 
         #loop through galaxies in input fits file, generate masks and cp results to '/mnt/astrophysics/kconger_wisesize/github/masks' directory
 
