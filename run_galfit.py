@@ -79,7 +79,7 @@ class galaxy():
         # remove the log file if it exists
         self.logfilename = self.galname+'-unwise-'+'w'+str(self.band)+'-log.txt'
         if os.path.exists(self.logfilename):
-           os.remove(self.logfilename)
+            os.remove(self.logfilename)
 
         # write the header line into the log file
         output=open(self.logfilename,'w')
@@ -148,7 +148,7 @@ class galaxy():
 
     
     
-    #this function is my comtribution...
+    #this function is my contribution...
     
     #grab cutout from allwise catalog
     
@@ -218,7 +218,15 @@ class galaxy():
                 shutil.copyfileobj(f_in,f_out)                  
                           
                           
-                          
+        self.image = name_desired_int_nogz
+        
+        self.sigma_image = name_desired_unc_nogz
+
+        # read in image and get image size
+
+        temp = fits.getdata(self.image)
+        print(temp.shape)
+        self.ximagesize,self.yimagesize = temp.shape                  
                           
                           
                           
