@@ -9,7 +9,7 @@ import glob
 
 
 homedir = os.getenv('HOME')
-vf = Table.read(homedir+'/vf_north_v1_main.fits')
+#vf = Table.read(homedir+'/vf_north_v1_main.fits')
 
 class galaxy():
     def __init__(self,name='galname',vfid='VFID',band='3'):
@@ -24,7 +24,9 @@ class galaxy():
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
         im = glob.glob('*w3-img-m.fits')[0]
         print(im)
-        get_ipython().run_line_magic('run','/mnt/astrophysics/kconger_wisesize/github/halphagui/maskwrapper.py'+' --image '+im)
+        #get_ipython().run_line_magic('run','/mnt/astrophysics/kconger_wisesize/github/halphagui/maskwrapper.py'+' --image '+im)
+        string = "python /mnt/astrophysics/kconger_wisesize/github/halphagui/maskwrapper.py --image {}".format(im)
+        os.system(string)
         im_mask = glob.glob('*mask.fits')[0]
         im_mask_inv = glob.glob('*mask.fits')[1]
         self.mask_image = im_mask
@@ -76,3 +78,8 @@ def run_mask_all(galaxy_sample,type):
         else:
             print('types: gui (for halphagui) or haim (for HalphaImaging)')
 
+
+
+if __name__ == '__main__':
+    vf = Table.read('vf_north_v1_main.fits')
+    

@@ -71,19 +71,19 @@ class galaxy():
         self.galname = name
         self.vfid = vfid
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
-        self.image = self.image_rootname+'-img-m-trim.fits'
+        self.image = self.image_rootname+'-img-m.fits'
 
         #try:
         
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
-        im = glob.glob('*w3-img-m-trim.fits')[0]
-        #get_ipython().run_line_magic('run','~/github/halphagui/maskwrapper.py'+' --image '+im)
-        im_mask = glob.glob('*mask-trim.fits')[0]
+        im = glob.glob('*w3-img-m.fits')[0]
+        get_ipython().run_line_magic('run','~/github/halphagui/maskwrapper.py'+' --image '+im)
+        im_mask = glob.glob('*mask.fits')[0]
         self.mask_image = im_mask
         
         os.chdir(homedir+'/github/gal_output')
-        self.sigma_image = self.image_rootname+'-std-m-trim.fits'
-        self.invvar_image = self.image_rootname+'-invvar-m-trim.fits'
+        self.sigma_image = self.image_rootname+'-std-m.fits'
+        self.invvar_image = self.image_rootname+'-invvar-m.fits'
 
         # remove the log file if it exists
         self.logfilename = self.galname+'-unwise-'+'w'+str(self.band)+'-log.txt'
@@ -158,8 +158,8 @@ class galaxy():
       for i in vfmain['VFID']:
          if str(self.vfid) == i:
             #os.chdir('/mnt/astrophysics/wisesize/')
-            self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m-trim.fits'
-            self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m-trim.fits'
+            self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
+            self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
             temp = fits.getdata(self.image)
             print(temp.shape)
             self.ximagesize, self.yimagesize = temp.shape
@@ -189,6 +189,14 @@ class galaxy():
         self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' 
         self.psf_oversampling = 8
 
+        
+        #os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
+        #print(os.getcwd())
+        #im = glob.glob('*w3-img-m.fits')[0]
+        #get_ipython().run_line_magic('run', '~/github/halphagui/maskwrapper.py' + ' --image '+im)
+        #im_mask = glob.glob('*mask.fits')[0]
+        #mask_image = im_mask  
+        #os.chdir(homedir+'/github/gal_output/')
         self.xminfit=0
         self.yminfit=0
         self.xmaxfit=self.ximagesize
