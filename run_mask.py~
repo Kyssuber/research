@@ -9,7 +9,7 @@ import glob
 
 
 homedir = os.getenv('HOME')
-vf = Table.read(homedir+'/vf_north_v1_main.fits')
+#vf = Table.read(homedir+'/vf_north_v1_main.fits')
 
 class galaxy():
     def __init__(self,name='galname',vfid='VFID',band='3'):

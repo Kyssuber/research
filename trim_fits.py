@@ -10,8 +10,9 @@ from astropy.wcs import WCS
 homedir = os.getenv("HOME")
 #read vf table (in home directory)
 vfmain = Table.read(homedir+'/vf_north_v1_main.fits')
+print('trim(gal_sample,plot=False) and trim_manual(gal_sample,initial_pixscale)')
 
-def trim(gal_sample):
+def trim(gal_sample,plot=False):
     for i in range(0,len(gal_sample)):
         galname = str(gal_sample['VFID'][i])
         #define filepaths
@@ -40,7 +41,7 @@ def trim(gal_sample):
         rad = vf['radius']
 
         #define center of image to be center of galaxy (img is 500x500 px)
-        center = (250,250)
+        center = (hdu1.header['CRPIX1'],hdu1.header['CRPIX2'])
         #desired image size, about 3x the galaxy size (will be identical for each cutout)
         size = u.Quantity((rad*3, rad*3),u.arcsec)
 
@@ -52,13 +53,17 @@ def trim(gal_sample):
         cutout5 = Cutout2D(hdu5.data, center, size, wcs=wcs5)
 
         print(vf['prefix'])
-        plt.subplots_adjust(hspace=0,wspace=0)
-        plt.subplot(1,2,1)
-        plt.imshow(cutout1.data,origin='lower')
-        plt.title('image')
-        plt.subplot(1,2,2)
-        plt.imshow(cutout4.data,origin='lower')
-        plt.title('mask')
+
+        if plot==False:
+            print(' ')
+        if plot==True:
+            plt.subplots_adjust(hspace=0,wspace=0)
+            plt.subplot(1,2,1)
+            plt.imshow(cutout1.data,origin='lower')
+            plt.title('image')
+            plt.subplot(1,2,2)
+            plt.imshow(cutout4.data,origin='lower')
+            plt.title('mask')
 
         #block=False will loop through every plt.imshow without requiring manual closing of each window before proceeding to the next galaxy
         #plt.show(block=False)
@@ -187,7 +192,6 @@ def trim_manual(gal,initial_scale):
             hdu4.writeto('/mnt/astrophysics/wisesize/'+galname+'/'+cutout_filename4)
             hdu5.writeto('/mnt/astrophysics/wisesize/'+galname+'/'+cutout_filename5)
 
-            break
 
         if str(yn) == 'n':
             print('try new scale')

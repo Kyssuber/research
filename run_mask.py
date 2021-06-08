@@ -82,4 +82,6 @@ def run_mask_all(galaxy_sample,type):
 
 if __name__ == '__main__':
     vf = Table.read('vf_north_v1_main.fits')
+    print('run_mask_one(galaxy,type), run_mask_all(galaxy_sample,type)')
+    print('types: haim for HalphaImaging, gui for halphagui')
     
