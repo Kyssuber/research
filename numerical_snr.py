@@ -8,6 +8,8 @@ import os
 def snr(gal_sample):
     snr15_list = []
     snr30_list = []
+    snr15_flag = []
+    snr30_flag = []
     for n in gal_sample:
 
         vfid=str(n['VFID'])
@@ -43,10 +45,10 @@ def snr(gal_sample):
         data30_im = mask30.multiply(hdu_im.data)
         data30_std = mask30.multiply(hdu_std.data)
 
-        data15_im = data15_im[data15_im>0]
-        data15_std = data15_std[data15_std>0]
-        data30_im = data30_im[data30_im>0]
-        data30_std = data30_std[data30_std>0]
+        data15_im = data15_im[data15_im!=0]
+        data15_std = data15_std[data15_std!=0]
+        data30_im = data30_im[data30_im!=0]
+        data30_std = data30_std[data30_std!=0]
 
         noise15 = np.sqrt(np.sum(data15_std**2))
         noise30 = np.sqrt(np.sum(data30_std**2))
@@ -57,26 +59,57 @@ def snr(gal_sample):
         snr15_list.append(snr15)
         snr30 = signal30/noise30
         snr30_list.append(snr30)
-        if snr15 > 10.:
+        if (snr15 > 10.) & (str(snr15) != 'inf'):
             print(vfid, 'snr15 > 10')
-        if snr30 > 10.:
+            snr15_flag.append(1)
+        if (snr15 < 10.) & (str(snr15) != 'inf'):
+            snr15_flag.append(0)
+        if str(snr15) == 'inf':
+            snr15_flag.append(0)
+        if (snr30 > 10.) & (str(snr30) != 'inf'):
             print(vfid, 'snr30 > 10')
-
+            snr30_flag.append(1)
+        if (snr30 < 10.) & (str(snr30) != 'inf'):
+            snr30_flag.append(0)
+        if str(snr30) == 'inf':
+            snr30_flag.append(0)
 
     snr15_list = [round(num,1) for num in snr15_list]
-    print('snr15:')
-    print(snr15_list)
+    #print('snr15:')
+    #print(snr15_list)
     snr15_array = np.asarray(snr15_list)
 
     snr30_list = [round(num,1) for num in snr30_list]
-    print('snr30:')
-    print(snr30_list)
+    #print('snr30:')
+    #print(snr30_list)
     snr30_array = np.asarray(snr30_list)
 
+    snr15_flag = np.asarray(snr15_flag)
+    snr30_flag = np.asarray(snr30_flag)
+
+    count15 = 0
+    count30 = 0
+    count_both = 0
+    print(len(snr15_flag),len(snr30_flag))
+    for i in range(0,len(gal_sample)):
+        if snr15_flag[i] == 1:
+            count15 += 1
+        if snr30_flag[i] == 1:
+            count30 += 1
+        if (snr15_flag[i] == 1) & (snr30_flag[i] == 1):
+            count_both += 1
+    print('SNR>10 for 15arc: ',count15,'of ',len(snr15_flag))
+    print('SNR>10 for 30arc: ',count30,'of ',len(snr15_flag))
+    print('# galaxies with SNR>10 for both: ',count_both)
+            
     os.chdir(homedir)
     np.savetxt('snr15.txt',snr15_array,fmt="%s")
     np.savetxt('snr30.txt',snr30_array,fmt="%s")
+    np.savetxt('snr15_flag.txt',snr15_flag,fmt="%s")
+    np.savetxt('snr30_flag.txt',snr30_flag,fmt="%s")
 
+    return(snr15_flag)
+    return(snr30_flag)
 
 
 
@@ -84,6 +117,8 @@ if __name__ == '__main__':
     homedir = os.getenv("HOME")
     vf = Table.read(homedir+'/vf_north_v1_main.fits')
     print('snr(gal_sample)')
+    print('sample: vf')
+    print("read table: ascii.read('___.txt',format='no_header')")
 
 
 

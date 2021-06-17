@@ -9,7 +9,6 @@ import glob
 
 
 homedir = os.getenv('HOME')
-#vf = Table.read(homedir+'/vf_north_v1_main.fits')
 
 class galaxy():
     def __init__(self,name='galname',vfid='VFID',band='3'):
@@ -81,7 +80,7 @@ def run_mask_all(galaxy_sample,type):
 
 
 if __name__ == '__main__':
-    vf = Table.read('vf_north_v1_main.fits')
+    vf = Table.read('vfcut.fits')
     print('run_mask_one(galaxy,type), run_mask_all(galaxy_sample,type)')
     print('types: haim for HalphaImaging, gui for halphagui')
     
