@@ -131,7 +131,7 @@ def mask_mosaic(sample,i,percentile1=.5,percentile2=99.5,cmap='viridis'):
         if i == 1:
             plt.subplot(1,3,i+1,projection=wcs_WISE)
             plt.imshow(im,origin='lower',cmap='gray')
-            plt.gca().invert_yaxis()
+            #plt.gca().invert_yaxis()
             plt.axis("off")
 
         plt.title(titles[i],fontsize=16)
