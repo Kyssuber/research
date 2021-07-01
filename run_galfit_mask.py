@@ -36,9 +36,11 @@ os.sys.path.append(homedir+'/github/virgowise/')
 import rungalfit as rg #This code has all the defined functions that I can use
 os.sys.path.append(homedir+'/github/HalphaImaging/python3/')
 import plot_cutouts_ha as cutouts #This code has all the defined functions that I can use
-#os.sys.path.append(homedir+'/github/halphagui/')
-#import maskwrapper as mask  #tHiS cOdE hAs AlL tHe DeFiNeD fUnCtIoNs ThAt I cAn UsE
 
+
+
+
+vf = Table.read(homedir+'/vfcut.fits')
 
 
 
@@ -72,12 +74,9 @@ class galaxy():
         self.vfid = vfid
         self.image_rootname = self.galname+'-unwise-w'+str(self.band)
         self.image = self.image_rootname+'-img-m-trim.fits'
-
-        #try:
         
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
         im = glob.glob('*w3-img-m-trim.fits')[0]
-        #get_ipython().run_line_magic('run','~/github/halphagui/maskwrapper.py'+' --image '+im)
         im_mask = glob.glob('*mask-trim.fits')[0]
         self.mask_image = im_mask
         
@@ -95,65 +94,16 @@ class galaxy():
         output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsrsic_err BA BA_err PA PA_err sky sky_err error chi2nu \n')
         # close log file
         output.close()    
-        
-        
 
 
-# Definition modified such that if galaxy VFID is in list containing the 59 subsample, then grab corrected fits image from 
-# directories created by Dustin.
 
-   def get_wise_image_default(self,makeplots=False):
-      baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-      imsize=self.radius*2
-      imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
-      self.image=imagenames[0]
-      self.sigma_image=weightnames[0]
-      temp = fits.getdata(self.image)
-      print(temp.shape)
-      self.ximagesize,self.yimagesize=temp.shape
-      
-      
-#if working with galaxies with a mix of corrected oversubtraction haloes and less-massive galaxies, use the following (switch function name to "get_wise_image" and the above to "get_wise_image_reg", rather than having to switch ALL lines of code to accommodate the function change)
-
-   def get_wise_image_fixed(self,makeplots=False):
-        '''
-        GOAL: Get the unWISE image from the unWISE catalog
-        INPUT: nsaid used to grab unwise image information
-        OUTPUT: Name of file to retrieve from
-        if unwise_fixed_59, then grab image from that directory
-        '''
-        vfmain = Table.read(homedir+'/github/research/sample_main.fits')
-        base_dir = homedir+'/github/unwise_fixed/'
-        vfmain_list = []
-        for i in range(0,len(vfmain)):
-            vfmain_list.append(vfmain['VFID'][i])
-        
-        if str(self.vfid) in vfmain_list: 
-            self.image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-img-m.fits'
-            self.sigma_image = base_dir + str(self.vfid) + '/unwise-' + str(self.vfid) + '-w3-std-m.fits'
-            temp = fits.getdata(self.image)
-            print(temp.shape)
-            self.ximagesize,self.yimagesize=temp.shape
-        else:
-            baseurl = 'http://unwise.me/cutout_fits?version=allwise'
-            imsize = self.radius*2
-
-            imagenames,weightnames,multiframe = cutouts.get_unwise_image(self.ra,self.dec,galid=self.galname,pixscale=1,imsize=self.radius*2,bands=self.band,makeplots=makeplots,subfolder=None)
-        
-            self.image = imagenames[0]
-        
-            self.sigma_image = weightnames[0]
-
-            # read in image and get image size
-
-            temp = fits.getdata(self.image)
-            print(temp.shape)
-            self.ximagesize,self.yimagesize = temp.shape
 
 
 
    def get_wise_image(self,makeplots=False):
-      vfmain = Table.read(homedir+'/vf_north_v1_main.fits')
+      #vfmain = Table.read(homedir+'/vf_north_v1_main.fits')
+      #vf defined above
+      vfmain = vf
       base_dir = '/mnt/astrophysics/wisesize/'
       for i in vfmain['VFID']:
          if str(self.vfid) == i:
@@ -243,7 +193,7 @@ class galaxy():
 
         '''
         self.nsersic = n
-        self.mag =m
+        self.mag = m
         self.re = re
         self.BA = BA
         self.PA = PA
@@ -558,8 +508,7 @@ def readfile2(filename):
 
 def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
 
-    homedir = os.getenv('HOME')
-    os.chdir(homedir+'/github/'+str(WISE_dir))
+
     get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
 
     for n in range(0,len(galaxy_sample)):
@@ -569,11 +518,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
                       galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
        print(galaxy_sample['prefix'][n])
        
-       try:
-            g.set_sersic_manual()
-       except:
-          print(galaxy_sample['prefix'][n],"failed at get_sersic_manual")
-          continue
+       g.set_sersic_manual()
        
        try:
           g.run_simple(convflag=False)
@@ -589,11 +534,11 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
           data.append(1)                                   #success_flag value of one
             
           if n == 0:                                       #if the galaxy is the first entry, then
-             file_test = [header,data]                    #append to the list both the header & data lists
-             file_plots = [header,data]                   #append to list for corner plots
+             file_test = [header,data]                     #append to the list both the header & data lists
+             file_plots = [header,data]                    #append to list for corner plots
                 
           else:
-             file_test2 = [header,data]                   #otherwise, only include the data list
+             file_test2 = [header,data]                    #otherwise, only include the data list
              file_test.append(file_test2[1])
              file_plots.append(file_test2[1])
                     
@@ -626,7 +571,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
     
     
 def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_psf):
-    os.chdir(homedir+'/github/'+str(WISE_dir))
+   
     get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
     
     for n in range(0,len(galaxy_sample)):

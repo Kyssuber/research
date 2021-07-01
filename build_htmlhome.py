@@ -5,7 +5,7 @@ from astropy.table import Table
 
 
 def build_htmlhome(sample):
-    path = '/Users/kconger/'
+    path = '/Users/k215c316/'
     htmlpath = '/mnt/astrophysics/kconger_wisesize/main_local.html'
     maskpath = path+'mask_mosaics/'
     cutoutpath = path+'LS_mosaics/'
