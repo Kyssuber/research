@@ -11,10 +11,7 @@ homedir = os.getenv("HOME")
 #read vf table (in home directory)
 vfmain = Table.read(homedir+'/vf_north_v1_main.fits')
 #read reduced vf table (in home directory)
-try:
-    vf = Table.read(homedir+'/vfcut.fits')
-except:
-    vf = Table.read(homedir+'/vfcut.fits',format='ascii')
+vf = Table.read(homedir+'/vfcut.fits')
 print('trim(gal_sample,plot=False) and trim_manual(gal_sample,initial_pixscale)')
 
 def trim(gal_sample,plot=False):

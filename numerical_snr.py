@@ -103,8 +103,8 @@ def snr(gal_sample):
     print('# galaxies with SNR>10 for both: ',count_both)
             
     os.chdir(homedir)
-    np.savetxt('snr15.txt',snr15_array,fmt="%s")
-    np.savetxt('snr30.txt',snr30_array,fmt="%s")
+    np.savetxt('snr15.txt',snr15_array,fmt="%f")
+    np.savetxt('snr30.txt',snr30_array,fmt="%f")
     np.savetxt('snr15_flag.txt',snr15_flag,fmt="%s")
     np.savetxt('snr30_flag.txt',snr30_flag,fmt="%s")
 

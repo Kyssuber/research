@@ -34,19 +34,7 @@ class galaxy():
         os.system('cp '+ im_mask + ' ' + str(output_dir))
         os.system('cp '+ im_mask_inv + ' ' + str(output_dir))
 
-    def mask_gui_one(self,output_dir):
-        os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
-        im = glob.glob('*w3-img-m.fits')[0]
-        print(im)
-        string = "python ~/github/halphagui/maskwrapper.py --image {}".format(im)
-        os.system(string)
-        im_mask = glob.glob('*mask.fits')[0]
-        im_mask_inv = glob.glob('*mask.fits')[1]
-        self.mask_image = im_mask
-        os.system('cp '+ im_mask + ' ' + str(output_dir))
-        os.system('cp '+ im_mask_inv + ' ' + str(output_dir))
 
-    
     def mask_haim(self,output_dir):
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
         im = glob.glob('*w3-img-m.fits')[0]
@@ -70,7 +58,7 @@ def run_mask_one(galaxy_sample,type):
     if str(type) == 'haim':
         g.mask_haim(output_dir == output_dir)
     if str(type) == 'gui':
-        g.mask_gui_one(output_dir == output_dir)
+        g.mask_gui(output_dir == output_dir)
     else:
         print('types: gui (for halphagui) or haim (for HalphaImaging)')
 
