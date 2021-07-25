@@ -83,7 +83,7 @@ class galaxy():
 
         # write the header line into the log file
         output=open(self.logfilename,'w')
-        output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsrsic_err BA BA_err PA PA_err sky sky_err error chi2nu \n')
+        output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsrsic_err BA BA_err PA PA_err sky sky_err error chi2nu galname \n')
         # close log file
         output.close()    
         
@@ -262,7 +262,7 @@ class galaxy():
         #convflag=1 # apply psf convolution
         #constraintflag=1 # add a constraint file?
         #self.fitallflag=0
-        self.ncomp=1
+        self.ncomp=2
 
     def getpix(self):
         '''
@@ -321,6 +321,8 @@ class galaxy():
         
         self.gal1 = rg.galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
         
+        
+        
     def run_galfit_wise(self,fitBA=1,fitPA=1):
         '''
         GOAL: 
@@ -336,6 +338,8 @@ class galaxy():
         '''
         #os.system('cp '+self.psf_image+' .')
         self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=self.BA,PA=self.PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
+     
+        
         self.gal1.set_sky(0)
         self.gal1.run_galfit()
     def get_galfit_results(self,printflag = False):
@@ -365,18 +369,105 @@ class galaxy():
         if printflag:
             self.gal1.print_galfit_results(self.filename)
         
-        header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','ERROR','CHI2NU']
-        self.xc, self.xc_err = t[0]
-        self.yc, self.yc_err = t[1]
-        self.mag, self.mag_err = t[2]
-        self.re, self.re_err = t[3]
-        self.nsersic, self.nsersic_err = t[4]
-        self.BA, self.BA_err = t[5]
-        self.PA, self.PA_err = t[6]
-        self.sky, self.sky_err = t[7]
-        self.error = t[8]
-        self.chi2nu = t[9]
+        if int(self.ncomp) == 1:
+            header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','ERROR','CHI2NU','galname']
+            self.xc, self.xc_err = t[0]
+            self.yc, self.yc_err = t[1]
+            self.mag, self.mag_err = t[2]
+            self.re, self.re_err = t[3]
+            self.nsersic, self.nsersic_err = t[4]
+            self.BA, self.BA_err = t[5]
+            self.PA, self.PA_err = t[6]
+            self.sky, self.sky_err = t[7]
+            self.error = t[8]
+            self.chi2nu = t[9]        
         
+        if int(self.ncomp) == 2:
+            header_keywords= ['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_SKY','CHI2NU','galname']
+            self.xc, self.xc_err = t[0]
+            self.yc, self.yc_err = t[1]
+            self.mag, self.mag_err = t[2]
+            self.re, self.re_err = t[3]
+            self.nsersic, self.nsersic_err = t[4]
+            self.BA, self.BA_err = t[5]
+            self.PA, self.PA_err = t[6]
+            self.xc2, self.xc2_err = t[7]
+            self.yc2, self.yc2_err = t[8]
+            self.mag2, self.mag2_err = t[9]
+            self.re2, self.re2_err = t[10]
+            self.nsersic2, self.nsersic2_err = t[11]
+            self.PA2, self.PA2_err = t[12]
+            self.BA2, self.BA2_err = t[13]            
+            self.sky, self.sky_err = t[14]
+            self.error = t[15]
+            self.chi2nu = t[16]
+
+    
+        if int(self.ncomp) == 3:
+            header_keywords= ['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_SKY','CHI2NU','galname']
+            self.xc, self.xc_err = t[0]
+            self.yc, self.yc_err = t[1]
+            self.mag, self.mag_err = t[2]
+            self.re, self.re_err = t[3]
+            self.nsersic, self.nsersic_err = t[4]
+            self.BA, self.BA_err = t[5]
+            self.PA, self.PA_err = t[6]
+            self.xc2, self.xc2_err = t[7]
+            self.yc2, self.yc2_err = t[8]
+            self.mag2, self.mag2_err = t[9]
+            self.re2, self.re2_err = t[10]
+            self.nsersic2, self.nsersic2_err = t[11]
+            self.PA2, self.PA2_err = t[12]
+            self.BA2, self.BA2_err = t[13]            
+            self.xc3, self.xc3_err = t[14]
+            self.yc3, self.yc3_err = t[15]
+            self.mag3, self.mag3_err = t[16]
+            self.re3, self.re3_err = t[17]
+            self.nsersic3, self.nsersic3_err = t[18]
+            self.PA3, self.PA3_err = t[19]
+            self.BA3, self.BA3_err = t[20]            
+            self.sky, self.sky_err = t[21]
+            self.error = t[22]
+            self.chi2nu = t[23]   
+    
+    
+        if int(self.ncomp) == 4:
+            header_keywords= ['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_XC','4_YC','4_MAG','4_RE','4_N','4_AR','4_PA','5_SKY','CHI2NU','galname']
+            self.xc, self.xc_err = t[0]
+            self.yc, self.yc_err = t[1]
+            self.mag, self.mag_err = t[2]
+            self.re, self.re_err = t[3]
+            self.nsersic, self.nsersic_err = t[4]
+            self.BA, self.BA_err = t[5]
+            self.PA, self.PA_err = t[6]
+            self.xc2, self.xc2_err = t[7]
+            self.yc2, self.yc2_err = t[8]
+            self.mag2, self.mag2_err = t[9]
+            self.re2, self.re2_err = t[10]
+            self.nsersic2, self.nsersic2_err = t[11]
+            self.PA2, self.PA2_err = t[12]
+            self.BA2, self.BA2_err = t[13]            
+            self.xc3, self.xc3_err = t[14]
+            self.yc3, self.yc3_err = t[15]
+            self.mag3, self.mag3_err = t[16]
+            self.re3, self.re3_err = t[17]
+            self.nsersic3, self.nsersic3_err = t[18]
+            self.PA3, self.PA3_err = t[19]
+            self.BA3, self.BA3_err = t[20] 
+            self.xc4, self.xc4_err = t[21]
+            self.yc4, self.yc4_err = t[22]
+            self.mag4, self.mag4_err = t[23]
+            self.re4, self.re4_err = t[24]
+            self.nsersic4, self.nsersic4_err = t[25]
+            self.PA4, self.PA4_err = t[26]
+            self.BA4, self.BA4_err = t[27] 
+            self.sky, self.sky_err = t[28]
+            self.error = t[29]
+            self.chi2nu = t[30]    
+    
+    
+    
+    
     def write_results(self,printflag=False):
         '''
         GOAL: 
@@ -393,7 +484,26 @@ class galaxy():
 
         output=open(self.logfilename,'a')
         # create string with best-fit parameters
-        s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu)
+        
+        
+        if int(self.ncomp) == 1:    
+            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu) + str( self.galname)
+        
+        #for below, may have to read dummycat.fits for second, third, and/or fourth sersic obj galnames. another option is to simply append a central and off-centered galname column...whichever strikes you as more doable.
+        
+        
+        if int(self.ncomp) == 2:
+            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error, self.chi2nu) + ' ' + str(self.galname) + '\n' + '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc2,self.xc2_err,self.yc2,self.yc2_err,self.mag2,self.mag2_err, self.re2, self.re2_err, self.nsersic2, self.nsersic2_err, self.BA2, self.BA2_err, self.PA2, self.PA2_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str(self.galname) + '\n'
+        
+        
+        if int(self.ncomp) == 3:
+            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error, self.chi2nu) + ' ' + str(self.galname) + '\n' + '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc2,self.xc2_err,self.yc2,self.yc2_err,self.mag2,self.mag2_err, self.re2, self.re2_err, self.nsersic2, self.nsersic2_err, self.BA2, self.BA2_err, self.PA2, self.PA2_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str(self.galname) + '\n' + '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc3,self.xc3_err,self.yc3,self.yc3_err,self.mag3,self.mag3_err, self.re3, self.re3_err, self.nsersic3, self.nsersic3_err, self.BA3, self.BA3_err, self.PA3, self.PA3_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str(self.galname) + '\n'
+        
+        
+        if int(self.ncomp) == 4:
+            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error, self.chi2nu) + ' ' + str(self.galname) + '\n' + '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc2,self.xc2_err,self.yc2,self.yc2_err,self.mag2,self.mag2_err, self.re2, self.re2_err, self.nsersic2, self.nsersic2_err, self.BA2, self.BA2_err, self.PA2, self.PA2_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str(self.galname) + '\n' + '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc3,self.xc3_err,self.yc3,self.yc3_err,self.mag3,self.mag3_err, self.re3, self.re3_err, self.nsersic3, self.nsersic3_err, self.BA3, self.BA3_err, self.PA3, self.PA3_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str(self.galname) + '\n' + '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'% (self.xc4,self.xc4_err,self.yc4,self.yc4_err,self.mag4,self.mag4_err, self.re4, self.re4_err, self.nsersic4, self.nsersic4_err, self.BA4, self.BA4_err, self.PA4, self.PA4_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str(self.galname) + '\n'    
+        
+        
         output.write(s)
         output.close()
     def display_galfit_model(self,percentile1=.5,percentile2=99.5,p1residual=5,p2residual=99,cmap='viridis',zoom=None):
@@ -641,6 +751,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
             ###
             g.run_simple(convflag=False)
             
+            #text file with output parameters
             t = homedir+'/github/'+str(WISE_dir)+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
             header,data = readfile(t)
             header.pop(0)                                    #removes the pound_sign from the array
@@ -754,6 +865,22 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     data_array_plots = np.array(file_plots)
     np.savetxt(sample_txt_name_psf+'.txt',data_array,fmt="%s")                          #all
     np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
+    
+    
+ 
+if __name__ == '__main__':
+    homedir = os.getenv("HOME")
+    #t_full = Table.read(homedir+'/Desktop/v1-20210308/vf_north_v1_main.fits')
+    #obj1 = t_full[481]
+    #g1 = galaxy(obj1['RA'],obj1['DEC'],obj1['radius'],name=obj1['prefix'],band=3)
+
+    
+    
+    
+    
+    
+    
+    
     
     
     
