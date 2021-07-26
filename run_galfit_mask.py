@@ -99,7 +99,7 @@ class galaxy():
 
         # write the header line into the log file
         output=open(self.logfilename,'w')
-        output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsrsic_err BA BA_err PA PA_err sky sky_err error chi2nu \n')
+        output.write('# xc xc_err yc yc_err mag mag_err re re_err nsersic nsersic_err BA BA_err PA PA_err sky sky_err error chi2nu galname \n')
         # close log file
         output.close()    
 
@@ -398,7 +398,8 @@ class galaxy():
            dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
            vfid = self.galname[0:8]
            index = np.where(dummycat['central galaxy'] == vfid)[0]
-           galname2 = dummycat['ID'][index]
+           galname2 = dummycat['ID'][index[0]]
+           print(galname2)
 
 
 
@@ -639,11 +640,28 @@ class galaxy():
 def readfile(filename):
     
     fileobj=open(filename,'r')                               #opens the file, of course
-    words=fileobj.read().splitlines()                        #splits the header and data into two lists
-    header = words[0].split()                                #splits header, data arrays into elements
-    data = words[1].split()
+    words=fileobj.read().splitlines()                        #splits the header and data into lists
+    header = words[0].split()       #splits header, data arrays into elements
+    header.remove('#')              #removes pound symbol from header
+    header.append('success_flag')
+    data1 = words[1].split()
+    if len(words) > 2:
+       if len(words) == 3:
+          data2 = words[2].split()
+          data=[header,data1,data2]
+       if len(words) == 4:
+          data2 = words[2].split()
+          data3 = words[3].split()
+          data = [header,data1,data2,data3]
+       if len(words) == 5:
+          data2 = words[2].split()
+          data3 = words[3].split()
+          data4 = words[4].split()
+          data = [header,data1,data2,data3,data4]
+    else:
+       data = [header,data1]
     fileobj.close()
-    return header,data
+    return data
 
 
 
@@ -674,31 +692,40 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
        try:
           g.run_simple(convflag=False)
           t = homedir+'/github/'+str(WISE_dir)+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
-          header,data = readfile(t)
-          header.pop(0)                                    #removes the pound_sign from the array
-          header.append('prefix')
-          header.append('success_flag')
+          data = readfile(t)      #returns list of header,data1,...
+
+
             
-          for i in range(0,len(data)):
-             data[i] = float(data[i])
-          data.append(galaxy_sample[n]['prefix'])
-          data.append(1)                                   #success_flag value of one
-            
-          if n == 0:                                       #if the galaxy is the first entry, then
-             file_test = [header,data]                     #append to the list both the header & data lists
-             file_plots = [header,data]                    #append to list for corner plots
+          if n == 0:                              #if the galaxy is the first entry, then
+             for i in range(0,len(data)):
+                try:
+                   m=i+1
+                   data[m].append(int(1))
+                except:
+                   continue             
+
+             file_test = data                     #append to the list both the header & data lists
+             file_plots = data                    #append to list for corner plots
                 
           else:
-             file_test2 = [header,data]                    #otherwise, only include the data list
-             file_test.append(file_test2[1])
-             file_plots.append(file_test2[1])
+             dat = []
+             for i in range(0,len(data)):
+                try:
+                   n=i+1
+                   data[n].append(int(1))
+                   dat.append(data[n])
+                except:
+                   continue
+                   #otherwise, only include the data list
+             file_test.append(dat)
+             file_plots.append(dat)
                     
        except:
             
            t = homedir+'/github/'+WISE_dir+'/'+str(galaxy_sample['prefix'][n])+'-unwise-w3-log.txt'
            header = readfile2(t)
-           header.pop(0)                                    #removes the pound_sign from the array
-           header.append('prefix')
+           header.remove('#')                                    #removes the pound_sign from the array
+           
            header.append('success_flag')
             
            data = []
