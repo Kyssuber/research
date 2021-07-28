@@ -641,10 +641,11 @@ def readfile(filename):
     
     fileobj=open(filename,'r')                               #opens the file, of course
     words=fileobj.read().splitlines()                        #splits the header and data into lists
-    header = words[0].split()       #splits header, data arrays into elements
+    header = words[0].split()       #splits header into elements
     header.remove('#')              #removes pound symbol from header
-    header.append('success_flag')
-    data1 = words[1].split()
+    header.append('success_flag')   #indicates whether galfit runs on galaxy successfully
+    header.append('central_flag')   #indicates whether galaxy is central (1) or off-centered (0)
+    data1 = words[1].split()        #splits data1 array into elements
     if len(words) > 2:
        if len(words) == 3:
           data2 = words[2].split()
@@ -678,8 +679,12 @@ def readfile2(filename):
 def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
 
 
-    get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
+    #get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
 
+    txt = '%run ~/github/virgowise/wisesize.py'
+    os.system(txt)
+
+    #note: galaxy_sample only includes central galaxies by design
     for n in range(0,len(galaxy_sample)):
     
        vfid = galaxy_sample['VFID'][n]
@@ -692,27 +697,41 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
        try:
           g.run_simple(convflag=False)
           t = homedir+'/github/'+str(WISE_dir)+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
-          data = readfile(t)      #returns list of header,data1,...
+          data = readfile(t)      #returns list of header,data*
 
 
             
-          if n == 0:                              #if the galaxy is the first entry, then
+          if n == 0:                              #if the galaxy is the first entry, then...
              for i in range(0,len(data)):
                 try:
-                   m=i+1
+                   m=i+1                          #define index to avoid data[0], which is the header
                    data[m].append(int(1))
-                except:
+                   name = str(data[m][18])        #isolate VFID
+                   name = name[0:8]
+                   print(name)
+                   if name in dummycat['central galaxy']:     #if galname is in central galaxy, append 1; else, append 0
+                      data[m].append(int(1))
+                   else:
+                      data[m].append(int(0))
+                except:                           #if the index m is beyond the length of the list, then continue (exit loop)
                    continue             
 
              file_test = data                     #append to the list both the header & data lists
-             file_plots = data                    #append to list for corner plots
+             file_plots = data                    #append to list for corner plots (which will not include defunct galaxies)
                 
           else:
              dat = []
              for i in range(0,len(data)):
                 try:
-                   n=i+1
+                   n=i+1                          #again, skips i=0 (header) index
                    data[n].append(int(1))
+                   name = str(data[n][18])        #isolate VFID
+                   name = name[0:8]
+                   print(name)
+                   if name in dummycat['central galaxy']:
+                      data[n].append(int(1))
+                   else:
+                      data[n].append(int(0))
                    dat.append(data[n])
                 except:
                    continue
@@ -732,7 +751,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
            for num in range(0,len(header)-2):
               data.append(-999)
            data.append(galaxy_sample[n]['prefix'])
-           data.append(0)                                   #success_flag value of zero
+           data.append(0)                                   #success_flag value of zero, other entries are -999
                
            file_test2 = [header,data]
            file_test.append(file_test2[1])
@@ -750,63 +769,101 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
     
 def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_psf):
    
-    get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
+    #get_ipython().run_line_magic('run', '~/github/virgowise/wisesize.py')
+
+    txt = '%run ~/github/virgowise/wisesize.py'
+    os.system(txt)
+
+
+    tab = ascii.read(homedir+'/github/'+WISE_dir+'/'+sample_txt_name_nopsf+'.txt')
+    central_flag = np.asarray(tab['central_flag'])
+    central_flag = central_flag.astype(bool)
+    success_flag = np.asarray(tab['success_flag'])
+    success_flag = success_flag.astype(bool)
+    tab_central = tab[central_flag]
+
     
     for n in range(0,len(galaxy_sample)):
         
-        try:
+       try:
             g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
-                      galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],band='3')
+                      galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
             print(galaxy_sample['prefix'][n])
             
             ###
-            tab = ascii.read(homedir+'/github/'+WISE_dir+'/'+sample_txt_name_nopsf+'.txt')
-            sersic_parameters = [tab['xc'][n],tab['yc'][n],tab['mag'][n],tab['re'][n],
-                                 tab['nsersic'][n],tab['BA'][n],tab['PA'][n]]
+            
+            sersic_parameters = [tab_central['xc'][n],tab_central['yc'][n],tab_central['mag'][n],tab_central['re'][n],
+                                 tab_central['nsersic'][n],tab_central['BA'][n],tab_central['PA'][n]]
+            name = tab_central['galname']
             ###
             
             g.run_simple(convflag=True,sersic_start = sersic_parameters)
             
             t = homedir+'/github/'+WISE_dir+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
-            header,data = readfile(t)
-            header.pop(0)                                    #removes the pound_sign from the array
-            header.append('prefix')
-            header.append('success_flag')
-            
-            for i in range(0,len(data)):
-                data[i] = float(data[i])
-            data.append(galaxy_sample[n]['prefix'])
-            data.append(1)                                   #success_flag value of one
-            
-            if n == 0:                                       #if the galaxy is the first entry, then
-                file_test = [header,data]                    #append to the list both the header & data lists
-                file_plots = [header,data]                   #append to list for corner plots
+            data = readfile(t)      #returns list of header,data1,...header
+
+
+
+            if n == 0:                              #if the galaxy is the first entry, then...
+               for i in range(0,len(data)):
+                  try:
+                     m=i+1                          #define index to avoid data[0], which is the header
+                     data[m].append(int(1))
+                     name = str(data[m][18])        #isolate VFID
+                     name = name[0:8]
+                     print(name)
+                     if name in dummycat['central galaxy']:     #if galname is in central galaxy, append 1; else, append 0
+                        data[m].append(int(1))
+                     else:
+                        data[m].append(int(0))
+                  except:                           #if the index m is beyond the length of the list, then continue (exit loop)
+                     continue             
+
+               file_test = data                     #append to the list both the header & data lists
+               file_plots = data                    #append to list for corner plots (which will not include defunct galaxies)
                 
             else:
-                file_test2 = [header,data]                   #otherwise, only include the data list
-                file_test.append(file_test2[1])
-                file_plots.append(file_test2[1])
-                    
-        except:
+               dat = []
+               for i in range(0,len(data)):
+                  try:
+                     n=i+1                          #again, skips i=0 (header) index
+                     data[n].append(int(1))
+                     name = str(data[n][18])        #isolate VFID
+                     name = name[0:8]
+                     print(name)
+                     if name in dummycat['central galaxy']:
+                        data[n].append(int(1))
+                     else:
+                        data[n].append(int(0))
+                     dat.append(data[n])
+                  except:
+                     continue
+                   #otherwise, only include the data list
+               file_test.append(dat)
+               file_plots.append(dat)
+
+
+       except:
             
-            t = homedir+'/github/'+WISE_dir+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
-            header = readfile2(t)
-            header.pop(0)                                    #removes the pound_sign from the array
-            header.append('prefix')
-            header.append('success_flag')
+           t = homedir+'/github/'+WISE_dir+'/'+str(galaxy_sample['prefix'][n])+'-unwise-w3-log.txt'
+           header = readfile2(t)
+           header.remove('#')                                    #removes the pound_sign from the array
+           
+           header.append('success_flag')
             
-            data = []
-            for num in range(0,len(header)-2):
-                data.append(-999)
-            data.append(galaxy_sample[n]['prefix'])
-            data.append(0)                                   #success_flag value of zero
+           data = []
+           for num in range(0,len(header)-2):
+              data.append(-999)
+           data.append(galaxy_sample[n]['prefix'])
+           data.append(0)                                   #success_flag value of zero, other entries are -999
                
-            file_test2 = [header,data]
-            file_test.append(file_test2[1])
+           file_test2 = [header,data]
+           file_test.append(file_test2[1])
 
             
-            print(galaxy_sample['prefix'][n], ' ' , 'was unsuccessful.')
-            continue
+           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
+           continue
+
         
     data_array = np.array(file_test)
     data_array_plots = np.array(file_plots)
@@ -817,4 +874,8 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
 if __name__ == '__main__':
    print('run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf)')
    print('run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_psf)')
+
+
+   homedir = os.getenv("HOME")
+   dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
    
