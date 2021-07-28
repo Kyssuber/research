@@ -388,8 +388,9 @@ class galaxy():
         # create string with best-fit parameter
 
         if int(self.ncomp) == 1:    
-            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str( self.galname)+'\n'
+            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu) + str( self.galname)
         
+        #for below, may have to read dummycat.fits for second, third, and/or fourth sersic obj galnames. another option is to simply append a central and off-centered galname column...whichever strikes you as more doable.
 
 
         
@@ -446,10 +447,10 @@ class galaxy():
       cmap = colormap, default is viridis
       '''
       # model name
-      self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.fits'
-      pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.png'
+      self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
+      pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.png'
       if self.convflag:
-         pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out-conv.png'
+         pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out-conv.png'
       image,h = fits.getdata(self.filename,1,header=True)
       model = fits.getdata(self.filename,2)
       residual = fits.getdata(self.filename,3)
@@ -708,7 +709,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
                    name = str(data[m][18])        #isolate VFID
                    name = name[0:8]
                    print(name)
-                   if name in vf['VFID']:     #if galname is in central galaxy, append 1; else, append 0
+                   if name in dummycat['central galaxy']:     #if galname is in central galaxy, append 1; else, append 0
                       data[m].append(int(1))
                    else:
                       data[m].append(int(0))
