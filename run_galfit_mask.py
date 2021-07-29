@@ -388,7 +388,7 @@ class galaxy():
         # create string with best-fit parameter
 
         if int(self.ncomp) == 1:    
-            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f \n'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str( self.galname)+'\n'
+            s = '%6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f %6.4f'%(self.xc,self.xc_err,self.yc,self.yc_err,self.mag,self.mag_err, self.re, self.re_err, self.nsersic, self.nsersic_err, self.BA, self.BA_err, self.PA, self.PA_err, self.sky, self.sky_err, self.error,self.chi2nu) + ' ' + str( self.galname)+'\n'
         
 
 
@@ -699,6 +699,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
           data = readfile(t)      #returns list of header,data*
 
 
+
             
           if n == 0:                              #if the galaxy is the first entry, then...
              for i in range(0,len(data)):
@@ -717,26 +718,27 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
 
              file_test = data                     #append to the list both the header & data lists
              file_plots = data                    #append to list for corner plots (which will not include defunct galaxies)
-                
+   
           else:
-             dat = []
-             for i in range(0,len(data)):
-                try:
-                   n=i+1                          #again, skips i=0 (header) index
-                   data[n].append(int(1))
-                   name = str(data[n][18])        #isolate VFID
+             for i in range(0,len(data)-1):
+                if (i+1) <  len(data):
+                   num=i+1                          #again, skips i=0 (header) index
+                   data[num].append(int(1))
+                   name = str(data[num][18])        #isolate VFID
                    name = name[0:8]
                    print(name)
-                   if name in dummycat['central galaxy']:
-                      data[n].append(int(1))
+
+                   if name in vf['VFID']:
+                      data[num].append(int(1))
                    else:
-                      data[n].append(int(0))
-                   dat.append(data[n])
-                except:
+                      data[num].append(int(0))
+
+                   #file_test.append(data[num])
+                   #file_plots.append(data[num])
+                else:
+                   print('fin')
                    continue
-                   #otherwise, only include the data list
-             file_test.append(dat)
-             file_plots.append(dat)
+
                     
        except:
             
@@ -750,12 +752,16 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
            for num in range(0,len(header)-2):
               data.append(-999)
            data.append(galaxy_sample[n]['prefix'])
-           data.append(0)                                   #success_flag value of zero, other entries are -999
-               
+           data.append(-999)                                   #success_flag value of zero, other entries are -999
+           data.append(-999)    
            file_test2 = [header,data]
            file_test.append(file_test2[1])
 
             
+           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
+           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
+           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
+           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
            print(galaxy_sample['prefix'][n], ' failed at run_simple.')
            continue
         
@@ -822,24 +828,22 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                file_plots = data                    #append to list for corner plots (which will not include defunct galaxies)
                 
             else:
-               dat = []
                for i in range(0,len(data)):
                   try:
-                     n=i+1                          #again, skips i=0 (header) index
-                     data[n].append(int(1))
-                     name = str(data[n][18])        #isolate VFID
+                     num=i+1                          #again, skips i=0 (header) index
+                     data[num].append(int(1))
+                     name = str(data[num][18])        #isolate VFID
                      name = name[0:8]
                      print(name)
-                     if name in dummycat['central galaxy']:
-                        data[n].append(int(1))
+                     if name in vf['VFID']:
+                        data[num].append(int(1))
                      else:
-                        data[n].append(int(0))
-                     dat.append(data[n])
+                        data[num].append(int(0))
                   except:
                      continue
                    #otherwise, only include the data list
-               file_test.append(dat)
-               file_plots.append(dat)
+               #file_test.append(dat)
+               #file_plots.append(dat)
 
 
        except:
