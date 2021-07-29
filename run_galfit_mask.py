@@ -733,12 +733,11 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
                    else:
                       data[num].append(int(0))
 
-                   #file_test.append(data[num])
-                   #file_plots.append(data[num])
                 else:
                    print('fin')
                    continue
-
+                file_test.append(data[num])
+                #file_plots.append(data[num])
                     
        except:
             
@@ -766,9 +765,9 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
            continue
         
     data_array = np.array(file_test)
-    data_array_plots = np.array(file_plots)
-    np.savetxt(sample_txt_name_nopsf+'.txt',data_array,fmt="%s")                          #all
-    np.savetxt(sample_txt_name_nopsf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
+    #data_array_plots = np.array(file_plots)
+    np.savetxt(sample_txt_name_nopsf+'.txt',data_array,fmt="%s")                           #all
+    #np.savetxt(sample_txt_name_nopsf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
  
     
     
