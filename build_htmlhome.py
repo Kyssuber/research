@@ -86,25 +86,29 @@ def build_htmlpage_one(sample,i,ku_or_siena,psf_or_nopsf):
             html.write('<a href='+str(sample['VFID'][i-1])+'.html>Previous Galaxy</a></br /> \n')
 
 
-
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'output_mosaics/'+str(sample['prefix'][i])+'-unwise-w3-1Comp-galfit-out.png'+'" /><br /> \n')
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic'+'.png'+'" /><br /> \n')
-
-        index = np.where(t['galname'] == sample['VFID'])[0]
-
+        if str(psf_or_nopsf) == 'nopsf':
+            html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'output_mosaics/'+str(sample['prefix'][i])+'-unwise-w3-1Comp-galfit-out.png'+'" /><br /> \n')
+        if str(psf_or_nopsf) == 'psf':
+            html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'output_mosaics/'+str(sample['prefix'][i])+'-unwise-w3-1Comp-galfit-out-conv.png'+'" /><br /> \n')
 
         
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic'+'.png'+'" /><br /> \n')
+
+         html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'mask_mosaics/'+str(sample['VFID'][i])+'-mask-mosaic'+'.png'+'" /><br /> \n')
+
+        index = np.where(t['galname'] == sample['VFID'])[0]
+       
         if tab['success_flag'][index] == 0:
             html.write('<font size="40">GALFIT Failed!</font>\n')
 
-
-
         else:
 
+            #if the galaxy is a central galaxy, then determine the number of "perimeter" galaxies
             if sample['VFID'][index] in dummycat['central galaxy']:
                 
                 external_number = len(np.where(sample['VFID'][index] == dummycat['central galaxy'])[0])
-                
+
+            #write parameters of central galaxy as first row
                 html.write('<font size="30">GALFIT Parameters</font><br />')
                 html.write('<table><tr><th>Galname</th><th>Type</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA+err</th></th> \n')
                 html.write('<td>'+str(sample['VFID'][i])+'</td>')
@@ -124,10 +128,12 @@ def build_htmlpage_one(sample,i,ku_or_siena,psf_or_nopsf):
                 html.write('<td>'+str(tab[index][12])+'</td>')
                 html.write('<td>'+str(tab[index][13])+'</td> \n')
 
-                for i in range(0,external_number):
-                    num=i+1
-                    if tab[index+1]['galname'] in galvf['VFID']:
-                        html.write('<td>'+str(tab[index+i]['galname'])+'</td>')
+                for f in range(0,external_number):
+                    #num will ensure central galaxy is skipped
+                    num=f+1
+                    #only VFID galaxies (i.e., galaxies included in VF catalog) 
+                    if tab[index+num]['galname'] in galvf['VFID']:
+                        html.write('<td>'+str(tab[index+num]['galname'])+'</td>')
                         html.write('<td>External</td> \n')
                         html.write('<td>'+str(tab[index+num][0])+'</td>')
                         html.write('<td>'+str(tab[index+num][1])+'</td>')
@@ -146,6 +152,7 @@ def build_htmlpage_one(sample,i,ku_or_siena,psf_or_nopsf):
                     
             
             else:
+                #if the galaxy is a central galaxy no "perimeter" galaxies, then go ahead and add one row to the page.
                 html.write('<font size="30">GALFIT Parameters</font><br />')
                 html.write('<table><tr><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th></tr>')
                 html.write('<td>'+str(sample['VFID'][i])+'</td>')
@@ -189,6 +196,58 @@ def build_htmlpage_one(sample,i,ku_or_siena,psf_or_nopsf):
 
 
 
+def build_htmlhome_galfit(sample,ku_or_siena,psf_or_nopsf):
+    
+    if str(siena_or_ku) == 'ku':
+        path = '/Users/k215c316/'
+    if str(siena_or_ku) == 'siena':
+        path = '/Users/kconger/'
+    if str(psf_or_nopsf) == 'nopsf':
+        galpath = '/mnt/astrophysics/kconger_wisesize/gal_output_nopsf/'
+    if str(psf_or_nopsf) == 'psf':
+        galpath = '/mnt/astrophysics/kconger_wisesize/gal_output/'
+        
+    htmlpath = '/mnt/astrophysics/kconger_wisesize/main_local.html'
+    maskpath = path+'mask_mosaics/'
+    cutoutpath = path+'LS_mosaics/'
+    stamppath = path+'LS_cutouts/'
+
+    with open(htmlpath,'w') as html:
+        html.write('<html><body>\n')
+        html.write('<title>WISESize Project</title>\n')
+        html.write('<body style="background-color:powderblue;">\n')
+        html.write('<style type="text/css">\n')
+        html.write('table, td, th {padding: 5px; text-align: center; border: 2px solid black;}\n')
+        html.write('p {display: inline-block;;}\n')
+        html.write('</style>\n')
+        html.write('<font size="40"> WISESize GALFIT Data for VF Galaxies (SNR>15) </font>\n')
+
+        html.write('<table><tr><th>Index</th><th>LS Cutout</th><th>Prefix</th><th>Galaxy</th><th>RA</th><th>DEC</th><th>2+ Sersic</th><th>Comments</th></tr>\n')
+
+        for i in range(0,len(sample)):
+            html.write('<tr><td>'+str(i)+'</td>\n')
+            html.write('<td><img src = "' + stamppath + str(sample['VFID'][i]) + '.jpg' + '" height="auto" width = "100%"></img></td>\n')
+            html.write('<td>'+str(sample['prefix'][i])+'</td>\n')
+############for the below entry, do not run until build_htmlpages runs
+            html.write('<td><a href='+str(sample['VFID'][i])+'.html>'+str(sample['objname'][i])+'</a></td>\n')
+            html.write('<td>+str(sample['RA'][i])+'</td>\n')
+            html.write('<td>+str(sample['DEC'][i])+'</td>\n')
+            if vf['VFID'] in dummycat['central galaxy']:
+                html.write('<td>Yes</td>')
+            else:
+                html.write('<td>No</td>')
+            html.write('<td> </td>\n')
+
+        html.write('</tr></table>\n')
+        html.write('<br /><br />\n')
+        html.write('</html></body>\n')
+        html.close()
+
+
+
+
+
+
 if __name__ == '__main__':
     homedir = os.getenv("HOME")
     vf = Table.read(homedir+'/vfcut.fits',format='ascii')
@@ -196,5 +255,6 @@ if __name__ == '__main__':
     galvf = Table.read('/mnt/astrophysics/kconger_wisesize/github/research/galfitcut.fits',format='ascii')
     print('build_htmlhome(sample,ku_or_siena,htmlpage=False)')
     print('build_html_one(sample,ku_or_siena,psf_or_nopsf)')
+    print('build_htmlhome_galfit(sample,ku_or_siena,psf_or_nopsf)')
     
     

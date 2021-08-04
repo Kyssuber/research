@@ -446,7 +446,10 @@ class galaxy():
       cmap = colormap, default is viridis
       '''
       # model name
+
       self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.fits'
+      if self.convflag:
+         self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out-conv.fits'
       pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.png'
       if self.convflag:
          pngname = self.galname+'-unwise-'+'w'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out-conv.png'
@@ -778,8 +781,10 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     txt = '%run ~/github/virgowise/wisesize.py'
     os.system(txt)
 
-
-    tab = ascii.read(homedir+'/github/'+WISE_dir+'/'+sample_txt_name_nopsf+'.txt')
+    try:
+       tab = ascii.read(homedir+'/github/'+WISE_dir+'/'+sample_txt_name_nopsf+'.txt')
+    except:
+       tab = ascii.read('/mnt/astrophysics/kconger_wisesize/gal_output_nopsf/'+str(sample_txt_name_nopsf)+'.txt')
     central_flag = np.asarray(tab['central_flag'])
     central_flag = central_flag.astype(bool)
     success_flag = np.asarray(tab['success_flag'])
@@ -816,7 +821,7 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                      name = str(data[m][18])        #isolate VFID
                      name = name[0:8]
                      print(name)
-                     if name in dummycat['central galaxy']:     #if galname is in central galaxy, append 1; else, append 0
+                     if name in vf['VFID']:     #if galname is in vf catalog, append 1; else, append 0
                         data[m].append(int(1))
                      else:
                         data[m].append(int(0))
@@ -827,8 +832,8 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                file_plots = data                    #append to list for corner plots (which will not include defunct galaxies)
                 
             else:
-               for i in range(0,len(data)):
-                  try:
+               for i in range(0,len(data)-1):
+                  if (i+1) < len(data):
                      num=i+1                          #again, skips i=0 (header) index
                      data[num].append(int(1))
                      name = str(data[num][18])        #isolate VFID
@@ -838,11 +843,12 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                         data[num].append(int(1))
                      else:
                         data[num].append(int(0))
-                  except:
+                  else:
+                     print('fin')
                      continue
-                   #otherwise, only include the data list
-               #file_test.append(dat)
-               #file_plots.append(dat)
+                  file_test.append(data[num])
+
+                  #file_plots.append(dat)
 
 
        except:
@@ -857,8 +863,8 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
            for num in range(0,len(header)-2):
               data.append(-999)
            data.append(galaxy_sample[n]['prefix'])
-           data.append(0)                                   #success_flag value of zero, other entries are -999
-               
+           data.append(-999)                                   #success_flag value of zero, other entries are -999
+           data.append(-999)    
            file_test2 = [header,data]
            file_test.append(file_test2[1])
 
@@ -868,9 +874,9 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
 
         
     data_array = np.array(file_test)
-    data_array_plots = np.array(file_plots)
-    np.savetxt(sample_txt_name_psf+'.txt',data_array,fmt="%s")                          #all
-    np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
+    #data_array_plots = np.array(file_plots)
+    np.savetxt(sample_txt_name_psf+'.txt',data_array,fmt="%s")                           #all
+    #np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
 
 
 if __name__ == '__main__':
