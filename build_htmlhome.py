@@ -59,10 +59,10 @@ def build_htmlhome(sample,ku_or_siena,htmlpage=False):
 def build_html_one(sample,i,ku_or_siena,psf_or_nopsf):
     if str(ku_or_siena) == 'ku':
         path = '/Users/k215c316/'
-        mainpath = path+'main_ku.html'
+        #mainpath = path+'main_ku.html'
     if str(ku_or_siena) == 'siena':
         path = '/Users/kconger/'
-        mainpath = path+'main_siena.html'
+        #mainpath = path+'main_siena.html'
     if str(psf_or_nopsf) == 'nopsf':
         galpath = '/mnt/astrophysics/kconger_wisesize/gal_output_nopsf/'
     if str(psf_or_nopsf) == 'psf':
@@ -85,7 +85,8 @@ def build_html_one(sample,i,ku_or_siena,psf_or_nopsf):
         html.write('</style>\n')
         
         html.write('<font size="40">Central Galaxy: '+str(sample['prefix'][i]) +'</font><br /> \n')
-        html.write('<a href='+mainpath+'>Return to Homepage</a></br /> \n')
+
+        html.write('<a href=main.html>Return to Homepage</a></br /> \n')
 
         if i != len(sample)-1:
             html.write('<a href='+str(sample['VFID'][i+1])+'.html>Next Galaxy</a></br /> \n') 

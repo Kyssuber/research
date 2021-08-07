@@ -36,6 +36,12 @@ os.sys.path.append(homedir+'/github/virgowise/')
 
 dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
 
+sga_params = Table.read(homedir+'/sga_vf_matched.fits')
+
+sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
+
+
+
 import rungalfit as rg #This code has all the defined functions that I can use
 os.sys.path.append(homedir+'/github/HalphaImaging/python3/')
 import plot_cutouts_ha as cutouts #This code has all the defined functions that I can use
@@ -241,8 +247,22 @@ class galaxy():
         OUTPUT: several output files
 
         '''
+        
+        if self.vfid in sgacut['VFID']:
+            sgaindex = np.where(sga_params['VFID'] == self.vfid)[0]
+
+            BA = sga_params['BA'][sgaindex]
+            PA = sga_params['PA'][sgaindex]
+            fitBA = 0
+            fitPA = 0
+        else:
+           BA = self.BA
+           PA = self.PA
+           
+
+        
         #os.system('cp '+self.psf_image+' .')
-        self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=self.BA,PA=self.PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
+        self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=BA,PA=PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
         self.gal1.set_sky(0)
         self.gal1.run_galfit()
    def get_galfit_results(self,printflag = False):
@@ -523,6 +543,8 @@ class galaxy():
       #self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
       self.filename = self.gal1.output_image
       rg.print_galfit_results(self.filename)
+
+      
    def run_dmc(self, N=100,convflag=True):
         '''
         GOAL: 
@@ -877,12 +899,13 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     #data_array_plots = np.array(file_plots)
     np.savetxt(sample_txt_name_psf+'.txt',data_array,fmt="%s")                           #all
     #np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
-
+    
 
 if __name__ == '__main__':
    print('run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf)')
    print('run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_psf)')
 
+   print('catalogs: vfcut (SNR>10 from VF parent sample), sgacut (vfcut matched with SGA)')
 
    homedir = os.getenv("HOME")
    dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
