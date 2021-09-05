@@ -60,29 +60,38 @@ def build_htmlhome(sample,ku_or_siena,htmlpage=False):
 
 
 
+#once psf is properly established, may no longer be necessary to include no_psf row. Until then, do include, and be sure both are the correct length (which will not be so if GALFIT fails with ncomp>1 for psf and not non_psf, or vice versa)
 
 
-
-def build_html_one(sample,i,ku_or_siena,psf_or_nopsf,paba_comparison=False):
+def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
     if str(ku_or_siena) == 'ku':
         path = '/Users/k215c316/'
-        #mainpath = path+'main_ku.html'
     if str(ku_or_siena) == 'siena':
         path = '/Users/kconger/'
-        #mainpath = path+'main_siena.html'
-    if str(psf_or_nopsf) == 'nopsf':
-        galpath = '/mnt/astrophysics/kconger_wisesize/gal_output_nopsf/'
-    if str(psf_or_nopsf) == 'psf':
-        galpath = '/mnt/astrophysics/kconger_wisesize/gal_output_psf/'
+
+    galpath = '/mnt/astrophysics/kconger_wisesize/'
+
+
     htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html/'+str(sample[i]['VFID'])+'.html'
 
     mosaicpath = galpath+'/output_mosaics/'
-    tab = ascii.read(galpath+'/set_one.txt')
 
+    tab_nopsf = ascii.read(galpath+'gal_output_nopsf/set_one.txt')
+    #print('tab_nopsf:',len(tab_nopsf))
+    tab_psf = ascii.read(galpath+'/gal_output_psf/set_one.txt')
+    #print('tab_psf:',len(tab_psf))
+
+
+    #index329 not in tab_psf...
+    index=np.where(tab_nopsf['galname'] == 'index329')[0]
+    index=int(index)
+    tab_nopsf.remove_row(index)
+    
+        
+    
     if paba_comparison == True:
-        galpath2 = '/mnt/astrophysics/kconger_wisesize/gal_output_fixed_psf/'
-        tab_sga = ascii.read(galpath2+'/set_one.txt')
-
+        tab_sga_psf = ascii.read(galpath+'gal_output_fixed_psf/set_one.txt')
+        tab_sga_nopsf = ascii.read(galpath+'gal_output_fixed_nopsf/set_one.txt')
 
     with open(htmlpath,'w') as html:
         html.write('<html><body>\n')
@@ -115,154 +124,268 @@ def build_html_one(sample,i,ku_or_siena,psf_or_nopsf,paba_comparison=False):
         print(mosaicfile)
 
 
-        html.write('<font size="30">GALFIT Output with no parameters held fixed:</font><br /> \n')
+        html.write('<font size="30">GALFIT Output (PSF) with no parameters held fixed:</font><br /> \n')
 
-        if str(psf_or_nopsf) == 'nopsf':
-            html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'output_mosaics/'+str(sample['prefix'][i])+'-unwise-w3-1Comp-galfit-out.png'+'" /><br /> \n')
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile+'" /><br /> \n')
 
-        if str(psf_or_nopsf) == 'psf':
-            html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile+'" /><br /> \n')
+        html.write('<font size="30">GALFIT Output (PSF) with PA, BA parameters held fixed:</font><br /> \n')
 
-
-        html.write('<font size="30">GALFIT Output with PA, BA parameters held fixed:</font><br /> \n')
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile_sga+'" /><br /> \n')
-         
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile_sga+'" /><br /> \n') 
         
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic'+'.png'+'" /><br /> \n')
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic.png" height="50%" width="50%" /><br /> \n')
 
         html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'mask_mosaics/'+str(sample['VFID'][i])+'-mask-mosaic'+'.png'+'" /><br /> \n')
 
-        index = np.where(sample['prefix'][i] == tab['galname'])[0]
+        index = np.where(sample['prefix'][i] == tab_nopsf['galname'])[0]
         index = int(index)
 
         
-        if tab['success_flag'][index] == 0:
+        if tab_psf['success_flag'][index] == 0:
             html.write('<font size="40">GALFIT Failed!</font>\n')
 
         else:
 
             #if the galaxy is a central galaxy, then determine the number of "perimeter" galaxies
-            if str(tab['galname'][index])[0:8] in dummycat['central galaxy']:
+            if str(tab_nopsf['galname'][index])[0:8] in dummycat['central galaxy']:
                 
-                external_number = len(np.where(str(tab['galname'][index])[0:8] == dummycat['central galaxy'])[0])
+                external_number = len(np.where(str(tab_nopsf['galname'][index])[0:8] == dummycat['central galaxy'])[0])
 
             #write parameters of central galaxy as first row
                 html.write('<font size="30">GALFIT Parameters</font><br />')
-                html.write('<table><tr><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA+err</th></tr> \n')
+                html.write('<table><tr><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>PSF?</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA+err</th><th>Error</th></tr> \n')
+
                 html.write('<tr><td>'+str(sample['VFID'][i])+'</td> \n')
                 html.write('<td>Host</td> \n')
                 html.write('<td>Free</td> \n')
-                html.write('<td>'+str(tab[index][0])+'</td> \n')
-                html.write('<td>'+str(tab[index][1])+'</td> \n')
-                html.write('<td>'+str(tab[index][2])+'</td> \n')
-                html.write('<td>'+str(tab[index][3])+'</td> \n')
-                html.write('<td>'+str(tab[index][4])+'</td> \n')
-                html.write('<td>'+str(tab[index][5])+'</td> \n')
-                html.write('<td>'+str(tab[index][6])+'</td> \n')
-                html.write('<td>'+str(tab[index][7])+'</td> \n')
-                html.write('<td>'+str(tab[index][8])+'</td> \n')
-                html.write('<td>'+str(tab[index][9])+'</td> \n')
-                html.write('<td>'+str(tab[index][10])+'</td> \n')
-                html.write('<td>'+str(tab[index][11])+'</td> \n')
-                html.write('<td>'+str(tab[index][12])+'</td> \n')
-                html.write('<td>'+str(tab[index][13])+'</td></tr> \n')
+                html.write('<td>No PSF</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][0])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][1])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][2])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][3])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][4])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][5])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][6])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][7])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][8])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][9])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][10])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][11])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][12])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][13])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][16])+'</td></tr> \n')
+
+                html.write('<tr><td>--</td> \n')
+                html.write('<td>--</td> \n')
+                html.write('<td>-- </td> \n')
+                html.write('<td>PSF</td> \n')
+                html.write('<td>'+str(tab_psf[index][0])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][1])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][2])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][3])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][4])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][5])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][6])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][7])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][8])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][9])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][10])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][11])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][12])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][13])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][16])+'</td></tr> \n')
 
                 if paba_comparison == True:
+
                     try:
-                        index2 = np.where(tab_sga['galname'] == sample['prefix'][i])[0]
-                        index2 = int(index2)
+                        index2 = np.where(str(tab_sga_psf['galname']) == str(sample['prefix'][0]))
+                        print(index2)
+                        index2 = int(index2[0])
+
+                        index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
+                        index3 = int(index3)
 
                         html.write('<tr><td>'+str(sample['VFID'][i])+'</td> \n')
                         html.write('<td>Host</td> \n')
                         html.write('<td>Fixed</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][0])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][1])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][2])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][3])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][4])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][5])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][6])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][7])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][8])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][9])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][10])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][11])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][12])+'</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][13])+'</td></tr> \n')                    
+                        html.write('<td>NoPSF</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][0])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][1])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][2])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][3])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][4])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][5])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][6])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][7])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][8])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][9])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][10])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][11])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][12])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][13])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][16])+'</td></tr> \n')
+
+                        html.write('<tr><td>--</td> \n')
+                        html.write('<td>--</td> \n')
+                        html.write('<td>--</td> \n')
+                        html.write('<td>PSF</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][0])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][1])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][2])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][3])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][4])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][5])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][6])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][7])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][8])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][9])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][10])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][11])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][12])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][13])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][16])+'</td></tr> \n')
 
                     except:
+
                         print('no sga equivalent')
                     
                 for f in range(0,external_number):
                     #num will ensure central galaxy is skipped
                     num=f+1
                     #only VFID galaxies (i.e., galaxies included in VF catalog) 
-                    if tab[index+num]['galname'] in galvf['VFID']:
-                        html.write('<tr><td>'+str(tab[index+num]['galname'])+'</td>')
+                    if tab_psf[index+num]['galname'] in galvf['VFID']:
+                        html.write('<tr><td>'+str(tab_psf[index+num]['galname'])+'</td>')
                         html.write('<td>External</td> \n')
                         html.write('<td>Free</td> \n')
-                        html.write('<td>'+str(tab[index+num][0])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][1])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][2])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][3])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][4])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][5])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][6])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][7])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][8])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][9])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][10])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][11])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][12])+'</td> \n')
-                        html.write('<td>'+str(tab[index+num][13])+'</td> \n')
+                        html.write('<td>NoPSF</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][0])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][1])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][2])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][3])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][4])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][5])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][6])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][7])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][8])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][9])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][10])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][11])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][12])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][13])+'</td> \n')
+                        html.write('<td>'+str(tab_nopsf[index+num][16])+'</td></tr> \n')
+
+                        html.write('<tr><td>'+str(tab_nopsf[index+num]['galname'])+'</td>')
+                        html.write('<td>--</td> \n')
+                        html.write('<td>--</td> \n')
+                        html.write('<td>PSF</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][0])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][1])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][2])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][3])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][4])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][5])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][6])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][7])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][8])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][9])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][10])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][11])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][12])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][13])+'</td> \n')
+                        html.write('<td>'+str(tab_psf[index+num][16])+'</td> \n')
                     
             
             else:
                 #if the galaxy is a central galaxy with no "perimeter" galaxies, then go ahead and add one row to the page.
                 html.write('<font size="30">GALFIT Parameters</font><br />')
-                html.write('<table><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th></tr> \n')
+                html.write('<table><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>PSF?</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th></th><th>Error</th></tr> \n')
+
                 html.write('<tr><td>'+str(sample['VFID'][i])+'</td> \n')
                 html.write('<td>Host</td> \n')
                 html.write('<td>Free</td> \n')
-                html.write('<td>'+str(tab[index][0])+'</td> \n')
-                html.write('<td>'+str(tab[index][1])+'</td> \n')
-                html.write('<td>'+str(tab[index][2])+'</td> \n')
-                html.write('<td>'+str(tab[index][3])+'</td> \n')
-                html.write('<td>'+str(tab[index][4])+'</td> \n')
-                html.write('<td>'+str(tab[index][5])+'</td> \n')
-                html.write('<td>'+str(tab[index][6])+'</td> \n')
-                html.write('<td>'+str(tab[index][7])+'</td> \n')
-                html.write('<td>'+str(tab[index][8])+'</td> \n')
-                html.write('<td>'+str(tab[index][9])+'</td> \n')
-                html.write('<td>'+str(tab[index][10])+'</td> \n')
-                html.write('<td>'+str(tab[index][11])+'</td> \n')
-                html.write('<td>'+str(tab[index][12])+'</td> \n' )
-                html.write('<td>'+str(tab[index][13])+'</td> \n')
+                html.write('<td><NoPSF></td> \n')
+                html.write('<td>'+str(tab_nopsf[index][0])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][1])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][2])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][3])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][4])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][5])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][6])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][7])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][8])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][9])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][10])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][11])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][12])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][13])+'</td> \n')
+                html.write('<td>'+str(tab_nopsf[index][16])+'</td> \n')
 
-
+                html.write('<tr><td>--</td> \n')
+                html.write('<td>--</td> \n')
+                html.write('<td>--</td> \n')
+                html.write('<td><PSF></td> \n')
+                html.write('<td>'+str(tab_psf[index][0])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][1])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][2])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][3])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][4])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][5])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][6])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][7])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][8])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][9])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][10])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][11])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][12])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][13])+'</td> \n')
+                html.write('<td>'+str(tab_psf[index][16])+'</td> \n')
                 
                 if paba_comparison == True:
+
                     try:
-                        index2 = np.where(tab_sga['galname'] == sample['prefix'][i])[0]
+                        index2 = np.where(tab_sga_psf['galname'] == sample['prefix'][i])[0]
                         index2 = int(index2)
+                        index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
+                        index3 = int(index3)
 
                         html.write('<tr><td>'+str(sample['VFID'][i])+'</td>')
                         html.write('<td>Host</td> \n')
                         html.write('<td>Fixed</td> \n')
-                        html.write('<td>'+str(tab_sga[index2][0])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][1])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][2])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][3])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][4])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][5])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][6])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][7])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][8])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][9])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][10])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][11])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][12])+'</td>')
-                        html.write('<td>'+str(tab_sga[index2][13])+'</td></tr> \n')                    
+                        html.write('<td>NoPSF</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][0])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][1])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][2])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][3])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][4])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][5])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][6])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][7])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][8])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][9])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][10])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][11])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][12])+'</td>')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][13])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_nopsf[index3][16])+'</td></tr> \n')
+
+                        html.write('<tr><td>'+str(sample['VFID'][i])+'</td>')
+                        html.write('<td>Host</td> \n')
+                        html.write('<td>Fixed</td> \n')
+                        html.write('<td>NoPSF</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][0])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][1])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][2])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][3])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][4])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][5])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][6])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][7])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][8])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][9])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][10])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][11])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][12])+'</td>')
+                        html.write('<td>'+str(tab_sga_psf[index2][13])+'</td> \n')
+                        html.write('<td>'+str(tab_sga_psf[index2][16])+'</td></tr> \n')
 
                     except:
                         print('no sga equivalent')
@@ -288,11 +411,11 @@ def build_html_one(sample,i,ku_or_siena,psf_or_nopsf,paba_comparison=False):
 
 
 
-def build_html_all(sample,ku_or_siena,psf_or_nopsf,paba_comparison):
+def build_html_all(sample,ku_or_siena,paba_comparison):
     for i in range(0,len(sample)):
-        build_html_one(sample,i,ku_or_siena,psf_or_nopsf,paba_comparison)
+        build_html_one(sample,i,ku_or_siena,paba_comparison)
         print(sample['VFID'][i])
-    build_htmlhome_galfit(sample,ku_or_siena,psf_or_nopsf)
+    build_htmlhome_galfit(sample,ku_or_siena)
 
 
 
@@ -300,7 +423,7 @@ def build_html_all(sample,ku_or_siena,psf_or_nopsf,paba_comparison):
 
 
 
-def build_htmlhome_galfit(sample,ku_or_siena,psf_or_nopsf):
+def build_htmlhome_galfit(sample,ku_or_siena):
     
     if str(ku_or_siena) == 'ku':
         path = '/Users/k215c316/'
@@ -308,10 +431,7 @@ def build_htmlhome_galfit(sample,ku_or_siena,psf_or_nopsf):
     if str(ku_or_siena) == 'siena':
         path = '/Users/kconger/'
         htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html/main.html'
-    if str(psf_or_nopsf) == 'nopsf':
-        galpath = '/mnt/astrophysics/kconger_wisesize/gal_output_nopsf/'
-    if str(psf_or_nopsf) == 'psf':
-        galpath = '/mnt/astrophysics/kconger_wisesize/gal_output/'
+    
         
 
     stamppath = path+'LS_cutouts/'
@@ -368,9 +488,10 @@ if __name__ == '__main__':
     galvf = Table.read('/mnt/astrophysics/kconger_wisesize/github/research/galfitcut.fits',format='ascii')
     re_ratio = Table.read(homedir+'/re_ratio.fits',format='ascii')
     print('build_htmlhome(sample,ku_or_siena,htmlpage=False)')
-    print('build_html_one(sample,i,ku_or_siena,psf_or_nopsf,paba_comparison=False), paba_comparison = True, False')
-    print('build_htmlhome_galfit(sample,ku_or_siena,psf_or_nopsf)')
-    print('build_html_all(sample,ku_or_siena,psf_or_nopsf,paba_comparison=False), paba_comparison = True, False')
+    print('build_html_one(sample,i,ku_or_siena,paba_comparison=False)')
+    print('build_htmlhome_galfit(sample,ku_or_siena)')
+    print('build_html_all(sample,ku_or_siena,paba_comparison=False)')
+    print(' ')
+    print('paba_comparison: True, False')
     print(' ')
     print('Be sure gal_html directory exists before running.')
-    
