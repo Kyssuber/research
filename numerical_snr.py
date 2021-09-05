@@ -11,9 +11,11 @@ def snr(gal_sample):
     snr15_flag = []
     snr30_flag = []
     for n in gal_sample:
-
-        vfid=str(n['VFID'])
-
+        try:
+            vfid=str(n['VFID'])
+        except:
+            vfid = n['galname']
+            vfid = vfid[0:8]
         filepath = '/mnt/astrophysics/wisesize/'+vfid+'/unwise-'+vfid+'-w3-'
         im = filepath+'img-m.fits'
         std = filepath+'std-m.fits'

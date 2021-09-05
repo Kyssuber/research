@@ -7,6 +7,7 @@
 ###########################################################################################################################
 
 import os
+import sys
 #import pyds9
 import numpy as np
 import argparse
@@ -35,24 +36,15 @@ homedir = os.getenv("HOME")
 os.sys.path.append(homedir+'/github/virgowise/')
 
 dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
-
 sga_params = Table.read(homedir+'/sga_vf_matched.fits')
-
 sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
+vf = Table.read(homedir+'/vfcut.fits',format='ascii')
 
 
 
 import rungalfit as rg #This code has all the defined functions that I can use
 os.sys.path.append(homedir+'/github/HalphaImaging/python3/')
 import plot_cutouts_ha as cutouts #This code has all the defined functions that I can use
-
-
-
-
-vf = Table.read(homedir+'/vfcut.fits',format='ascii')
-dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
-
-
 
        
 class galaxy():
@@ -854,24 +846,33 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                file_plots = data                    #append to list for corner plots (which will not include defunct galaxies)
                 
             else:
-               for i in range(0,len(data)-1):
-                  if (i+1) < len(data):
-                     num=i+1                          #again, skips i=0 (header) index
-                     data[num].append(int(1))
-                     name = str(data[num][18])        #isolate VFID
-                     name = name[0:8]
-                     print(name)
-                     if name in vf['VFID']:
+
+               #try:
+
+                  for i in range(0,len(data)-1):
+                     if (i+1) < len(data):
+                        num=i+1                          #again, skips i=0 (header) index
                         data[num].append(int(1))
+                        name = str(data[num][18])        #isolate VFID
+                        name = name[0:8]
+                        print(name)
+                        if name in vf['VFID']:
+                           data[num].append(int(1))
+                        else:
+                           data[num].append(int(0))
                      else:
-                        data[num].append(int(0))
-                  else:
-                     print('fin')
-                     continue
+                        print('fin')
+                        continue
                   file_test.append(data[num])
 
-                  #file_plots.append(dat)
-
+               #except:
+               #   header=readfile2(t)
+               #   header.remove('#')
+               #   header.append('success_flag')
+               #   length = len(header)
+               #   data = np.zeros(len(header))-999
+               #   data[18] = galaxy_sample['prefix'][n]
+                  
 
        except:
             
@@ -889,7 +890,7 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
            data.append(-999)    
            file_test2 = [header,data]
            file_test.append(file_test2[1])
-
+           np.savetxt(t,file_test2,fmt='%s',overwrite=True)
             
            print(galaxy_sample['prefix'][n], ' failed at run_simple.')
            continue
@@ -901,12 +902,143 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     #np.savetxt(sample_txt_name_psf+'_cornerplots.txt',data_array_plots,fmt="%s")        #for corner plots
     
 
+
+
+#ONLY USE IF GALFIT IS NOT RUN ON ALL GALAXIES IN ONE GO
+def generate_txt_manual(galaxy_sample,WISE_dir,txtname):
+
+   #for all galaxies
+   for n in range(0,len(galaxy_sample)):
+
+      #define .txt file address
+      t = '/mnt/astrophysics/kconger_wisesize/'+WISE_dir+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'   
+
+      #apply readfile to .txt if galfit successful; else, run readfile2
+      try:
+         data=readfile(t)
+      except:
+         data=readfile2(t)
+
+      #if first galaxy in sample, then append header AND output parameter data
+      if n == 0:
+
+         #for each row in data,
+         for i in range(0,len(data)):
+            #try the following until no rows remain
+            try:
+               #m index skips 0, which is the header
+               m=i+1
+               #append 1 to data, indicating galfit success
+               data[m].append(int(1))
+               #define galaxy VFID
+               name=str(data[m][18])
+               name=name[0:8]
+               print(name)
+               #if VFID is in the sample, meaning galaxy is "central," append 1. Else, 0.
+               if name in vf['VFID']:
+                  data[m].append(int(1))
+               else:
+                  data[m].append(int(0))
+            #once m exceeds number of rows, break the loop      
+            except:
+               continue
+
+         file_test=data
+         file_plots=data
+
+      #if galaxy is not the n=0 index
+      else:
+         #for n != 0 galaxies with output parameter row(s)
+         try:
+            #this notation is an alternative to the above "skip header" syntax, because I can.
+            for i in range(0,len(data)-1):
+               #so long as this equality holds, perform the precise procedure as above
+               if (i+1)<len(data):
+                  m=i+1
+                  data[m].append(int(1))
+                  name=str(data[m][18])
+                  name=name[0:8]
+                  print(name)
+                  if name in vf['VFID']:
+                     data[m].append(int(1))
+                  else:
+                     data[m].append(int(0))
+               #add the edited row to the parent text file
+               file_test.append(data[m])
+
+         #for galaxies on which galfit failed
+         except:
+            #create array of -999, with length of header (minus two, to accommodate the 0, 1, and prefix)
+            data2 = np.zeros(len(data)-2)-999
+            #convery array to list
+            data2=data2.tolist()
+            #append galaxy prefix
+            data2.append(galaxy_sample['prefix'][n])
+            #append 0 (galfit failed)
+            data2.append(0)
+            #extract VFID from prefix
+            name=data2[18]
+            print(name)
+            name=name[0:8]
+            #same as above
+            if name in vf['VFID']:
+               data2.append(1)
+            else:
+               data2.append(0)
+            #print row, because I can
+            print(data2)
+            #append row to parent text file
+            file_test.append(data2)
+
+   #convert parent file to array, then save as txtname.
+   data_array = np.array(file_test)
+   np.savetxt(txtname+'.txt',data_array,fmt='%s')
+      
+
+
+
 if __name__ == '__main__':
    print('run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf)')
    print('run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_psf)')
+   print('in ipython, generate_txt_manual(galaxy_sample,WISE_dir,txtname)')
 
-   print('catalogs: vfcut (SNR>10 from VF parent sample), sgacut (vfcut matched with SGA)')
+   print('catalogs: vf (vfcut, SNR>10 from VF parent sample), sgacut (vfcut matched with SGA)')
 
    homedir = os.getenv("HOME")
    dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
-   
+
+
+
+
+#below this line is a test for running the scripts external to ipython environment!
+   print(' ')
+   if '-h' in sys.argv or '--help' in sys.argv:
+      print ("Usage: %s [-psf (0 for False, 1 for True)] [-cat (vf or sga)] [-txtfile name (do not append .txt)]" % sys.argv[0])
+      print
+      sys.exit(1)
+
+   if '-psf' in sys.argv:
+      p = sys.argv.index('-psf')
+      psf = int(sys.argv[p+1])
+      if psf == 1:
+         psf = True
+      if psf == 0:
+         psf = False
+
+   if '-cat' in sys.argv:
+      p = sys.argv.index('-cat')
+      cat = sys.argv[p+1]
+      if cat == 'vf':
+         vf = vf
+      if cat == 'sga':
+         vf = sgacut
+
+   if '-txtfile' in sys.argv:
+      p = sys.argv.index('-txtfile')
+      txtfilename = sys.argv[p+1]
+
+   if psf:
+      run_galfit_psf(vf,'gal_output',txtfilename,txtfilename)
+
+   else:
+      run_galfit_no_psf(vf,'gal_output',txtfilename)
