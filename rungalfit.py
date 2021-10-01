@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 
 '''
-
-
 REQUIRED MODULES:
 pyds9
-
-
 '''
-
+try:
+    import pyds9
+except ImportError:
+    print("WARNING: could not import pyds9")
 import os
 from astropy.io import fits
+from astropy.table import Table
+import numpy as np
+homedir = os.getenv("HOME")
+dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
 
-def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=2,printflag=False):
+
+
+
+def parse_galfit_1comp(galfit_outimage,ncomp,asymflag=0,printflag=False):
     numerical_error_flag=0
     if asymflag:
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','1_F1','1_F1PA','CHI2NU']
@@ -20,6 +26,15 @@ def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=2,printflag=False):
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','CHI2NU']
     if ncomp == 2:
         header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_SKY','CHI2NU']
+    if ncomp == 3:
+        header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_SKY','CHI2NU']
+
+    if ncomp == 4:
+        header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_XC','4_YC','4_MAG','4_RE','4_N','4_AR','4_PA','5_SKY','CHI2NU']
+
+
+
+        
     fit_parameters=[]
     working_dir=os.getcwd()+'/'
     image_header = fits.getheader(galfit_outimage,2)
@@ -60,10 +75,19 @@ def parse_galfit_1comp(galfit_outimage,asymflag=0,ncomp=2,printflag=False):
     return fit_parameters
 
 
+
+
+
+
+
+
+
+
 class galfit:
-    def __init__(self,galname=None,image=None,sigma_image=None,psf_image=None,psf_oversampling=None,mask_image=None,xminfit=None,yminfit=None,xmaxfit=None,ymaxfit=None,convolution_size=None,magzp=None,pscale=None,convflag=1,constraintflag=1,fitallflag=0,ncomp=1):
+    def __init__(self,galname=None,vfid=None,image=None,sigma_image=None,psf_image=None,psf_oversampling=None,mask_image=None,xminfit=None,yminfit=None,xmaxfit=None,ymaxfit=None,convolution_size=None,magzp=None,pscale=None,convflag=1,constraintflag=1,fitallflag=0,ncomp=1):
         self.galname=galname
         self.image=image
+        self.vfid=vfid
 
         self.sigma_image=sigma_image
         self.psf_image=psf_image
@@ -79,7 +103,13 @@ class galfit:
         self.convflag=convflag
         self.constraintflag=constraintflag
         self.fitallflag=fitallflag
-        self.ncomp=ncomp
+        vfid = self.galname[0:8]
+        
+        if vfid in dummycat['central galaxy']:
+            self.ncomp = len(np.where(dummycat['central galaxy'] == vfid)[0]) + 1
+        else:
+            self.ncomp=ncomp
+
         self.asymmetry=0
 
         #print('***%%%%%%%%%%%%%%%%%')
@@ -92,6 +122,8 @@ class galfit:
 
         
 
+
+        
     def create_output_names(self):
         if self.asymmetry:
             output_image=str(self.galname)+'-'+ str(self.ncomp) +'Comp-galfit-out-asym.fits'
@@ -185,6 +217,8 @@ class galfit:
         self.sky=sky
 
     def write_sersic(self,objnumber,profile):
+
+        
         self.galfit_input.write(' \n')
         self.galfit_input.write('# Object number: %i \n'%(objnumber))
         self.galfit_input.write(' 0) %s             # Object type \n'%(profile))
@@ -198,10 +232,10 @@ class galfit:
         self.galfit_input.write('10) %5.2f       %i       # position angle (PA)  [Degrees: Up=0, Left=90] \n'%(self.PA,int(self.fitPA)))
         if self.asymmetry:
             self.galfit_input.write('F1) 0.0001 0.00   1  1     # azim. Fourier mode 1, amplitude & phase angle \n')
-        self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")
-      
+        self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")           
 
         
+
     def write_sky(self,objnumber):    
         self.galfit_input.write(' \n')
         self.galfit_input.write('# Object number: %i \n'%(objnumber))
@@ -211,7 +245,9 @@ class galfit:
         self.galfit_input.write(' 3) 0      0       # dsky/dy (sky gradient in y) \n')
         self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")
 
-        
+
+
+
     def add_simple_sersic_object(self,objnumber,profile,x,y,mag,rad,nsersic,BA,PA):
         self.galfit_input.write(' \n')
         self.galfit_input.write('# Object number: %i \n'%(objnumber))
@@ -222,12 +258,17 @@ class galfit:
         self.galfit_input.write(' 5) %5.2f       1       # Sersic exponent (deVauc=4, expdisk=1)   \n'%(nsersic))
         self.galfit_input.write(' 9) %5.2f       1       # axis ratio (b/a)    \n'%(BA))
         self.galfit_input.write('10) %5.2f       1       # position angle (PA)  [Degrees: Up=0, Left=90] \n'%(PA))
-        self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")        
-        
- 
- #below is currently edited to accommodate the 2-sersic obj test. remove lines 238 & 239 to revert.
+        self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")
 
+    
     def run_galfit(self,displayflag=False):
+
+        from astropy.table import Table
+        import os
+        import numpy as np
+        
+        homedir = os.getenv("HOME")
+        dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
         #print 'self.fitall = ',self.fitall
         self.create_output_names()
         self.open_galfit_input()
@@ -235,15 +276,32 @@ class galfit:
         self.write_image_params()
         #print 'self.fitall = ',self.fitall
         self.write_sersic(1,'sersic')
-        self.add_simple_sersic_object(2,'sersic',x=70,y=30,mag=self.mag,rad=self.rad,nsersic=self.nsersic,
-                                      BA=self.BA,PA=self.PA)
-        self.write_sky(3)     
+        print(self.galname[0:8])
+        vfid = self.galname[0:8]
+        if vfid in dummycat['central galaxy']:
+            indices = np.where(dummycat['central galaxy'] == vfid)[0]
+            print(indices)
+            for i in range(0,len(indices)):
+                index = indices[i]
+                n = int(i)+2
+                #1 already taken, i begins at 0
+                x = int(dummycat['x (px)'][index])
+                y = int(dummycat['y (px)'][index])
+                print(x,y)
+                self.add_simple_sersic_object(n,'sersic',x=x,y=y,mag=self.mag,rad=self.rad,nsersic=self.nsersic,BA=self.BA,PA=self.PA)
 
+                
+                if n == int(len(indices)+1):
+                    self.write_sky(n+1)
 
-        #if (self.fitallflag):
-        #    print('%%%%%%%%%%%%%% HEY %%%%%%%%%%%%%')
-        #    print('I think fitall is true, just sayin...')
-            #self.fitall()
+        #print 'self.fitall = ',self.fitall
+        else:
+            self.write_sky(2)
+        #print 'self.fitall = ',self.fitall
+        if (self.fitallflag):
+            print('%%%%%%%%%%%%%% HEY %%%%%%%%%%%%%')
+            print('I think fitall is true, just sayin...')
+            self.fitall()
         self.close_input_file()
         #print 'self.fitall = ',self.fitall
         s = 'galfit '+self.galfile
@@ -383,7 +441,7 @@ class galfit:
             nearbyobjflag=sqrt((se.X_IMAGE-self.xobj)**2+(se.Y_IMAGE-self.yobj)**2) > mindistance
             for k in range(len(se.X_IMAGE)):
                 if nearbyobjflag[k]:
-                    objnumber=objnumber+1
+                    objnumer=objnumber+1
                     self.add_simple_sersic_object(objnumber,profile,se.X_IMAGE[k],se.Y_IMAGE[k],se.MAG_BEST[k],se.FLUX_RADIUS[k,0],2,se.B_IMAGE[k]/se.A_IMAGE[k],se.THETA_IMAGE[k])
         except AttributeError:
             print('WARNING: no sources detected in image!')
@@ -413,6 +471,7 @@ class galfit:
             header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','1_F1','1_F1PA','ERROR','CHI2NU']
         else:
             header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','ERROR','CHI2NU']
+
         if self.ncomp == 2:
             header_keywords=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_SKY','ERROR','CHI2NU']
 
@@ -420,40 +479,40 @@ class galfit:
             header_keywords = ['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_SKY','ERROR','CHI2NU']
        
         if self.ncomp == 4:
-            header_keywords = ['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_XC','4_YC','4_MAG','4_RE','4_N','4_AR','4_PA','5_SKY','ERROR','CHI2NU']
-        
-        
-        
-        
-        t=parse_galfit_1comp(image,printflag=True)
+            header_keywords = ['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_XC','4_YC','4_MAG','4_RE','4_N','4_AR','4_PA','5_SKY','ERROR','CHI2NU']    
+
+
+
+            
+        t=parse_galfit_1comp(image,ncomp=self.ncomp,printflag=True)
     def edit_params_menu(self):
         flag=str(raw_input('What is wrong?\n n = adjust sersic \n r = reset Re \n o = nearby object (toggle fitall) \n b = B/A \n p = PA \n m = mag \n c = recenter \n f = hold values fixed \n a = toggle asymmetry parameter \n R = reset to original values \n g = go (run galfit) \n x=quit \n '))
         return flag
 
     def set_n(self):
-        n=float(input('sersic exponent = '))
+        n=float(raw_input('sersic exponent = '))
         self.nsersic=n
 
     def set_r(self):
-        r=float(input('radius = '))
+        r=float(raw_input('radius = '))
         self.rad=r
 
     def set_BA(self):
-        r=float(input('BA = '))
+        r=float(raw_input('BA = '))
         self.BA=r
 
     def set_PA(self):
-        r=float(input('PA = '))
+        r=float(raw_input('PA = '))
         self.PA=r
 
     def set_mag(self):
-        r=float(input('mag = '))
+        r=float(raw_input('mag = '))
         self.mag=r
 
     def set_center(self):
-        r=float(input('xc = '))
+        r=float(raw_input('xc = '))
         self.xobj=r
-        r=float(input('yc = '))
+        r=float(raw_input('yc = '))
         self.yobj=r
 
     def toggle_fitall(self):
@@ -487,3 +546,10 @@ class galfit:
     def add_constraint_file(self):
         self.constraintflag=toggle(self.constraintflag)
         
+
+if __name__ == '__main__':
+    from astropy.table import Table
+    from astropy.io import ascii
+    homedir = os.getenv("HOME")
+    dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
+    vfcut = Table.read(homedir+'/vfcut.fits',format='ascii')
