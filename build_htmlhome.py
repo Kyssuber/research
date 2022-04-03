@@ -82,7 +82,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
     #print('tab_psf:',len(tab_psf))
 
 
-    #index329 not in tab_psf...
+    #index329 not in tab_psf...remove this row for consistency purposes. See note above this function for further information.
     index=np.where(tab_nopsf['galname'] == 'index329')[0]
     index=int(index)
     tab_nopsf.remove_row(index)
@@ -134,7 +134,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
         
         html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic.png" height="50%" width="50%" /><br /> \n')
 
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'mask_mosaics/'+str(sample['VFID'][i])+'-mask-mosaic'+'.png'+'" /><br /> \n')
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'mask_mosaics/'+str(sample['VFID'][i])+'-mask-mosaic.png" height="50%" width="50%" /><br /> \n')
 
         index = np.where(sample['prefix'][i] == tab_nopsf['galname'])[0]
         index = int(index)
@@ -152,7 +152,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
 
             #write parameters of central galaxy as first row
                 html.write('<font size="30">GALFIT Parameters</font><br />')
-                html.write('<table><tr><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>PSF?</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA+err</th><th>Error</th></tr> \n')
+                html.write('<table><tr><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>PSF?</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th>Error</th></tr> \n')
 
                 html.write('<tr><td>'+str(sample['VFID'][i])+'</td> \n')
                 html.write('<td>Host</td> \n')
@@ -197,9 +197,8 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
                 if paba_comparison == True:
 
                     try:
-                        index2 = np.where(str(tab_sga_psf['galname']) == str(sample['prefix'][0]))
-                        print(index2)
-                        index2 = int(index2[0])
+                        index2 = np.where(tab_sga_psf['galname'] == sample['prefix'][i])[0]
+                        index2 = int(index2)
 
                         index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
                         index3 = int(index3)
@@ -297,12 +296,12 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
             else:
                 #if the galaxy is a central galaxy with no "perimeter" galaxies, then go ahead and add one row to the page.
                 html.write('<font size="30">GALFIT Parameters</font><br />')
-                html.write('<table><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>PSF?</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th></th><th>Error</th></tr> \n')
+                html.write('<table><th>Galname</th><th>Type</th><th>Fixed/Free PA,BA</th><th>PSF?</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th>Error</th></tr> \n')
 
                 html.write('<tr><td>'+str(sample['VFID'][i])+'</td> \n')
                 html.write('<td>Host</td> \n')
                 html.write('<td>Free</td> \n')
-                html.write('<td><NoPSF></td> \n')
+                html.write('<td>NoPSF</td> \n')
                 html.write('<td>'+str(tab_nopsf[index][0])+'</td> \n')
                 html.write('<td>'+str(tab_nopsf[index][1])+'</td> \n')
                 html.write('<td>'+str(tab_nopsf[index][2])+'</td> \n')
@@ -322,7 +321,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
                 html.write('<tr><td>--</td> \n')
                 html.write('<td>--</td> \n')
                 html.write('<td>--</td> \n')
-                html.write('<td><PSF></td> \n')
+                html.write('<td>PSF</td> \n')
                 html.write('<td>'+str(tab_psf[index][0])+'</td> \n')
                 html.write('<td>'+str(tab_psf[index][1])+'</td> \n')
                 html.write('<td>'+str(tab_psf[index][2])+'</td> \n')
@@ -342,6 +341,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
                 if paba_comparison == True:
 
                     try:
+                        #indices where particular galaxies are located may differ, so two index definition are needed here.
                         index2 = np.where(tab_sga_psf['galname'] == sample['prefix'][i])[0]
                         index2 = int(index2)
                         index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
@@ -367,10 +367,10 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
                         html.write('<td>'+str(tab_sga_nopsf[index3][13])+'</td> \n')
                         html.write('<td>'+str(tab_sga_nopsf[index3][16])+'</td></tr> \n')
 
-                        html.write('<tr><td>'+str(sample['VFID'][i])+'</td>')
-                        html.write('<td>Host</td> \n')
-                        html.write('<td>Fixed</td> \n')
-                        html.write('<td>NoPSF</td> \n')
+                        html.write('<tr><td>--</td>')
+                        html.write('<td>--</td> \n')
+                        html.write('<td>--</td> \n')
+                        html.write('<td>PSF</td> \n')
                         html.write('<td>'+str(tab_sga_psf[index2][0])+'</td>')
                         html.write('<td>'+str(tab_sga_psf[index2][1])+'</td>')
                         html.write('<td>'+str(tab_sga_psf[index2][2])+'</td>')

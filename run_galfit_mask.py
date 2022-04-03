@@ -240,18 +240,19 @@ class galaxy():
 
         '''
         
-        if self.vfid in sgacut['VFID']:
-            sgaindex = np.where(sga_params['VFID'] == self.vfid)[0]
+#        if self.vfid in sgacut['VFID']:
+#            sgaindex = np.where(sga_params['VFID'] == self.vfid)[0]
 
-            BA = sga_params['BA'][sgaindex]
-            PA = sga_params['PA'][sgaindex]
-            fitBA = 0
-            fitPA = 0
-        else:
-           BA = self.BA
-           PA = self.PA
+#            BA = sga_params['BA'][sgaindex]
+#            PA = sga_params['PA'][sgaindex]
+#            fitBA = 0
+#            fitPA = 0
+#        else:
+#           BA = self.BA
+#           PA = self.PA
            
-
+        BA = self.BA
+        PA = self.PA
         
         #os.system('cp '+self.psf_image+' .')
         self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=BA,PA=PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
@@ -504,33 +505,44 @@ class galaxy():
          model = model[x1:x2,y1:y2]
          residual = residual[x1:x2,y1:y2]         
          pass
+
       wcs = WCS(h)
-      images = [image,model,residual]
-      titles = ['image','model','residual']
+      images = [image,model,residual,residual]
+      titles = ['image','model','residual (img stretch)','residual (res stretch)']
+      #titles = ['image','model','residual','residual (res stretch)']
       v1 = [scoreatpercentile(image,percentile1),
+            scoreatpercentile(image,percentile1),
             scoreatpercentile(image,percentile1),
             scoreatpercentile(residual,p1residual)]
       v2 = [scoreatpercentile(image,percentile2),
             scoreatpercentile(image,percentile2),
+            scoreatpercentile(image,percentile2),
             scoreatpercentile(residual,p2residual)]
       norms = [simple_norm(image,'asinh',max_percent=percentile2),
+               simple_norm(image,'asinh',max_percent=percentile2),
                simple_norm(image,'asinh',max_percent=percentile2),
                simple_norm(residual,'linear',max_percent=p2residual)]
                
       plt.figure(figsize=(14,6))
       plt.subplots_adjust(wspace=.0)
       for i,im in enumerate(images): 
-         ax = plt.subplot(1,3,i+1,projection=wcs)
+         ax = plt.subplot(1,4,i+1,projection=wcs)
+         #ax = plt.subplot(1,4,i+1)
+
          plt.imshow(im,origin='lower',cmap=cmap,vmin=v1[i],vmax=v2[i],norm=norms[i])
+         #if i == 1:
+         #   plt.plot(xmax/8,ymax/8,'o',markersize=4,color='red')
          ax.set_xlabel('RA')
          if i == 0:
             ax.set_ylabel('DEC')
          else:
+            plt.ylabel(' ')
             ax = plt.gca()
             ax.set_yticks([])
          plt.title(titles[i],fontsize=16)
-      plt.savefig(pngname)
+      plt.savefig(pngname,dpi=300)
       plt.close()
+
    def print_galfit_results(self):
       #self.filename = self.galname+'-unwise-'+'w'+str(self.band)+'-1Comp-galfit-out.fits'
       self.filename = self.gal1.output_image
@@ -1013,7 +1025,7 @@ if __name__ == '__main__':
 #below this line is a test for running the scripts external to ipython environment!
    print(' ')
    if '-h' in sys.argv or '--help' in sys.argv:
-      print ("Usage: %s [-psf (0 for False, 1 for True)] [-cat (vf or sga)] [-txtfile name (do not append .txt)]" % sys.argv[0])
+      print ("Usage: %s [-psf (0 for False, 1 for True)] [-cat (vf or sga)] [-range_min integer] [-range_max integer] [-txtfile name (do not append .txt)]" % sys.argv[0])
       print
       sys.exit(1)
 
@@ -1032,6 +1044,19 @@ if __name__ == '__main__':
          vf = vf
       if cat == 'sga':
          vf = sgacut
+
+   if '-range_min' in sys.argv:
+      p = sys.argv.index('-range_min')
+      range_min = int(sys.argv[p+1])
+
+   if '-range_max' in sys.argv:
+      p = sys.argv.index('-range_max')
+      range_max = int(sys.argv[p+1])
+      try:
+         vf = vf[range_min:range_max]
+      except:
+         print('enter correct min and max ranges!')
+      
 
    if '-txtfile' in sys.argv:
       p = sys.argv.index('-txtfile')

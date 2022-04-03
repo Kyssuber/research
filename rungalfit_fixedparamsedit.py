@@ -171,14 +171,16 @@ class galfit:
 
     def set_sersic_params(self,xobj=None,yobj=None,mag=None,rad=None,nsersic=None,BA=None,PA=None,fitmag=1,fitcenter=1,fitrad=1,fitBA=1,fitPA=1,fitn=1,first_time=0):
 
-        sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
-        if self.vfid in sgacut['VFID']:
-            sgaindex = np.where(sga_params['VFID'] == self.vfid)[0]
+#run to hold PA, BA fixed
 
-            BA = sga_params['BA'][sgaindex]
-            PA = sga_params['PA'][sgaindex]
-            fitBA = 0
-            fitPA = 0
+#        sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
+#        if self.vfid in sgacut['VFID']:
+#            sgaindex = np.where(sga_params['VFID'] == self.vfid)[0]
+
+#            BA = sga_params['BA'][sgaindex]
+#            PA = sga_params['PA'][sgaindex]
+#            fitBA = 0
+#            fitPA = 0
             
 
 
@@ -187,7 +189,11 @@ class galfit:
         self.yobj=yobj
         self.mag=mag
         self.rad=rad
-        self.nsersic=nsersic
+#a few lines to ensure that the sersic index does not exceed 6 (which would translate to an unphysical model)
+        if nsersic>6:
+            self.nsersic = 6
+        else:
+            self.nsersic=nsersic
         self.BA=BA
         self.PA=PA
         self.fitmag=fitmag
@@ -219,7 +225,11 @@ class galfit:
         self.yobj=self.yobj0
         self.mag=self.mag0
         self.rad=self.rad0
-        self.nsersic=self.nsersic0
+#in case the nsersic can be larger than 6 here, I apply a similar upper limit as above
+        if nself.nsersic0>6:
+            self.nsersic=6
+        else:
+            self.nsersic=self.nsersic0
         self.BA=self.BA0
         self.PA=self.PA0
         self.fitmag=self.fitmag0
@@ -572,3 +582,4 @@ if __name__ == '__main__':
     vfcut = Table.read(homedir+'/vfcut.fits',format='ascii')
     sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
     sga_params = Table.read(homedir+'/sga_vf_matched.fits')
+    vf_largeser = Table.read(homedir+'/vf_largeser.fits')
