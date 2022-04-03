@@ -181,18 +181,19 @@ class galfit:
 #            PA = sga_params['PA'][sgaindex]
 #            fitBA = 0
 #            fitPA = 0
-            
 
+#run to hold n fixed
+#        nsersic=6
+#        fitn=0
 
 
         self.xobj=xobj
         self.yobj=yobj
         self.mag=mag
         self.rad=rad
-#a few lines to ensure that the sersic index does not exceed 6 (which would translate to an unphysical model)
-        if nsersic>6:
-            self.nsersic = 6
-        else:
+        if nsersic>5:
+            self.nsersic=5
+        if nsersic<5:
             self.nsersic=nsersic
         self.BA=BA
         self.PA=PA
@@ -209,7 +210,10 @@ class galfit:
             self.yobj0=yobj
             self.mag0=mag
             self.rad0=rad
-            self.nsersic0=nsersic
+            if nsersic>5:
+                self.nsersic0=5
+            else:
+                self.nsersic0=nsersic
             self.BA0=BA
             self.PA0=PA
             self.fitmag0=fitmag
@@ -225,10 +229,9 @@ class galfit:
         self.yobj=self.yobj0
         self.mag=self.mag0
         self.rad=self.rad0
-#in case the nsersic can be larger than 6 here, I apply a similar upper limit as above
-        if nself.nsersic0>6:
-            self.nsersic=6
-        else:
+        if self.nsersic0>5:
+            self.nsersic=5
+        if self.nsersic0<5:
             self.nsersic=self.nsersic0
         self.BA=self.BA0
         self.PA=self.PA0
@@ -326,8 +329,6 @@ class galfit:
             self.write_sky(2)
         #print 'self.fitall = ',self.fitall
         if (self.fitallflag):
-            print('%%%%%%%%%%%%%% HEY %%%%%%%%%%%%%')
-            print('I think fitall is true, just sayin...')
             self.fitall()
         self.close_input_file()
         #print 'self.fitall = ',self.fitall
@@ -366,7 +367,7 @@ class galfit:
         print('inside display_results')
         print('self.galfit_flag = ',self.galfit_flag)
         if (self.galfit_flag < 0.1):
-            print('GALFIT did not complete - can not display results')
+            print('GALFIT did not complete - cannot display results')
             return
 
         subcomp_image=self.galname+'-'+str(self.ncomp)+'Comp'+'-subcomps.fits'
@@ -582,4 +583,4 @@ if __name__ == '__main__':
     vfcut = Table.read(homedir+'/vfcut.fits',format='ascii')
     sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
     sga_params = Table.read(homedir+'/sga_vf_matched.fits')
-    vf_largeser = Table.read(homedir+'/vf_largeser.fits')
+    vf_largeser = Table.read(homedir+'/vf_largeser.fits',format='ascii')

@@ -39,6 +39,7 @@ dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
 sga_params = Table.read(homedir+'/sga_vf_matched.fits')
 sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
 vf = Table.read(homedir+'/vfcut.fits',format='ascii')
+vf_largeser = Table.read(homedir+'/vf_largeser.fits')
 
 
 
@@ -226,7 +227,7 @@ class galaxy():
         
         self.gal1 = rg.galfit(galname=self.image_rootname,image=self.image, mask_image = self.mask_image, sigma_image=self.sigma_image,psf_image=self.psf_image,psf_oversampling=self.psf_oversampling,xminfit=self.xminfit,yminfit=self.yminfit,xmaxfit=self.xmaxfit,ymaxfit=self.ymaxfit,convolution_size=self.convolution_size,magzp=self.magzp,pscale=self.pscale,ncomp=self.ncomp,convflag=convflag)
         
-   def run_galfit_wise(self,fitBA=1,fitPA=1):
+   def run_galfit_wise(self,fitBA=1,fitPA=1,fitn=1):
         '''
         GOAL: 
         * run galfit on one image
@@ -253,9 +254,15 @@ class galaxy():
            
         BA = self.BA
         PA = self.PA
+
+        if self.nsersic>5:
+           fitn = 0
+           self.nsersic=5
+        if self.nsersic<5:
+           fitn = 1
         
         #os.system('cp '+self.psf_image+' .')
-        self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=BA,PA=PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=1,first_time=0)
+        self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=BA,PA=PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=fitn,first_time=0)
         self.gal1.set_sky(0)
         self.gal1.run_galfit()
    def get_galfit_results(self,printflag = False):
@@ -787,10 +794,6 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
 
             
            print(galaxy_sample['prefix'][n], ' failed at run_simple.')
-           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
-           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
-           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
-           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
            continue
         
     data_array = np.array(file_test)
@@ -1025,7 +1028,7 @@ if __name__ == '__main__':
 #below this line is a test for running the scripts external to ipython environment!
    print(' ')
    if '-h' in sys.argv or '--help' in sys.argv:
-      print ("Usage: %s [-psf (0 for False, 1 for True)] [-cat (vf or sga)] [-range_min integer] [-range_max integer] [-txtfile name (do not append .txt)]" % sys.argv[0])
+      print ("Usage: %s [-psf (0 for False, 1 for True)] [-cat (vf, sga, or ser (for ser>6 cat))] [-range_min integer] [-range_max integer] [-txtfile name (do not append .txt)]" % sys.argv[0])
       print
       sys.exit(1)
 
@@ -1044,6 +1047,8 @@ if __name__ == '__main__':
          vf = vf
       if cat == 'sga':
          vf = sgacut
+      if cat == 'ser':
+         vf = vf_largeser
 
    if '-range_min' in sys.argv:
       p = sys.argv.index('-range_min')
