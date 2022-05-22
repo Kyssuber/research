@@ -832,8 +832,7 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
         
        try:
             #ensuring that the correct galaxy is associated with the correct set of parameters
-            index = np.where(galaxy_sample['prefix'] == tab_central['galname'][n])[0][0]
-            print(index)
+            index = np.where(galaxy_sample['prefix'] == tab_central['galname'][n])[0]
             
             g = galaxy(galaxy_sample['RA'][index], galaxy_sample['DEC'][index],
                       galaxy_sample['radius'][index], name = galaxy_sample['prefix'][index],vfid=galaxy_sample['VFID'][index],band='3')

@@ -577,3 +577,4 @@ if __name__ == '__main__':
     vfcut = Table.read(homedir+'/vfcut.fits',format='ascii')
     sgacut = Table.read(homedir+'/sga_cut.fits',format='ascii')
     sga_params = Table.read(homedir+'/sga_vf_matched.fits')
+    vf_largeser = Table.read(homedir+'/vf_largeser.fits',format='ascii')

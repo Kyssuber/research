@@ -19,15 +19,15 @@ def build_htmlhome(sample,ku_or_siena,htmlpage=False):
 
     with open(htmlpath,'w') as html:
         html.write('<html><body>\n')
-        html.write('<title>WISESize Project</title>\n')
+        html.write('<title>Virgo WISESize Project</title>\n')
         html.write('<body style="background-color:powderblue;">\n')
         html.write('<style type="text/css">\n')
         html.write('table, td, th {padding: 5px; text-align: center; border: 2px solid black;}\n')
         html.write('p {display: inline-block;;}\n')
         html.write('</style>\n')
-        html.write('<font size="40"> WISESize GALFIT Data for VF Galaxies (SNR>10) </font>\n')
+        html.write('<font size="40"> WISESize GALFIT Data for VF Galaxies (SNR>10, T>1) </font>\n')
 
-        html.write('<table><tr><th>Index</th><th>Prefix</th><th>RA</th><th>DEC</th><th>Image</th><th>Mask</th><th>2+ Sersic</th><th>Re_ratio (fixed/free PA,BA)</th><th>Comments</th></tr>\n')
+        html.write('<table><tr><th>Index</th><th>Prefix</th><th>RA</th><th>DEC</th><th>Image</th><th>Mask</th><th>2+ Sersic</th><th>Comments</th></tr>\n')
 
         for i in range(0,len(sample)):
             html.write('<tr><td>'+str(i)+'</td>\n')
@@ -40,12 +40,6 @@ def build_htmlhome(sample,ku_or_siena,htmlpage=False):
                 html.write('<td>Yes</td>')
             else:
                 html.write('<td>No</td>')
-
-            if vf['prefix'][i] in re_ratio['prefix']:
-                index = np.where(re_ratio['prefix'] == vf['prefix'][i])[0]
-                html.write('<td>'+ str('%.5f'%re_ratio['re_ratio'][index]) +' </td>\n')
-            else:
-                html.write('<td>N/A</td>\n')
             
             html.write('<td> </td>\n')
 
@@ -72,23 +66,26 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
     galpath = '/mnt/astrophysics/kconger_wisesize/'
 
 
-    htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html/'+str(sample[i]['VFID'])+'.html'
+    htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_new/'+str(sample[i]['VFID'])+'.html'
 
-    mosaicpath = galpath+'/output_mosaics/'
-
-    tab_nopsf = ascii.read(galpath+'gal_output_nopsf/set_one.txt')
+    #full subsample
+    #tab_nopsf = ascii.read(galpath+'gal_output_nopsf/set_one.txt')
     #print('tab_nopsf:',len(tab_nopsf))
-    tab_psf = ascii.read(galpath+'/gal_output_psf/set_one.txt')
+    #tab_psf = ascii.read(galpath+'/gal_output_psf/set_one.txt')
     #print('tab_psf:',len(tab_psf))
 
+    #will have to change paths accordingly - I am inexplicably susceptible to inconsistency here:
+    tab_nopsf = ascii.read(galpath+'gal_output_new/nopsf_params.txt')
+    tab_psf = ascii.read(galpath+'gal_output_new/psf_params.txt')
 
+    #the below lines are modifications tailored to the first galfit run with the full subsample
     #index329 not in tab_psf...remove this row for consistency purposes. See note above this function for further information.
-    index=np.where(tab_nopsf['galname'] == 'index329')[0]
-    index=int(index)
-    tab_nopsf.remove_row(index)
+    #index=np.where(tab_nopsf['galname'] == 'index329')[0]
+    #index=int(index)
+    #tab_nopsf.remove_row(index)
     
         
-    
+    #True if want to compare with models for which PA, B/A fixed with SGA optical values
     if paba_comparison == True:
         tab_sga_psf = ascii.read(galpath+'gal_output_fixed_psf/set_one.txt')
         tab_sga_nopsf = ascii.read(galpath+'gal_output_fixed_nopsf/set_one.txt')
@@ -118,31 +115,33 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
         else:
             ncomp = 1
 
-
+        #be sure to change "output_mosaics_largeser" to correct directory name
         mosaicfile = path + 'output_mosaics/'+str(sample['prefix'][i])+'-unwise-w3-{}Comp-galfit-out-conv.png'.format(ncomp)
-        mosaicfile_sga = path + 'output_mosaics_fixed/'+str(sample['prefix'][i])+'-unwise-w3-{}Comp-galfit-out-conv.png'.format(ncomp)
+
+        if paba_comparison == True:    
+            mosaicfile_sga = path + 'output_mosaics_fixed/'+str(sample['prefix'][i])+'-unwise-w3-{}Comp-galfit-out-conv.png'.format(ncomp)
+
         print(mosaicfile)
 
 
-        html.write('<font size="30">GALFIT Output (PSF) with no parameters held fixed:</font><br /> \n')
+        html.write('<font size="30">GALFIT Output (PSF):</font><br /> \n')
 
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile+'" /><br /> \n')
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile+'" height="70%" width="70%" /><br /> \n')
 
-        html.write('<font size="30">GALFIT Output (PSF) with PA, BA parameters held fixed:</font><br /> \n')
+        #html.write('<font size="30">GALFIT Output (PSF) with PA, BA parameters held fixed:</font><br /> \n')
 
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile_sga+'" /><br /> \n') 
+        #html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile_sga+'" /><br /> \n') 
         
         html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic.png" height="50%" width="50%" /><br /> \n')
 
         html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'mask_mosaics/'+str(sample['VFID'][i])+'-mask-mosaic.png" height="50%" width="50%" /><br /> \n')
-
+        print(sample['prefix'][i])
         index = np.where(sample['prefix'][i] == tab_nopsf['galname'])[0]
         index = int(index)
 
         
         if tab_psf['success_flag'][index] == 0:
-            html.write('<font size="40">GALFIT Failed!</font>\n')
-
+            html.write('<font size="40">GALFIT Failed. :-(</font>\n')
         else:
 
             #if the galaxy is a central galaxy, then determine the number of "perimeter" galaxies
@@ -341,7 +340,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
                 if paba_comparison == True:
 
                     try:
-                        #indices where particular galaxies are located may differ, so two index definition are needed here.
+                        #indices where particular galaxies are located may differ, so two index definitions are needed here.
                         index2 = np.where(tab_sga_psf['galname'] == sample['prefix'][i])[0]
                         index2 = int(index2)
                         index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
@@ -411,7 +410,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
 
 
 
-def build_html_all(sample,ku_or_siena,paba_comparison):
+def build_html_all(sample,ku_or_siena,paba_comparison=False):
     for i in range(0,len(sample)):
         build_html_one(sample,i,ku_or_siena,paba_comparison)
         print(sample['VFID'][i])
@@ -427,31 +426,32 @@ def build_htmlhome_galfit(sample,ku_or_siena):
     
     if str(ku_or_siena) == 'ku':
         path = '/Users/k215c316/'
-        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html/main.html'
+        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_new/main.html'
     if str(ku_or_siena) == 'siena':
         path = '/Users/kconger/'
-        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html/main.html'
+        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_new/main.html'
     
         
 
     stamppath = path+'LS_cutouts/'
-    galhtmlpath = path+'gal_html/'
+    galhtmlpath = path+'gal_html_new/'
 
     with open(htmlpath,'w') as html:
         html.write('<html><body>\n')
-        html.write('<title>WISESize Project</title>\n')
+        html.write('<title>Virgo WISESize Project</title>\n')
         html.write('<body style="background-color:powderblue;">\n')
         html.write('<style type="text/css">\n')
         html.write('table, td, th {padding: 5px; text-align: center; border: 2px solid black;}\n')
         html.write('p {display: inline-block;;}\n')
         html.write('</style>\n')
-        html.write('<font size="40"> WISESize GALFIT Data for VF Galaxies (SNR>10) </font>\n')
+        html.write('<font size="40"> Virgo WISESize (updated PSFs) </font>\n')
+        #html.write('<font size="40"> WISESize GALFIT Data for VF Galaxies (SNR>10) </font>\n')
 
         html.write('<table><tr><th>Index</th><th>LS Cutout</th><th>Prefix</th><th>Galaxy</th><th>RA</th><th>DEC</th><th>2+ Sersic</th><th>Re_ratio (fixed/free PA,BA)</th><th>Comments</th></tr>\n')
 
         for i in range(0,len(sample)):
             html.write('<tr><td>'+str(i)+'</td>\n')
-            html.write('<td><img src = "' + stamppath + str(sample['VFID'][i]) + '.jpg' + '" height="auto" width = "100%"></img></td>\n')
+            html.write('<td><img src = "' + stamppath + str(sample['VFID'][i]) + '.jpg' + '" height="auto" width = "80%"></img></td>\n')
             html.write('<td>'+str(sample['prefix'][i])+'</td>\n')
 ############for the below entry, do not run until build_htmlpages runs
             html.write('<td><a href='+galhtmlpath+str(sample['VFID'][i])+'.html>'+str(sample['objname'][i])+'</a></td>\n')
@@ -463,12 +463,12 @@ def build_htmlhome_galfit(sample,ku_or_siena):
             else:
                 html.write('<td>--</td>')
 
-            if vf['prefix'][i] in re_ratio['prefix']:
-                index = np.where(re_ratio['prefix'] == vf['prefix'][i])[0]
-                html.write('<td>'+ str('%.5f'%re_ratio['re_ratio'][index]) +' </td>\n')
-            else:
-                html.write('<td>N/A</td>\n')
-
+            #if vf['prefix'][i] in re_ratio['prefix']:
+            #    index = np.where(re_ratio['prefix'] == vf['prefix'][i])[0]
+            #    html.write('<td>'+ str('%.5f'%re_ratio['re_ratio'][index]) +' </td>\n')
+            #else:
+            #    html.write('<td>N/A</td>\n')
+            html.write('<td> </td>\n')
             html.write('<td> </td>\n')
 
         html.write('</tr></table>\n')
@@ -483,15 +483,19 @@ def build_htmlhome_galfit(sample,ku_or_siena):
 
 if __name__ == '__main__':
     homedir = os.getenv("HOME")
-    vf = Table.read(homedir+'/vfcut.fits',format='ascii')
+    vf = Table.read(homedir+'/sgacut_coadd.fits')
     dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
     galvf = Table.read('/mnt/astrophysics/kconger_wisesize/github/research/galfitcut.fits',format='ascii')
     re_ratio = Table.read(homedir+'/re_ratio.fits',format='ascii')
     print('build_htmlhome(sample,ku_or_siena,htmlpage=False)')
     print('build_html_one(sample,i,ku_or_siena,paba_comparison=False)')
     print('build_htmlhome_galfit(sample,ku_or_siena)')
+    print(' ')
+    print('I suspect you are wanting to run the following:')
     print('build_html_all(sample,ku_or_siena,paba_comparison=False)')
     print(' ')
     print('paba_comparison: True, False')
+    print('ku_or_siena: should be enclosed in single quotes')
+    print('sample: vf')
     print(' ')
     print('Be sure gal_html directory exists before running.')
