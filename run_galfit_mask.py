@@ -783,7 +783,7 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
                     
        except:
             
-           t = '/mnt/astrophysics/kconger_wisesize/github/'+WISE_dir+'/'+str(galaxy_sample['prefix'][n])+'-unwise-w3-log.txt'
+           t = '/mnt/astrophysics/kconger_wisesize/github/gal_output/'+str(galaxy_sample['prefix'][n])+'-unwise-w3-log.txt'
            header = readfile2(t)
            header.remove('#')                                    #removes the pound_sign from the array
            
@@ -815,29 +815,28 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
 
     txt = '%run ~/github/virgowise/wisesize.py'
     os.system(txt)
-
-    try:
-       tab = ascii.read(homedir+'/github/'+WISE_dir+'/'+sample_txt_name_nopsf+'.txt')
-    except:
-       tab = ascii.read('/mnt/astrophysics/kconger_wisesize/gal_output_new/'+str(sample_txt_name_nopsf)+'.txt')
+    
+    tab = ascii.read('/mnt/astrophysics/kconger_wisesize/gal_output_new/'+str(sample_txt_name_nopsf)+'.txt')
 
     central_flag = np.asarray(tab['central_flag'])
     central_flag = central_flag.astype(bool)
     success_flag = np.asarray(tab['success_flag'])
     success_flag = success_flag.astype(bool)
+
+    #all central galaxies in nopsf table:
     tab_central = tab[central_flag]
 
     
-    for n in range(0,len(tab_central)):
-        
+    for n in range(0,len(vf)):
+
        try:
             #ensuring that the correct galaxy is associated with the correct set of parameters
-            index = np.where(galaxy_sample['prefix'] == tab_central['galname'][n])[0][0]
+            index = np.where(galaxy_sample['prefix'][n] == tab_central['galname'])[0][0]
             print(index)
             
-            g = galaxy(galaxy_sample['RA'][index], galaxy_sample['DEC'][index],
-                      galaxy_sample['radius'][index], name = galaxy_sample['prefix'][index],vfid=galaxy_sample['VFID'][index],band='3')
-            print(galaxy_sample['prefix'][index])
+            g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
+                      galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
+            print(galaxy_sample['prefix'][n])
             
             ###
             
@@ -848,9 +847,8 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
             
             g.run_simple(convflag=True,sersic_start = sersic_parameters)
             
-            t = '/mnt/astrophysics/kconger_wisesize/github/'+WISE_dir+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
-            data = readfile(t)      #returns list of header,data1,...header
-
+            t = '/mnt/astrophysics/kconger_wisesize/github/gal_output/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
+            data = readfile(t)      #returns list of header,data1,...
 
 
             if n == 0:                              #if the galaxy is the first entry, then...
@@ -861,7 +859,7 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                      name = str(data[m][18])        #isolate VFID
                      name = name[0:8]
                      print(name)
-                     if name in vf['VFID']:     #if galname is in vf catalog, append 1; else, append 0
+                     if name in vf['VFID']:         #if galname is in vf catalog, append 1; else, append 0
                         data[m].append(int(1))
                      else:
                         data[m].append(int(0))
@@ -875,7 +873,7 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
 
                #try:
 
-                  for i in range(0,len(data)-1):
+                  for i in range(0,len(data)-1):         #number of galaxies only, excludes header
                      if (i+1) < len(data):
                         num=i+1                          #again, skips i=0 (header) index
                         data[num].append(int(1))
@@ -889,7 +887,8 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                      else:
                         print('fin')
                         continue
-                  file_test.append(data[num])
+
+                     file_test.append(data[num])
 
                #except:
                #   header=readfile2(t)
@@ -937,7 +936,7 @@ def generate_txt_manual(galaxy_sample,WISE_dir,txtname):
    for n in range(0,len(galaxy_sample)):
 
       #define .txt file address
-      t = '/mnt/astrophysics/kconger_wisesize/'+WISE_dir+'/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'   
+      t = '/mnt/astrophysics/kconger_wisesize/gal_output/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'   
 
       #apply readfile to .txt if galfit successful; else, run readfile2
       try:
