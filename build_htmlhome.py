@@ -75,8 +75,8 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
     #print('tab_psf:',len(tab_psf))
 
     #will have to change paths accordingly - I am inexplicably susceptible to inconsistency here:
-    tab_nopsf = ascii.read(galpath+'gal_output_new/nopsf_params.txt')
-    tab_psf = ascii.read(galpath+'gal_output_new/psf_params.txt')
+    tab_nopsf = ascii.read(galpath+'gal_output_psf/nopsf_params.txt')
+    tab_psf = ascii.read(galpath+'gal_output_psf/psf_params.txt')
 
     #the below lines are modifications tailored to the first galfit run with the full subsample
     #index329 not in tab_psf...remove this row for consistency purposes. See note above this function for further information.
@@ -115,7 +115,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
         else:
             ncomp = 1
 
-        #be sure to change "output_mosaics_largeser" to correct directory name
+        #be sure to change to correct directory name, if applicable
         mosaicfile = path + 'output_mosaics/'+str(sample['prefix'][i])+'-unwise-w3-{}Comp-galfit-out-conv.png'.format(ncomp)
 
         if paba_comparison == True:    
@@ -423,6 +423,8 @@ def build_html_all(sample,ku_or_siena,paba_comparison=False):
 
 
 def build_htmlhome_galfit(sample,ku_or_siena):
+
+    #change htmlpath, if applicable
     
     if str(ku_or_siena) == 'ku':
         path = '/Users/k215c316/'
@@ -434,20 +436,22 @@ def build_htmlhome_galfit(sample,ku_or_siena):
         
 
     stamppath = path+'LS_cutouts/'
+
+    #change galhtmlpath, if applicable
     galhtmlpath = path+'gal_html_new/'
 
     with open(htmlpath,'w') as html:
         html.write('<html><body>\n')
         html.write('<title>Virgo WISESize Project</title>\n')
-        html.write('<body style="background-color:powderblue;">\n')
+        html.write('<body style="background-color:GreenYellow;">\n')
         html.write('<style type="text/css">\n')
         html.write('table, td, th {padding: 5px; text-align: center; border: 2px solid black;}\n')
         html.write('p {display: inline-block;;}\n')
         html.write('</style>\n')
         html.write('<font size="40"> Virgo WISESize (updated PSFs) </font>\n')
-        #html.write('<font size="40"> WISESize GALFIT Data for VF Galaxies (SNR>10) </font>\n')
+        #html.write('<font size="40"> WISESize GALFIT Data for VF Galaxies (SNR>10, t-type>0) </font>\n')
 
-        html.write('<table><tr><th>Index</th><th>LS Cutout</th><th>Prefix</th><th>Galaxy</th><th>RA</th><th>DEC</th><th>2+ Sersic</th><th>Re_ratio (fixed/free PA,BA)</th><th>Comments</th></tr>\n')
+        html.write('<table><tr><th>Index</th><th>LS Cutout</th><th>Prefix</th><th>Galaxy</th><th>RA</th><th>DEC</th><th>2+ Sersic</th><th>Comments</th></tr>\n')
 
         for i in range(0,len(sample)):
             html.write('<tr><td>'+str(i)+'</td>\n')
@@ -469,7 +473,6 @@ def build_htmlhome_galfit(sample,ku_or_siena):
             #else:
             #    html.write('<td>N/A</td>\n')
             html.write('<td> </td>\n')
-            html.write('<td> </td>\n')
 
         html.write('</tr></table>\n')
         html.write('<br /><br />\n')
@@ -483,11 +486,12 @@ def build_htmlhome_galfit(sample,ku_or_siena):
 
 if __name__ == '__main__':
     homedir = os.getenv("HOME")
+    #change vf as applicable
     vf = Table.read(homedir+'/sgacut_coadd.fits')
     dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
     galvf = Table.read('/mnt/astrophysics/kconger_wisesize/github/research/galfitcut.fits',format='ascii')
     re_ratio = Table.read(homedir+'/re_ratio.fits',format='ascii')
-    print('build_htmlhome(sample,ku_or_siena,htmlpage=False)')
+    #print('build_htmlhome(sample,ku_or_siena,htmlpage=False)')
     print('build_html_one(sample,i,ku_or_siena,paba_comparison=False)')
     print('build_htmlhome_galfit(sample,ku_or_siena)')
     print(' ')

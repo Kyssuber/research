@@ -38,6 +38,7 @@ os.sys.path.append(homedir+'/github/virgowise/')
 dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
 sga_params = Table.read(homedir+'/sga_vf_matched.fits')
 sgacut = Table.read(homedir+'/sgacut_coadd.fits')
+photcut = Table.read(homedir+'/vf_paba_fixed.fits')
 vf = Table.read(homedir+'/vfcut.fits',format='ascii')
 
 
@@ -207,11 +208,11 @@ class galaxy():
 
    def set_sersic_manual(self,n=2,m=7,re=5,BA=1,PA=0):
         '''
-        GOAL: Set random parameters for galfit
+        GOAL: Set manual parameters for galfit
 
         INPUT: nsaid
 
-        OUTPUT: 5 random parameters for nsersic, magnitude, effective radius, axis ratio, and position angle
+        OUTPUT: 5 parameters for nsersic, magnitude, effective radius, axis ratio, and position angle
 
         '''
         self.nsersic = n
@@ -246,26 +247,27 @@ class galaxy():
         OUTPUT: several output files
 
         '''
-        
-#        if self.vfid in sgacut['VFID']:
-#            sgaindex = np.where(sga_params['VFID'] == self.vfid)[0]
+        #just a way to isolate the index, since I would rather not add more lines than necessary above (which I would then have to modify when I revert the script to 'iterate over ALL parameters' mode).
+        if self.vfid in photcut['VFID']:
+            photindex = np.where(photcut['VFID'] == self.vfid)[0]
 
-#            BA = sga_params['BA'][sgaindex]
-#            PA = sga_params['PA'][sgaindex]
-#            fitBA = 0
-#            fitPA = 0
-#        else:
-#           BA = self.BA
-#           PA = self.PA
+            BA = photcut['BA_MOMENT'][photindex]
+            PA = photcut['PA_MOMENT'][photindex]
+            fitBA = 0
+            fitPA = 0
+        else:
+           BA = self.BA
+           PA = self.PA
            
-        BA = self.BA
-        PA = self.PA
+#        BA = self.BA
+#        PA = self.PA
 
-        if self.nsersic>5:
-           fitn = 0
-           self.nsersic=5
-        if self.nsersic<5:
-           fitn = 1
+#correction for instances where no_psf nsersic is > 5, if desired
+#        if self.nsersic>5:
+#           fitn = 0
+#           self.nsersic=5
+#        if self.nsersic<5:
+#           fitn = 1
         
         #os.system('cp '+self.psf_image+' .')
         self.gal1.set_sersic_params(xobj=self.xc,yobj=self.yc,mag=self.mag,rad=self.re,nsersic=self.nsersic,BA=BA,PA=PA,fitmag=1,fitcenter=1,fitrad=1,fitBA=fitBA,fitPA=fitPA,fitn=fitn,first_time=0)
@@ -731,7 +733,6 @@ def run_galfit_no_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf):
        vfid = galaxy_sample['VFID'][n]
        g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
                       galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
-       print(galaxy_sample['prefix'][n])
        
        g.set_sersic_manual()
        
@@ -823,11 +824,9 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
     success_flag = np.asarray(tab['success_flag'])
     success_flag = success_flag.astype(bool)
 
-    #all central galaxies in nopsf table:
     tab_central = tab[central_flag]
-
     
-    for n in range(0,len(vf)):
+    for n in range(0,len(galaxy_sample)):
 
        try:
             #ensuring that the correct galaxy is associated with the correct set of parameters
@@ -836,15 +835,19 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
             
             g = galaxy(galaxy_sample['RA'][n], galaxy_sample['DEC'][n],
                       galaxy_sample['radius'][n], name = galaxy_sample['prefix'][n],vfid=galaxy_sample['VFID'][n],band='3')
-            print(galaxy_sample['prefix'][n])
             
             ###
-            
-            sersic_parameters = [tab_central['xc'][index],tab_central['yc'][index],tab_central['mag'][index],tab_central['re'][index],
+
+            #GALFIT hiccups dramatically if input parameters are ever -999, which is the element I insert if a fitting error arises in the no_psf case. To avoid such diaphramic spasms, this correction will do - simply use those "default" GALFIT initial guesses rather than the row of values from the no_psf table entries.
+            if tab_central['xc'][index] == -999:
+               sersic_parameters = g.set_sersic_manual()
+            else:
+               sersic_parameters = [tab_central['xc'][index],tab_central['yc'][index],tab_central['mag'][index],tab_central['re'][index],
                                  tab_central['nsersic'][index],tab_central['BA'][index],tab_central['PA'][index]]
+
             name = tab_central['galname']
             ###
-            
+
             g.run_simple(convflag=True,sersic_start = sersic_parameters)
             
             t = '/mnt/astrophysics/kconger_wisesize/github/gal_output/'+galaxy_sample[n]['prefix']+'-unwise-w3-log.txt'
@@ -900,7 +903,8 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
                   
 
        except:
-            
+
+           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
            t = '/mnt/astrophysics/kconger_wisesize/github/'+WISE_dir+'/'+str(galaxy_sample['prefix'][n])+'-unwise-w3-log.txt'
            header = readfile2(t)
            header.remove('#')                                    #removes the pound_sign from the array
@@ -917,7 +921,7 @@ def run_galfit_psf(galaxy_sample,WISE_dir,sample_txt_name_nopsf,sample_txt_name_
            file_test.append(file_test2[1])
            np.savetxt(t,file_test2,fmt='%s',overwrite=True)
             
-           print(galaxy_sample['prefix'][n], ' failed at run_simple.')
+           
            continue
 
         
@@ -1037,7 +1041,7 @@ if __name__ == '__main__':
 #below this line is a test for running the scripts external to ipython environment!
    print(' ')
    if '-h' in sys.argv or '--help' in sys.argv:
-      print ("Usage: %s [-psf (0 for False, 1 for True)] [-cat (vf, sga)] [-range_min integer] [-range_max integer] [-txtfile name (do not append .txt or include single quotes)] [-txtfilepsf name]" % sys.argv[0])
+      print ("Usage: %s [-psf (0 for False, 1 for True)] [-cat (vf, sga, phot)] [-range_min integer] [-range_max integer] [-txtfile name (do not append .txt or include single quotes)] [-txtfilepsf name]" % sys.argv[0])
       print
       sys.exit(1)
 
@@ -1056,6 +1060,8 @@ if __name__ == '__main__':
          vf = vf
       if cat == 'sga':
          vf = sgacut
+      if cat == 'phot':
+         vf = photcut
 
    if '-range_min' in sys.argv:
       p = sys.argv.index('-range_min')
