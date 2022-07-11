@@ -66,7 +66,7 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
     galpath = '/mnt/astrophysics/kconger_wisesize/'
 
 
-    htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_new/'+str(sample[i]['VFID'])+'.html'
+    htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_fixed/'+str(sample[i]['VFID'])+'.html'
 
     #full subsample
     #tab_nopsf = ascii.read(galpath+'gal_output_nopsf/set_one.txt')
@@ -77,18 +77,12 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
     #will have to change paths accordingly - I am inexplicably susceptible to inconsistency here:
     tab_nopsf = ascii.read(galpath+'gal_output_psf/nopsf_params.txt')
     tab_psf = ascii.read(galpath+'gal_output_psf/psf_params.txt')
-
-    #the below lines are modifications tailored to the first galfit run with the full subsample
-    #index329 not in tab_psf...remove this row for consistency purposes. See note above this function for further information.
-    #index=np.where(tab_nopsf['galname'] == 'index329')[0]
-    #index=int(index)
-    #tab_nopsf.remove_row(index)
     
         
     #True if want to compare with models for which PA, B/A fixed with SGA optical values
     if paba_comparison == True:
-        tab_sga_psf = ascii.read(galpath+'gal_output_fixed_psf/set_one.txt')
-        tab_sga_nopsf = ascii.read(galpath+'gal_output_fixed_nopsf/set_one.txt')
+        tab_sga_psf = ascii.read(galpath+'gal_output_fixed/psf_fixed.txt')
+        #tab_sga_nopsf = ascii.read(galpath+'gal_output_fixed_nopsf/set_one.txt')
 
     with open(htmlpath,'w') as html:
         html.write('<html><body>\n')
@@ -128,13 +122,14 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
 
         html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile+'" height="70%" width="70%" /><br /> \n')
 
-        #html.write('<font size="30">GALFIT Output (PSF) with PA, BA parameters held fixed:</font><br /> \n')
+        if paba_comparison == True:
+            html.write('<font size="30">GALFIT Output (PSF) with PA, BA parameters held fixed:</font><br /> \n')
 
-        #html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile_sga+'" /><br /> \n') 
+            html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaicfile_sga+'" height="70%" width="70%" /><br /> \n') 
         
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic.png" height="50%" width="50%" /><br /> \n')
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'LS_mosaics/'+str(sample['VFID'][i])+'-mosaic.png" height="60%" width="50%" /><br /> \n')
 
-        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'mask_mosaics/'+str(sample['VFID'][i])+'-mask-mosaic.png" height="50%" width="50%" /><br /> \n')
+        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+path+'mask_mosaics/'+str(sample['VFID'][i])+'-mask-mosaic.png" height="60%" width="50%" /><br /> \n')
         print(sample['prefix'][i])
         index = np.where(sample['prefix'][i] == tab_nopsf['galname'])[0]
         index = int(index)
@@ -199,32 +194,32 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
                         index2 = np.where(tab_sga_psf['galname'] == sample['prefix'][i])[0]
                         index2 = int(index2)
 
-                        index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
-                        index3 = int(index3)
+                        #index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
+                        #index3 = int(index3)
 
                         html.write('<tr><td>'+str(sample['VFID'][i])+'</td> \n')
                         html.write('<td>Host</td> \n')
                         html.write('<td>Fixed</td> \n')
-                        html.write('<td>NoPSF</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][0])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][1])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][2])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][3])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][4])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][5])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][6])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][7])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][8])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][9])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][10])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][11])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][12])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][13])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][16])+'</td></tr> \n')
+                        #html.write('<td>NoPSF</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][0])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][1])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][2])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][3])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][4])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][5])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][6])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][7])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][8])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][9])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][10])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][11])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][12])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][13])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][16])+'</td></tr> \n')
 
-                        html.write('<tr><td>--</td> \n')
-                        html.write('<td>--</td> \n')
-                        html.write('<td>--</td> \n')
+                        #html.write('<tr><td>--</td> \n')
+                        #html.write('<td>--</td> \n')
+                        #html.write('<td>--</td> \n')
                         html.write('<td>PSF</td> \n')
                         html.write('<td>'+str(tab_sga_psf[index2][0])+'</td> \n')
                         html.write('<td>'+str(tab_sga_psf[index2][1])+'</td> \n')
@@ -343,32 +338,32 @@ def build_html_one(sample,i,ku_or_siena,paba_comparison=False):
                         #indices where particular galaxies are located may differ, so two index definitions are needed here.
                         index2 = np.where(tab_sga_psf['galname'] == sample['prefix'][i])[0]
                         index2 = int(index2)
-                        index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
-                        index3 = int(index3)
+                        #index3 = np.where(tab_sga_nopsf['galname'] == sample['prefix'][i])[0]
+                        #index3 = int(index3)
 
                         html.write('<tr><td>'+str(sample['VFID'][i])+'</td>')
                         html.write('<td>Host</td> \n')
                         html.write('<td>Fixed</td> \n')
-                        html.write('<td>NoPSF</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][0])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][1])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][2])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][3])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][4])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][5])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][6])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][7])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][8])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][9])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][10])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][11])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][12])+'</td>')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][13])+'</td> \n')
-                        html.write('<td>'+str(tab_sga_nopsf[index3][16])+'</td></tr> \n')
+                        #html.write('<td>NoPSF</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][0])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][1])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][2])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][3])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][4])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][5])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][6])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][7])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][8])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][9])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][10])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][11])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][12])+'</td>')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][13])+'</td> \n')
+                        #html.write('<td>'+str(tab_sga_nopsf[index3][16])+'</td></tr> \n')
 
-                        html.write('<tr><td>--</td>')
-                        html.write('<td>--</td> \n')
-                        html.write('<td>--</td> \n')
+                        #html.write('<tr><td>--</td>')
+                        #html.write('<td>--</td> \n')
+                        #html.write('<td>--</td> \n')
                         html.write('<td>PSF</td> \n')
                         html.write('<td>'+str(tab_sga_psf[index2][0])+'</td>')
                         html.write('<td>'+str(tab_sga_psf[index2][1])+'</td>')
@@ -428,22 +423,22 @@ def build_htmlhome_galfit(sample,ku_or_siena):
     
     if str(ku_or_siena) == 'ku':
         path = '/Users/k215c316/'
-        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_new/main.html'
+        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_fixed/main.html'
     if str(ku_or_siena) == 'siena':
         path = '/Users/kconger/'
-        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_new/main.html'
+        htmlpath = '/mnt/astrophysics/kconger_wisesize/gal_html_fixed/main.html'
     
         
 
     stamppath = path+'LS_cutouts/'
 
     #change galhtmlpath, if applicable
-    galhtmlpath = path+'gal_html_new/'
+    galhtmlpath = path+'gal_html_fixed/'
 
     with open(htmlpath,'w') as html:
         html.write('<html><body>\n')
         html.write('<title>Virgo WISESize Project</title>\n')
-        html.write('<body style="background-color:GreenYellow;">\n')
+        html.write('<body style="background-color:Silver;">\n')
         html.write('<style type="text/css">\n')
         html.write('table, td, th {padding: 5px; text-align: center; border: 2px solid black;}\n')
         html.write('p {display: inline-block;;}\n')
@@ -488,6 +483,7 @@ if __name__ == '__main__':
     homedir = os.getenv("HOME")
     #change vf as applicable
     vf = Table.read(homedir+'/sgacut_coadd.fits')
+    vf_phot = Table.read(homedir+'/vf_paba_fixed.fits')
     dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
     galvf = Table.read('/mnt/astrophysics/kconger_wisesize/github/research/galfitcut.fits',format='ascii')
     re_ratio = Table.read(homedir+'/re_ratio.fits',format='ascii')
