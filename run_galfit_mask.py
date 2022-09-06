@@ -151,8 +151,8 @@ class galaxy():
         #self.psf_image = 'wise-w3-psf-wpro-09x09-05x05.fits' 
 
         #'personalized' psfs according to coadd_id
-        #copies psf directory into gal_output...there will be as many as there are galaxies in the vf sample, so be prepared for an influx (pun unintended) of point spread functionz. 
-        os.system('cp '+homedir+'/github/virgowise/sgacut_psfs/* .')
+        #copies psf directory into gal_output...there will be as many as there are galaxies in the vf sample, so be prepared for an influx (pun unintended) of point spread functionz.
+        os.system('cp '+homedir+'/github/virgowise/sgacut_psfs/'+str(self.vfid)+'* .')
         self.psf_image = glob.glob(str(self.vfid)+'*-psf.fits')[0]
         print(self.psf_image)
 

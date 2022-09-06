@@ -1,3 +1,19 @@
+'''
+GOAL:
+- for some input galaxy sample, gather their corresponding .fits cutouts and calculate their SNR using photutils.aperture.CircularAperture. Do so for 15" and 30" apertures.
+Steps:
+---create empty lists, first set with S/N values and second set with flags indicating whether the values > 10
+---for each galaxy, isolate VFID and navigate to the directory hosting the cutouts. Grab the signal and noise images
+---define central x,y coordinates of image; approximate as center of galaxy
+---from header information, extract the number of arcsec per pixel
+---convert 15, 30 arcseconds to pixels (unique to each cutout)
+---do the aperture thingy
+---append columns to gal_sample table
+---if save == True, then add each column as a .txt in homedir
+
+NOTE: /mnt/astrophysics/wisesize directories are named using v1 VFIDs, so there are a few lines of code below to accommodate this disappointing hocus pocus.
+'''
+
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.io import fits
@@ -5,17 +21,15 @@ from astropy.table import Table
 from photutils.aperture import CircularAperture
 import os
 
-def snr(gal_sample):
+def snr(gal_sample,save=False):
     snr15_list = []
     snr30_list = []
     snr15_flag = []
     snr30_flag = []
     for n in gal_sample:
-        try:
-            vfid=str(n['VFID'])
-        except:
-            vfid = n['galname']
-            vfid = vfid[0:8]
+        vfid=str(n['VFID_V1'])
+        #vfid = n['galname']
+        #vfid = vfid[0:8]
         filepath = '/mnt/astrophysics/wisesize/'+vfid+'/unwise-'+vfid+'-w3-'
         im = filepath+'img-m.fits'
         std = filepath+'std-m.fits'
@@ -63,18 +77,18 @@ def snr(gal_sample):
         snr30_list.append(snr30)
         if (snr15 > 10.) & (str(snr15) != 'inf'):
             print(vfid, 'snr15 > 10')
-            snr15_flag.append(1)
+            snr15_flag.append(True)
         if (snr15 < 10.) & (str(snr15) != 'inf'):
-            snr15_flag.append(0)
+            snr15_flag.append(False)
         if str(snr15) == 'inf':
-            snr15_flag.append(0)
+            snr15_flag.append(False)
         if (snr30 > 10.) & (str(snr30) != 'inf'):
             print(vfid, 'snr30 > 10')
-            snr30_flag.append(1)
+            snr30_flag.append(True)
         if (snr30 < 10.) & (str(snr30) != 'inf'):
-            snr30_flag.append(0)
+            snr30_flag.append(False)
         if str(snr30) == 'inf':
-            snr30_flag.append(0)
+            snr30_flag.append(False)
 
     snr15_list = [round(num,1) for num in snr15_list]
     #print('snr15:')
@@ -103,23 +117,30 @@ def snr(gal_sample):
     print('SNR>10 for 15arc: ',count15,'of ',len(snr15_flag))
     print('SNR>10 for 30arc: ',count30,'of ',len(snr15_flag))
     print('# galaxies with SNR>10 for both: ',count_both)
-            
-    os.chdir(homedir)
-    np.savetxt('snr15.txt',snr15_array,fmt="%f")
-    np.savetxt('snr30.txt',snr30_array,fmt="%f")
-    np.savetxt('snr15_flag.txt',snr15_flag,fmt="%s")
-    np.savetxt('snr30_flag.txt',snr30_flag,fmt="%s")
 
-    return(snr15_flag)
-    return(snr30_flag)
+    #convert str to int
+    
+    gal_sample.add_column(snr15,name='snr15')
+    gal_sample.add_column(snr30,name='snr30')
+    gal_sample.add_column(snr15_flag,name='snr15_flag')
+    gal_sample.add_column(snr30_flag,name='snr30_flag')
+    if save==True:
+        os.chdir(homedir)
+        np.savetxt('snr15.txt',snr15_array,fmt="%f")
+        np.savetxt('snr30.txt',snr30_array,fmt="%f")
+        np.savetxt('snr15_flag.txt',snr15_flag,fmt="%s")
+        np.savetxt('snr30_flag.txt',snr30_flag,fmt="%s")
+
+    #return(snr15_flag)
+    #return(snr30_flag)
 
 
 
 if __name__ == '__main__':
     homedir = os.getenv("HOME")
-    vf = Table.read(homedir+'/vf_north_v1_main.fits')
-    print('snr(gal_sample)')
-    print('sample: vf')
+    vf = Table.read(homedir+'/vf_v2_main.fits')
+    print('snr(gal_sample,save=False)')
+    print('preloaded sample: vf (v2)')
     print("read table: ascii.read('___.txt',format='no_header')")
 
 

@@ -5,7 +5,7 @@
 GOAL:
 - generate galfit input scripts for sample galaxies
 OUTPUT:
-- individual scripts for each central galaxy in sample; default directory is /mnt/astrophysics/kconger_wisesize/github/gal_output
+- individual scripts for each central galaxy in sample; default output directory is /mnt/astrophysics/kconger_wisesize/github/gal_output
 - can directly feed these textfiles into GALFIT
 '''
 
@@ -29,11 +29,11 @@ dummycat = Table.read(homedir+'/dummycat.fits',format='ascii')
 
 
 class galfit:
-    def __init__(self,galname=None,vfid=None,band=None,image=None,sigma_image=None,psf_image=None,psf_oversampling=None,mask_image=None,output_image=None,xminfit=None,yminfit=None,xmaxfit=None,ymaxfit=None,convolution_size=None,magzp=None,pscale=None,galfile=None,convflag=1,constraintflag=1,fitallflag=0,ncomp=1,xobj=None, yobj=None, mag=None, rad=None, nsersic=None, BA=None, PA=None, fitmag=1, fitcenter=1, fitrad=1, fitBA=1, fitPA=1, fitn=1, first_time=0, asymmetry=0):
+    def __init__(self, galname=None, vfid=None, r25=None, band=3, image=None, sigma_image=None, psf_image=None, psf_oversampling=None, mask_image=None, xminfit=None, yminfit=None, xmaxfit=None, ymaxfit=None, convolution_size=None, magzp=None, pscale=None, galfile=None, convflag=1, constraintflag=1, fitallflag=0, ncomp=1, xobj=None, yobj=None, mag=None, rad=None, nsersic=None, BA=None, PA=None, fitmag=1, fitcenter=1, fitrad=1, fitBA=1, fitPA=1, fitn=1, first_time=0, asymmetry=0):
         
         self.galname=galname
         self.vfid=vfid
-        self.band=3
+        self.band=band
         self.constraintflag=constraintflag
         self.fitallflag=fitallflag
         
@@ -49,19 +49,16 @@ class galfit:
 
         #change directory, grab galaxy's image and mask FITS filenames
         os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid))
-        im = glob.glob('*w3-img-m-trim.fits')[0]
+        im = glob.glob('*w3-img-m.fits')[0]
         self.image = im
-        im_mask = glob.glob('*mask-trim.fits')[0]
+        im_mask = glob.glob('*mask.fits')[0]
         self.mask_image = im_mask
 
-        self.sigma_image = self.image_rootname+'-std-m-trim.fits'
-        self.invvar_image = self.image_rootname+'-invvar-m-trim.fits'
+        self.sigma_image = self.image_rootname+'-std-m.fits'
+        self.invvar_image = self.image_rootname+'-invvar-m.fits'
         
         temp = fits.getdata(self.image)
         self.ximagesize, self.yimagesize = temp.shape
-        
-        self.xmaxfit=self.ximagesize
-        self.ymaxfit=self.yimagesize
         
         #default psf:
         #os.system('cp '+homedir+'/github/virgowise/wise_psfs/wise-w3-psf-wpro-09x09-05x05.fits .')
@@ -70,15 +67,12 @@ class galfit:
         #'personalized' psfs according to coadd_id
         #copies psf directory into gal_output...there will be as many as there are galaxies in the vf sample, so be prepared for an influx (pun unintended) of point spread functions.
         os.chdir('/mnt/astrophysics/kconger_wisesize/github/gal_output/')
+        #print(+str(self.vfid)+' PSF now in gal_output directory.')
         os.system('cp '+homedir+'/github/virgowise/sgacut_psfs/'+str(self.vfid)+'* .')
-        
         self.psf_image = glob.glob(str(self.vfid)+'*-psf.fits')[0]
         
-        #values from original script
+        #value from original script
         self.psf_oversampling=8
-        self.convolution_size=self.ximagesize
-        self.xminfit=0
-        self.yminfit=0
         
         #for WISE
         self.magzp=22.5     #magnitude zeropoint
@@ -86,8 +80,8 @@ class galfit:
         
         self.convflag=convflag
 
-        self.xobj=self.xmaxfit/2
-        self.yobj=self.ymaxfit/2
+        self.xobj=self.ximagesize/2
+        self.yobj=self.yimagesize/2
         self.mag=7
         self.rad=5
         self.nsersic=2
@@ -99,9 +93,27 @@ class galfit:
         self.fitrad=fitrad
         self.fitBA=fitBA
         self.fitPA=fitPA
-
-    def open_galfit_input(self):
-        self.galfit_input=open(self.galfile,'w')
+        
+        #default max and min fits
+        #self.xmaxfit=self.ximagesize
+        #self.ymaxfit=self.yimagesize
+        #self.xminfit=0
+        #self.yminfit=0
+        #self.convolution_size=self.ximagesize
+        
+        
+        #each cutout from Dustin is 500x500 px; the aim here is instruct GALFIT to only model a certain region about this central galaxy (which I quasi-arbitrarily choose to be a cutout size of 3*d25)
+        xc = self.ximagesize/2
+        yc = self.yimagesize/2
+        self.r25 = r25
+        #convert arcseconds to pixels
+        r25_px = self.r25/2.75
+        size = r25_px * 3
+        self.xminfit = xc - size
+        self.yminfit = yc - size
+        self.xmaxfit = xc + size
+        self.ymaxfit = yc + size
+        self.convolution_size = self.xmaxfit - self.xminfit
 
 
     def create_output_names(self):
@@ -111,6 +123,10 @@ class galfit:
             self.output_image=str(self.galname)+'-'+ str(self.ncomp) +'Comp-galfit-out-conv.fits'
         else:
             self.output_image=str(self.galname)+'-'+ str(self.ncomp) +'Comp-galfit-out.fits'
+            
+
+    def open_galfit_input(self):
+        self.galfit_input=open(self.galfile,'w')
 
 
     def write_image_params(self): #,input_image,output_image,sigma_image,psf_image,psf_oversampling,mask_image,xminfit,xmaxfit,yminfit,ymaxfit,convolution_size,magzp,pscale,convflag=1,constraintflag=1,fitallflag=0):
@@ -130,7 +146,7 @@ class galfit:
         self.galfit_input.write('P) 0                   # Create output image only? (1=yes; 0=optimize) \n')
         self.galfit_input.write('S) 0                   # Modify/create objects interactively?\n')
 
-
+        
     def set_sky(self,sky):
         self.sky=sky
 
@@ -184,12 +200,12 @@ class galfit:
 if __name__ == '__main__':
     
     params = Table.read('/mnt/astrophysics/kconger_wisesize/gal_output_psf/nopsf_params.txt',format='ascii')
-
+    
     convflag = input('conv? enter 0 (n) or 1 (y): ')
     
     for i in range(0,len(cat)):
     
-        gal = galfit(galname=cat['prefix'][i], vfid=cat['VFID'][i], convflag=convflag, constraintflag=1, fitallflag=0, ncomp=1)
+        gal = galfit(galname=cat['prefix'][i], vfid=cat['VFID'][i], r25 = cat['radius'][i], convflag=convflag, constraintflag=1, fitallflag=0, ncomp=1)
         
         if gal.convflag == 1:
             ind = np.where(cat['galname'][i] == params['galname'])[0]
@@ -200,7 +216,7 @@ if __name__ == '__main__':
             gal.nsersic=params['nsersic'][ind]
             gal.BA=params['BA'][ind]
             gal.PA=params['PA'][ind]
-
+        
         print(gal.vfid)
         gal.create_output_names()
         gal.set_sky(0)
