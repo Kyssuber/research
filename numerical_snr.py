@@ -120,8 +120,8 @@ def snr(gal_sample,save=False):
 
     #convert str to int
     
-    gal_sample.add_column(snr15,name='snr15')
-    gal_sample.add_column(snr30,name='snr30')
+    gal_sample.add_column(snr15_array,name='snr15')
+    gal_sample.add_column(snr30_array,name='snr30')
     gal_sample.add_column(snr15_flag,name='snr15_flag')
     gal_sample.add_column(snr30_flag,name='snr30_flag')
     if save==True:
