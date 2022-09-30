@@ -1,0 +1,14 @@
+#--------------------------------------------------- File Names ----------------------------------------------------
+
+vf_sample        /mnt/astrophysics/muchogalfit-input-cats/sgacut_coadd.fits   # VFS subsample
+dummycat         /mnt/astrophysics/muchogalfit-input-cats/dummycat.fits       # off-centered galaxy catalog
+directory        /mnt/astrophysics/wisesize/                                  # loc. of [insert band] images
+gal_output_path  /mnt/astrophysics/kconger_wisesize/github/gal_output/        # where galfit output will go
+vf_full          /mnt/astrophysics/muchogalfit-input-cats/vf_v2_main.fits     # vf main catalog (v2)
+
+#--------------------------------------------------- Parameters ----------------------------------------------------
+
+band               w3                                                         # wavelength band of image
+organize           1                                                          # move output .fits to gal_output_path
+convflag           0                                                          # 0 for conv, 1 for conv
+test               True                                                       # in testing phase

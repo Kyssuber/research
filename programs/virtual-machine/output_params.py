@@ -5,10 +5,11 @@
 GOAL:
 - gather all GALFIT output parameters, as well as the galnames and 'central' designations, and compile into an Astropy table.
 - only includes galaxies with VFIDs. entries in 'dummy catalog' which do not have a VFID are not added to the table.
-- be sure current directory contains all GALFIT output .fits files for "cat" galaxies before running. 
-- output will be a .fits table.
+- be sure directories contain all GALFIT output .fits files before running. 
+- output will be multiple .fits tables, one for each central galaxy and one that combines parameters of all galaxies.
 '''
 
+import sys
 import numpy as np
 import os
 homedir = os.getenv("HOME")
@@ -17,24 +18,14 @@ from astropy.table import Table
 from astropy.wcs import WCS
 from astropy.io import ascii
 from astropy.io import fits
-
-#os.sys.path.append('/mnt/astrophysics/kconger_wisesize/github/gal_output')
-
-#have to call sample
-homedir = os.getenv("HOME")
-cat = Table.read(homedir+'/sgacut_coadd.fits')
-dummycat = Table.read(homedir+'/dummycat.fits')
-vf = Table.read(homedir+'/vf_v2_main.fits')
-
-header = ['galname','xc','xc_err','yc','yc_err','mag','mag_err','re','re_err','nsersic','nsersic_err','BA','BA_err','PA','PA_er',
-          'sky','sky_err','err_flag','chi2nu','central_flag']
     
 
 class output_galaxy:
-    def __init__(self,galname=None,vfid=None,vfid_v1=None,outimage=None,convflag=None,band=3,ncomp=1):
+    def __init__(self,galname=None,vfid=None,objname=None,vfid_v1=None,outimage=None,convflag=None,band=None,ncomp=1):
         
         self.galname=galname
         self.vfid=vfid
+        self.objname=objname
         self.vfid_v1=vfid_v1
         
         if vfid in dummycat['central galaxy']:
@@ -42,12 +33,7 @@ class output_galaxy:
         else:
             self.ncomp=ncomp
         
-        #if band is an integer, than prepend with w to indicate that the 'band' is a WISE channel
-        try:
-            int(band)
-            self.band = 'w'+str(band)
-        except:
-            self.band = band
+        self.band = band
 
         outimage = str(self.galname)+'-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.fits'
         self.outimage=outimage
@@ -117,7 +103,7 @@ class output_galaxy:
                 temp.append(1)
             else:
                 temp.append(0)
-            print(temp)
+            #print(temp)
             fit_parameters.append(temp)
         #print(len(fit_parameters))
         return fit_parameters
@@ -125,30 +111,99 @@ class output_galaxy:
 
 if __name__ == '__main__':
     
-    t = Table(names=header,dtype=[str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float])
+    if '-h' in sys.argv or '--help' in sys.argv:
+        print("Usage: %s [-param_file (name of parameter file, no single or double quotation marks)]")
+        sys.exit(1)
     
-    convflag = input('conv? enter 0 (n) or 1 (y): ')
-    #band = input('band? enter 1-4 for w, r for r-band: ')
+    if '-param_file' in sys.argv:
+        p = sys.argv.index('-param_file')
+        param_file = str(sys.argv[p+1])
+    
+    
+    homedir = os.getenv("HOME")
+       
+    #create dictionary with keywords and values, from parameter .txt file
+
+    param_dict = {}
+    with open('/mnt/astrophysics/kconger_wisesize/github/research/mucho-galfit/'+param_file) as f:
+        for line in f:
+            try:
+                key = line.split()[0]
+                val = line.split()[1]
+                param_dict[key] = val
+            except:
+                continue    
+    
+    #now...extract parameters and assign to relevantly-named variables
+    
+    #catalogs and pathnames
+    cat_path = param_dict['vf_catalog']
+    cat = Table.read(cat_path)
+    dummycat_path = param_dict['dummycat']
+    dummycat = Table.read(dummycat_path)
+    gal_output_dir = param_dict['gal_output_path']
+    band = param_dict['band']
+    convflag = int(param_dict['convflag'])
+    test = bool(param_dict['test'])
+    
+
+    header = ['galname_v2','xc','xc_err','yc','yc_err','mag','mag_err','re','re_err','nsersic','nsersic_err','BA','BA_err','PA','PA_er','sky','sky_err','err_flag','chi2nu','central_flag']
+    
+    dtype=[np.object,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float]
+    
+    full_sample_table = Table(names=header,dtype=dtype)
     
     for i in range(0,len(cat)):
-        g = output_galaxy(galname=cat['prefix'][i], vfid=cat['VFID'][i], vfid_v1 = cat['VFID_V1'][i], band=3)        
         
-        if convflag == 1:
-            g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
+        g = output_galaxy(galname=cat['prefix'][i], vfid=cat['VFID'][i], vfid_v1 = cat['VFID_V1'][i],convflag=convflag, band=band)
         
-        param_rows = g.parse_galfit_1comp()
-        for n in param_rows:
-            if 'index' in n[0]:
-                print('external ID not in vf catalog')
-            else:
-                t.add_row(n)
-        band=g.band  
+        if test == True:
+            
+            num_rows = int(g.ncomp)
+            for i in range(num_rows):
+                zero_row = np.zeros(len(dtype))
+                zero_row = np.ndarray.tolist(zero_row) 
+                zero_row[0] = '        '
+                full_sample_table.add_row(zero_row)
+            
+            os.chdir(gal_output_dir)
+            
+            one_gal_table = Table(names=header,dtype=dtype)
+            
+            if convflag == 1:
+                g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
+                
+            param_rows = g.parse_galfit_1comp()
+            
+            for n in range(len(param_rows)):
+                '''FUNCTIONALITY EXAMPLE: if ncomp=2, then there should be 2 additional zero rows for ith galaxy, appended at the bottom of the table. 
+                Beginning with n=1 (central galaxy), its corresponding zeroth row will be at index tab_length - (n) - 1. the -1 is to accommodate the length being some number N but the final index of the table being N-1.
+                We replace that row of zeros with the output parameters, if the galaxy output directory exists, then proceed to the n=2 galaxy. repeat.'''
+                current_table_length = len(full_sample_table)
+                zero_row_index = int(current_table_length - n - 1)
+                #repopulate this row with nth param_row
+                full_sample_table[zero_row_index] = param_rows[n]
+                one_gal_table.add_row(param_rows[n])  
         
-    print(t)            
+        
+        if test == False:
+
+            if convflag == 1:
+                g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
+
+            param_rows = g.parse_galfit_1comp()
+            for n in param_rows:
+                if 'index' in n[0]:
+                    print('external ID not in vf catalog')
+                else:
+                    t.add_row(n)
+            band=g.band  
+        
+    print(full_sample_table)            
     if int(convflag) == 1:
-        t.write(homedir+'/output_params_'+band+'_psf.fits', format='fits', overwrite=True)
+        full_sample_table.write(homedir+'/output_params_'+band+'_psf.txt', format='ascuu', overwrite=True)
     if int(convflag) == 0:
-        t.write(homedir+'/output_params_'+band+'_nopsf.fits',format='fits',overwrite=True)
+        full_sample_table.write(homedir+'/output_params_'+band+'_nopsf.txt',format='ascii',overwrite=True)
       
     
 

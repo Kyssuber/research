@@ -4,12 +4,10 @@ GOAL:
 - generate galfit output mosaic .png
 '''
 
+import sys
 from matplotlib import pyplot as plt
 import numpy as np
-import warnings
-warnings.filterwarnings('ignore')
 import os
-homedir = os.getenv("HOME")
 import glob
 from astropy.table import Table
 from astropy.io import fits
@@ -18,20 +16,11 @@ from astropy.wcs import WCS
 from astropy.io import ascii
 from scipy.stats import scoreatpercentile
 
-#os.sys.path.append('/mnt/astrophysics/kconger_wisesize/github/gal_output')
-#os.chdir('/mnt/astrophysics/kconger_wisesize/github/gal_output')
-
-#have to call sample
-cat = Table.read(homedir+'/sgacut_coadd.fits')
-dummycat = Table.read(homedir+'/dummycat.fits')
-
-
 class mosaic():
    
-    def __init__(galname,band='w3',vfid,ncomp=1):
+    def __init__(galname,vfid,band=None,ncomp=1):
         self.galname = galname
         self.band = band
-        #self.vfid = galname[0:8]
         self.vfid = vfid
         if self.vfid in dummycat['central galaxy']:
             self.ncomp = len(np.where(dummycat['central galaxy'] == vfid)[0]) + 1
@@ -48,16 +37,16 @@ class mosaic():
         cmap = colormap, default is viridis
         '''
         
-        self.filename = glob.glob(self.galname+'-unwise-'+str(self.band)+'*Comp-galfit-out.fits')[0]
-        pngname = self.galname+'-unwise-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.png'
+        filename = glob.glob(self.galname+str(self.band)+'*Comp-galfit-out.fits')[0]
+        pngname = self.galname+'-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.png'
         
         if self.convflag:
-            self.filename = glob.glob(self.galname+'-unwise-'+str(self.band)+'*Comp-galfit-out-conv.fits')[0]
-            pngname = self.galname+'-unwise-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out-conv.png'
+            filename = glob.glob(self.galname+str(self.band)+'*Comp-galfit-out-conv.fits')[0]
+            pngname = self.galname+'-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out-conv.png'
         
-        image,h = fits.getdata(self.filename,1,header=True)
-        model = fits.getdata(self.filename,2)
-        residual = fits.getdata(self.filename,3)
+        image,h = fits.getdata(filename,1,header=True)
+        model = fits.getdata(filename,2)
+        residual = fits.getdata(filename,3)
 
         wcs = WCS(h)
         images = [image,model,residual,residual]
@@ -98,6 +87,49 @@ class mosaic():
         
 
 if __name__ == '__main__':
+    
+    if '-h' in sys.argv or '--help' in sys.argv:
+        print("Usage: %s [-param_file (name of parameter file, no single or double quotation marks)]" % sys.argv[0])
+        sys.exit(1)
+    
+    if '-param_file' in sys.argv:
+        p = sys.argv.index('-param_file')
+        param_file = str(sys.argv[p+1])
+  
+       
+    #create dictionary with keywords and values, from parameter .txt file
+    
+    homedir = os.getenv("HOME")
+    
+    param_dict = {}
+    with open(homedir+'/'+param_file) as f:
+        for line in f:
+            try:
+                key = line.split()[0]
+                val = line.split()[1]
+                param_dict[key] = val
+            except:
+                continue
+    
+    ############
+    
+    cat_path = param_dict['vf_sample']
+    cat = Table.read(cat_path)
+    
+    dummycat_path = param_dict['dummycat']
+    dummycat = Table.read(dummycat_path)
+    
+    directory = param_dict['directory']
+    gal_output_path = param_dict['gal_output_path']
+    
+    band = param_dict['band']    
+    
+    #cd to location of all galfit output .fits files
+    os.chdir(gal_output_path) 
+    
     for i in range(0,len(cat)):
-        m = mosaic(galname=cat['prefix'][i],vfid=cat['VFID'][i])
-        m.createmosaic()
+        m = mosaic(galname=cat['prefix'][i],vfid=cat['VFID'][i],band=band)
+        try:
+            m.createmosaic()
+        except:
+            print('did not complete for ',m.galname)
