@@ -1,0 +1,30 @@
+#---------------------------------------------- File Names ---------------------------------------------
+
+VFID_or_objname  VFID                                            # does filename use VFID or objname?
+filename         unwise-VFID0545-w3-img-m.fits                   # 2D cutout of galaxy, in pathname
+pathname         /NGC2273A/                                      # where files are/will be located
+vf_catalog       /Desktop/v2-20220820/vf_v2_main.fits            # location of VF catalog
+csv_savename     .csv                                            # desired filename of galaxy data
+vid_name_cutout  .mp4                                            # desired filename of cutout animation
+vid_name_midi    midi_notes_vfid.mp4                             # desired filename of midi animation
+wav_savename     .wav                                            # desired filename of wavefile
+soundfont        /opt/anaconda3/share/soundfonts/FluidR3_GM.sf2  # location of soundfont for mid-to-wav
+
+#--------------------------------------------- Parameters ----------------------------------------------
+
+r25_multiple_x   2.5                                             # r25 multiple for x px dimension
+r25_multiple_y   2.5                                             # r25 multiple for y px dimension
+y_scale          0.5                                             # exponential factor to scale y
+strips_per_beat  10                                              # number of pixel strips per beat
+vel_min          5                                               # min volume (don't want vel_min=0)
+vel_max          120                                             # max volume (max value can be 127)
+bpm              35                                              # beats per minute
+midi_or_2D       midi                                            # midi, 2D (cutout), or both
+
+#-------------------------------------------- Note Scales ----------------------------------------------
+
+note_names1      C2-D2-E2-F2-G2-A2-B2-C3-D3-E3-F3-G3-A3-B3-C4-D4-E4-F4-G4-A4-B4-C5-D5-E5-F5-G5-A5-B5    #C-major 
+note_names2      D3-E3-F#3-G3-A3-B3-C#3-D4-E4-F#4-G4-A4-B4-C#4-D5-E5-F#5-G5-A5-B5-C#5-D6       #D-major
+note_names3      C#2-D#2-E2-F#2-G#2-A#2-B2-C#3-D#3-E3-F#3-G#3-A#3-B3-C#4-D#4-E4-F#4-G#4-A#4-B4-C#5-D#5-E5-F#5-G#5-A#5-B5  #B-major
+note_names       note_names2                               # the desired scale for iteration
+

@@ -25,28 +25,32 @@ cat = Table.read(mnt_cat_path+'sgacut_coadd.fits')
 dummycat = Table.read(mnt_cat_path+'dummycat.fits')
 vf = Table.read(mnt_cat_path+'vf_v2_main.fits')
 
+
 header = ['galname','xc','xc_err','yc','yc_err','mag','mag_err','re','re_err','nsersic','nsersic_err','BA','BA_err','PA','PA_er','sky','sky_err','err_flag','chi2nu','central_flag']
     
 
 class output_galaxy:
-    def __init__(self,galname=None,vfid=None,objname=None,vfid_v1=None,outimage=None,convflag=None,band='r',ncomp=1):
+    def __init__(self,galname=None,vfid=None,objname=None,vfid_v1=None,outimage=None,convflag=None,band='W3',ncomp=1):
         
         self.galname=galname
         self.vfid=vfid
         self.objname=objname
         self.vfid_v1=vfid_v1
         
+        '''
         if vfid in dummycat['central galaxy']:
             self.ncomp = len(np.where(dummycat['central galaxy'] == vfid)[0]) + 1
         else:
             self.ncomp=ncomp
+        '''
+        self.ncomp=ncomp
         
         #if band is an integer, than prepend with w to indicate that the 'band' is a WISE channel
         self.band = band
 
         #outimage = str(self.galname)+'-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.fits'
         #self.outimage=outimage
-        outimage = str(self.objname)+'-'+str(self.band)+'-out2.fits'
+        outimage = str(self.objname)+'-'+str(self.band)+'-out1.fits'
         self.outimage=outimage
         print(self.outimage)
         
@@ -71,7 +75,8 @@ class output_galaxy:
 
         fit_parameters=[]
         
-        for n in range(0,self.ncomp):
+        
+        for n in range(self.ncomp):
             temp=[]
             if n == 0:
                 temp.append(self.galname)   #if no external galaxies, only include central galaxy; if external galaxies, then first index will represent the central galaxy...then proceed to next index.
@@ -79,8 +84,6 @@ class output_galaxy:
                 indices = np.where(dummycat['central galaxy'] == self.vfid)[0]  #find where external(s) have self.vfid as 'host'
                 index = indices[n-1]   #only want one index; if n=1, then we want the first external galaxy, meaning the 0th element in the indices list
                 temp.append(dummycat['ID'][index])   #append the name (ID) of the external galaxy
-
-            working_dir=os.getcwd()+'/'
             
             image_header = fits.getheader(self.outimage,2)
             for hkey in header_keywords[n]:
@@ -128,14 +131,18 @@ if __name__ == '__main__':
     full_sample_table = Table(names=header,dtype=dtype)
     
     convflag = input('conv? enter 0 (n) or 1 (y): ')
-    #band = input('band? enter 1-4 for w, r for r-band: ')
-    
-    for i in range(0,len(cat)):
-           
-        #add row of zeros for ith central galaxy and each "off-centered" sersic object
-        g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], band='r') 
-        num_rows = int(g.ncomp)   
-        for i in range(0,num_rows):
+    #band = input('band? enter W1-4, r for r-band: ')
+
+    #for every galaxy in the VF subsample catalog...
+    for i in range(len(cat)):
+
+        
+        
+        #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
+        g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], band='W3') 
+        num_rows = int(g.ncomp)
+        
+        for num in range(num_rows):
             zero_row = np.zeros(len(dtype))
             zero_row = np.ndarray.tolist(zero_row) #convert to list, as the np array is all floats and won't allow the zeroth index element to be replaced with a string.
             zero_row[0] = '        ' #number of spaces corresponding to number of characters for VFID####. this formatting is necessary, for whatever reason. If I only inserted one space, then the resulting cell would read 'V'. Unhelpful.
@@ -144,10 +151,10 @@ if __name__ == '__main__':
         #if path exists (os.path.exists() returns True), then galaxy directory exists...
         #helpful for testing purposes
         galfit_dir = '/mnt/astrophysics/muchogalfit-output/'
-        galfit_dir_one = galfit_dir+g.objname
-        if os.path.exists(galfit_dir_one):
+        galfit_dir_one = galfit_dir+g.vfid
+        if os.path.isfile(galfit_dir_one+'/'+g.outimage):
             os.chdir(galfit_dir_one)
-
+        
             one_gal_table = Table(names=header,dtype=[str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float])
 
             if convflag == 1:
@@ -169,13 +176,14 @@ if __name__ == '__main__':
 #no need for such trickery with the central galaxy table...simply add the row
                 one_gal_table.add_row(param_rows[n])
                 
-                
+
+            #print(one_gal_table)    
                     
             #write table of central (+external, if any) galaxy parameters in directory
             if int(convflag) == 1:
-                one_gal_table.write(galfit_dir+g.objname+'/output_params_'+g.band+'_psf.fits',format='fits',overwrite=True)
+                one_gal_table.write(galfit_dir+g.vfid+'/output_params_'+g.band+'_psf.fits',format='fits',overwrite=True)
             if int(convflag) == 0:
-                one_gal_table.write(galfit_dir+g.objname+'/output_params_'+g.band+'_nopsf.fits',format='fits',overwrite=True)
+                one_gal_table.write(galfit_dir+g.vfid+'/output_params_'+g.band+'_nopsf.fits',format='fits',overwrite=True)
             
             
             index=len(full_sample_table)-1
@@ -192,5 +200,5 @@ if __name__ == '__main__':
     if int(convflag) == 1:
         full_sample_table.write(galfit_dir+'output_params_'+band+'_psf.fits', format='fits', overwrite=True)
     if int(convflag) == 0:
-        full_sample_table.write(galfit_dir+'output_params_'+band+'_nopsf.fits',format='fits',overwrite=True)
+        full_sample_table.write(galfit_dir+'output_params_'+band+'_nopsf.fits', format='fits', overwrite=True)
 

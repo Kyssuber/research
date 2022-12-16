@@ -10,7 +10,7 @@ gal_output_path  /mnt/astrophysics/kconger_wisesize/github/gal_output/        # 
 
 band               w3                                                         # wavelength band of image
 magzp              22.5                                                       # magnitude zeropoint
-convflag           0                                                          # 0 for conv, 1 for conv
+convflag           0                                                          # 0 for no conv, 1 for conv
 asymmetry          0                                                          # asymmetric fit?
 pscale             0.344                                                      # plate scale (dx,dy)[arcsec/px)]
 psf_oversampling   8                                                          # value taken from Rose's code

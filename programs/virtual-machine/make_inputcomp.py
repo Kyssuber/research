@@ -1,6 +1,3 @@
-
-
-
 '''
 GOAL:
 - generate galfit input scripts for sample galaxies
@@ -344,7 +341,7 @@ if __name__ == '__main__':
                 n = int(i)+2      #i begins at 0, and 1 is already taken
                 x = int(dummycat['x (px)'][index])
                 y = int(dummycat['y (px)'][index])
-                gal.add_simple_sersic_object(n,'sersic',x=x,y=y,mag=gal.mag,rad=gal.rad,nsersic=gal.nsersic,BA=gal.BA,PA=gal.PA)
+                gal.add_simple_sersic_object(n, 'sersic', x=x, y=y, mag=gal.mag, rad=gal.rad, nsersic=gal.nsersic, BA=gal.BA, PA=gal.PA)
                 
                 if n == int(len(indices)+1):
                     gal.write_sky(n+1)
