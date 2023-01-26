@@ -1,0 +1,20 @@
+#-------------------------------------------- File Names -------------------------------------------
+galaxy_VFID       VFID0545                                # galaxy VFID (v1), used as prefix
+path_to_wav       /NGC2273A/                              # where .wav file is located
+wavname           .wav                                    # name of .wav file
+pathname          /NGC2273A/                              # where files are/will be located
+vid_name_cutout   .mp4                                    # filename of cutout video animation
+vid_name_midi     midi_notes.mp4                          # filename of midi video animation
+savedir           /Desktop/                               # directory to save full video animations
+outputvid_midi    _midi.mp4                               # desired filename of full midi video
+outputvid_cutout  _cutout.mp4                             # desired filename of full cutout video
+
+#------------------------------------------- Parameters --------------------------------------------
+
+midi_or_2D        midi                                    # animation either midi, 2D, or both
+
+
+
+
+#need to first convert .mid to .wav
+#can use website (https://www.zamzar.com/convert/midi-to-wav/ --> /Downloads/sonification_wav/) or the generated .wav in sonification_galaxyfits.py (/testfolder/)
