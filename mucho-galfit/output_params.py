@@ -36,6 +36,7 @@ class output_galaxy:
         '''
         self.band = band
         self.ncomp = ncomp
+        print(self.band,self.ncomp,self.objname)
         
         pathname = '/mnt/astrophysics/muchogalfit-output/'+str(self.vfid)+'/'
         outimage = glob.glob(pathname+self.objname+'-'+str(self.band)+'-out*')[0]
