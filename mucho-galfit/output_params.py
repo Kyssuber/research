@@ -176,8 +176,8 @@ if __name__ == '__main__':
             
             one_gal_table = Table(names=header,dtype=dtype)
             
-            if convflag == 1:
-                g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
+            #if convflag == 1:
+            #    g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
                 
             param_rows = g.parse_galfit_1comp()
             
