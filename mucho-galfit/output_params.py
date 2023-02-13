@@ -27,15 +27,20 @@ class output_galaxy:
         self.vfid=vfid
         self.objname=objname
         self.vfid_v1=vfid_v1
-        
+
+        '''
         if vfid in dummycat['central galaxy']:
             self.ncomp = len(np.where(dummycat['central galaxy'] == vfid)[0]) + 1
         else:
             self.ncomp=ncomp
-        
+        '''
         self.band = band
-
-        outimage = str(self.galname)+'-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.fits'
+        self.ncomp = ncomp
+        
+        
+        outimage = glob.glob(str(self.galname)+'-'+str(self.band)+'-out*')[0]
+        if convflag==1:
+            outimage = glob.glob(str(self.galname)+'-'+str(self.band)+'-out*')[1]
         self.outimage=outimage
         print(self.outimage)
         
@@ -103,7 +108,7 @@ class output_galaxy:
                 temp.append(1)
             else:
                 temp.append(0)
-            print(temp)
+            #print(temp)
             fit_parameters.append(temp)
         #print(len(fit_parameters))
         return fit_parameters
@@ -125,7 +130,7 @@ if __name__ == '__main__':
     #create dictionary with keywords and values, from parameter .txt file
 
     param_dict = {}
-    with open(homedir+'/'+param_file) as f:
+    with open('/mnt/astrophysics/kconger_wisesize/github/research/mucho-galfit/'+param_file) as f:
         for line in f:
             try:
                 key = line.split()[0]
@@ -149,7 +154,7 @@ if __name__ == '__main__':
 
     header = ['galname_v2','xc','xc_err','yc','yc_err','mag','mag_err','re','re_err','nsersic','nsersic_err','BA','BA_err','PA','PA_er','sky','sky_err','err_flag','chi2nu','central_flag']
     
-    dtype=[str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float]
+    dtype=[np.object,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float]
     
     full_sample_table = Table(names=header,dtype=dtype)
     
@@ -201,9 +206,9 @@ if __name__ == '__main__':
         
     print(full_sample_table)            
     if int(convflag) == 1:
-        full_sample_table.write(homedir+'/output_params_'+band+'_psf.fits', format='fits', overwrite=True)
+        full_sample_table.write(homedir+'/output_params_'+band+'_psf.txt', format='ascuu', overwrite=True)
     if int(convflag) == 0:
-        full_sample_table.write(homedir+'/output_params_'+band+'_nopsf.fits',format='fits',overwrite=True)
+        full_sample_table.write(homedir+'/output_params_'+band+'_nopsf.txt',format='ascii',overwrite=True)
       
     
 
