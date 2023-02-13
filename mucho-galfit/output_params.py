@@ -162,7 +162,7 @@ if __name__ == '__main__':
     
     for i in range(0,len(cat)):
         
-        g = output_galaxy(galname=cat['prefix'][i], vfid=cat['VFID'][i], vfid_v1 = cat['VFID_V1'][i],convflag=convflag, band=band)
+        g = output_galaxy(galname=cat['prefix'][i], objname = cat['objname'][i], vfid=cat['VFID'][i], vfid_v1 = cat['VFID_V1'][i],convflag=convflag, band=band)
         
         if test == True:
             
