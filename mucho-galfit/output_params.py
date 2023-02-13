@@ -37,10 +37,10 @@ class output_galaxy:
         self.band = band
         self.ncomp = ncomp
         
-        
-        outimage = glob.glob('/mnt/astrophysics/muchogalfit-output/'+str(self.vfid)+'-'+str(self.band)+'-out*')[0]
+        pathname = /mnt/astrophysics/muchogalfit-output/'+str(self.vfid)+'/'
+        outimage = glob.glob(pathname+self.galname+'-'+str(self.band)+'-out*')[0]
         if convflag==1:
-            outimage = glob.glob('/mnt/astrophysics/muchogalfit-output/'+str(self.vfid)+'-'+str(self.band)+'-out*')[1]
+            outimage = glob.glob(pathname+self.galname+'-'+str(self.band)+'-out*')[1]
         
         self.outimage=outimage
         print(self.outimage)
