@@ -41,6 +41,7 @@ class output_galaxy:
         outimage = glob.glob(str(self.galname)+'-'+str(self.band)+'-out*')[0]
         if convflag==1:
             outimage = glob.glob(str(self.galname)+'-'+str(self.band)+'-out*')[1]
+        
         self.outimage=outimage
         print(self.outimage)
         
@@ -184,6 +185,7 @@ if __name__ == '__main__':
                 '''FUNCTIONALITY EXAMPLE: if ncomp=2, then there should be 2 additional zero rows for ith galaxy, appended at the bottom of the table. 
                 Beginning with n=1 (central galaxy), its corresponding zeroth row will be at index tab_length - (n) - 1. the -1 is to accommodate the length being some number N but the final index of the table being N-1.
                 We replace that row of zeros with the output parameters, if the galaxy output directory exists, then proceed to the n=2 galaxy. repeat.'''
+                
                 current_table_length = len(full_sample_table)
                 zero_row_index = int(current_table_length - n - 1)
                 #repopulate this row with nth param_row
@@ -206,7 +208,7 @@ if __name__ == '__main__':
         
     print(full_sample_table)            
     if int(convflag) == 1:
-        full_sample_table.write(homedir+'/output_params_'+band+'_psf.txt', format='ascuu', overwrite=True)
+        full_sample_table.write(homedir+'/output_params_'+band+'_psf.txt', format='ascii', overwrite=True)
     if int(convflag) == 0:
         full_sample_table.write(homedir+'/output_params_'+band+'_nopsf.txt',format='ascii',overwrite=True)
       
