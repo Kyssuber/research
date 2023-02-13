@@ -172,7 +172,7 @@ if __name__ == '__main__':
                 zero_row[0] = '        '
                 full_sample_table.add_row(zero_row)
             
-            os.chdir(gal_output_dir)
+            os.chdir(gal_output_dir+self.vfid)
             
             one_gal_table = Table(names=header,dtype=dtype)
             
@@ -195,8 +195,8 @@ if __name__ == '__main__':
         
         if test == False:
 
-            if convflag == 1:
-                g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
+            #if convflag == 1:
+            #    g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
 
             param_rows = g.parse_galfit_1comp()
             for n in param_rows:
