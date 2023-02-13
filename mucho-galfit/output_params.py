@@ -36,7 +36,6 @@ class output_galaxy:
         '''
         self.band = band
         self.ncomp = ncomp
-        print(self.band,self.ncomp,self.objname)
         
         pathname = '/mnt/astrophysics/muchogalfit-output/'+str(self.vfid)+'/'
         outimage = glob.glob(pathname+self.objname+'-'+str(self.band)+'-out*')[0]
@@ -173,7 +172,7 @@ if __name__ == '__main__':
                 zero_row[0] = '        '
                 full_sample_table.add_row(zero_row)
             
-            os.chdir(gal_output_dir+self.vfid)
+            os.chdir(gal_output_dir+g.vfid)
             
             one_gal_table = Table(names=header,dtype=dtype)
             
