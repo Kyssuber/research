@@ -18,6 +18,9 @@ from astropy.wcs import WCS
 from astropy.io import ascii
 from astropy.io import fits
 
+import warnings
+warnings.filterwarnings("ignore", category=StringTruncateWarning)
+
 #have to call sample
 homedir = os.getenv("HOME")
 mnt_cat_path = '/mnt/astrophysics/muchogalfit-input-cats/'
@@ -194,7 +197,7 @@ if __name__ == '__main__':
     for i in full_sample_table['VFID']:
         if 'index' in i:
             print('external ID not in vf catalog, removed')
-            full_sample_table.remove_row(np.where(full_sample_table['galname']==i)[0])
+            full_sample_table.remove_row(np.where(full_sample_table['VFID']==i)[0])
             
     if int(convflag) == 1:
         full_sample_table.write(galfit_dir+'output_params_'+band+'_psf.fits', format='fits', overwrite=True)
