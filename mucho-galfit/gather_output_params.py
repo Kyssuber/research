@@ -140,7 +140,7 @@ if __name__ == '__main__':
     for i in range(len(cat)):        
         
         #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
-        g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], band='W3') 
+        g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], band=band) 
         num_rows = int(g.ncomp)
         
         for num in range(num_rows):
