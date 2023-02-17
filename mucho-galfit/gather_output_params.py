@@ -18,9 +18,6 @@ from astropy.wcs import WCS
 from astropy.io import ascii
 from astropy.io import fits
 
-import warnings
-warnings.filterwarnings("ignore", category=StringTruncateWarning)
-
 #have to call sample
 homedir = os.getenv("HOME")
 mnt_cat_path = '/mnt/astrophysics/muchogalfit-input-cats/'
