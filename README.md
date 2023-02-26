@@ -1,2 +1,2 @@
 # research
-See Local branch for a more extensive README. This current branch (Master) contains various novice scripts I created during my first two years of research in order to optimize GALFIT on a remote server.
+See Local branch for a more extensive README. This current branch (Remote) almost entirely contains various novice scripts I created during my first two years of research in order to optimize GALFIT on a remote server.
