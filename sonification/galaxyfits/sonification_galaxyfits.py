@@ -46,22 +46,34 @@ def define_strips(fits_type, filepath, gal_name, filename, vf, r25_multiple_x, r
         print('all savefiles will include the galaxy VFID',gal_name)
     
     #if instead the name of the galaxy is the objname (in 2D cutout filename), taken from /mnt/virgofilaments-data on virtual machine, then run the following:
-    if fits_type == 'objname':
+    elif fits_type == 'objname':
         header = hdu1[1].header
         vf_index = np.where(gal_name == vf['objname'])[0]
         r25 = vf['radius'][vf_index]  #optical, in arcseconds
         print('all savefiles will include the galaxy objname',gal_name)
     
-    #use header information to generalize conversion from arcseconds to pixels (for 12-micron, 2.75 arcsec per px),
-    len_image_arcsec = np.abs(header['NAXIS1']*header['CD1_1'])*3600
-    arcsec_per_pixel = len_image_arcsec/header['NAXIS1']
-    r25 = r25/arcsec_per_pixel
+    #if neither...then the default bar length will be 3/4 of the image height.
+    else:
+        return
+    
+    if (fits_type=='VFID') | (fits_type=='objname'):
+        #use header information to generalize conversion from arcseconds to pixels (for 12-micron, 2.75 arcsec per px),
+        len_image_arcsec = np.abs(header['NAXIS1']*header['CD1_1'])*3600
+        arcsec_per_pixel = len_image_arcsec/header['NAXIS1']
+        r25 = r25/arcsec_per_pixel
 
-    lower_bound_y = int(header['CRPIX2']-(r25_multiple_y*r25))
-    upper_bound_y = int(header['CRPIX2']+(r25_multiple_y*r25))
+        lower_bound_y = int(header['CRPIX2']-(r25_multiple_y*r25))
+        upper_bound_y = int(header['CRPIX2']+(r25_multiple_y*r25))
 
-    lower_bound_x = int(header['CRPIX1']-(r25_multiple_x*r25))
-    upper_bound_x = int(header['CRPIX1']+(r25_multiple_x*r25))
+        lower_bound_x = int(header['CRPIX1']-(r25_multiple_x*r25))
+        upper_bound_x = int(header['CRPIX1']+(r25_multiple_x*r25))
+    
+    else:
+        lower_bound_y = int(im.shape[1]-(im.shape[1]*3/4))
+        upper_bound_y = int(im.shape[1]+(im.shape[1]*3/4))
+        
+        lower_bound_x = int(im.shape[0]-(im.shape[0]*3/4))
+        upper_bound_x = int(im.shape[0]+(im.shape[0]*3/4))
 
     #first isolate pixels in this APPROXIMATE band.
     band = im[:,lower_bound_y:upper_bound_y]
@@ -75,7 +87,6 @@ def define_strips(fits_type, filepath, gal_name, filename, vf, r25_multiple_x, r
     
     return(im,lower_bound_y,upper_bound_y,lower_bound_x,upper_bound_x,strips,gal_name)
 
-
 def create_csv_file(strips, pathname, csv_savename):
     # open the file in the write mode
     with open(pathname+csv_savename, 'w') as f:
@@ -85,7 +96,6 @@ def create_csv_file(strips, pathname, csv_savename):
         for i in strips:
             writer.writerow(i)
     f.close()
-
     
 def load_csv_file(csv_savename,pathname):
     #load data as a pandas dataframe
@@ -93,7 +103,6 @@ def load_csv_file(csv_savename,pathname):
     #add column to df representing mean of each pixel strip
     df = df.assign(mean=df.mean(axis=1))
     return(df)
-
 
 '''a typical sonification mapping function
 mapping value(s) from one range to another range
@@ -104,7 +113,6 @@ map_value(5,1,10,100,200) '''
 def map_value(value, min_value, max_value, min_result, max_result):
     result = min_result + (value - min_value)/(max_value - min_value)*(max_result - min_result)
     return result
-
 
 '''now. compress time. how many strips per beat of music?
 recall that, for the example .fits, there will be 500 strips per band
@@ -121,14 +129,12 @@ def compress_time(y_data,strips_per_beat):
     #one beat = one quarter note
     return(t_data)
 
-
 #many, MANY points are around or below 0.1 once normalized, and they may likely be mapped to the same music note
 #one option: scale data points by **0.5
 def normalize_scale(y_data,y_scale):
     y_data = map_value(y_data,min(y_data),max(y_data),0,1)
     y_data_scaled = y_data**y_scale
     return(y_data,y_data_scaled)
-
 
 def visualize_data(t_data,y_data):
     plt.figure(figsize=(6,4))
@@ -139,7 +145,6 @@ def visualize_data(t_data,y_data):
     plt.grid(alpha=0.5)
     plt.legend()
     plt.show()
-
 
 def note_to_midi(y_data_scaled,note_names):
     note_midis = [str2midi(n) for n in note_names]  #list of midi note numbers
@@ -158,7 +163,6 @@ def note_to_midi(y_data_scaled,note_names):
 
     return(midi_data)
 
-
 def map_note_velocities(y_data_scaled,vel_min,vel_max):
     #map data to note velocities
     #like midi numbers, ranges from 0 to 127
@@ -169,7 +173,6 @@ def map_note_velocities(y_data_scaled,vel_min,vel_max):
         vel_data.append(note_velocity)
     
     return(vel_data)
-
 
 #save data as midi file
 def save_midi_file(t_data, midi_data, volume, bpm, midi_savename, VFID=None):
@@ -197,7 +200,6 @@ def get_midi_length(path_to_midi,midi_savename):
     #'duration' of each midi note is 2 sec, but I think time-3 seconds is preferable (at least for VFID0047)
     #but still not flawless - a bit of asynchrony remains.
     return(time-3)
-
 
 def create_animation_midi(t_data, midi_data, time, vid_name_midi):
         
@@ -227,7 +229,6 @@ def create_animation_midi(t_data, midi_data, time, vid_name_midi):
     FFWriter = animation.FFMpegWriter()
     line_anim.save(vid_name_midi,fps=len(X_VALS)/time)
     plt.close()
-
 
 def create_animation_cutout(fits_type, filepath, filename, im, lower_bound_x, upper_bound_x, lower_bound_y, upper_bound_y, time, vid_name_cutout):
     
@@ -290,34 +291,34 @@ def create_animation_cutout(fits_type, filepath, filename, im, lower_bound_x, up
     line_anim.save(vid_name_cutout,fps=len(X_VALS)/time)
     plt.close()
 
-
 def convert_to_wav(midi_savename,wav_savename,soundfont,gain=2):
     #the .sf2 file was downloaded from internet; can select alternative .sf2 files which act as converter maps between midi values and notes.
     #gain = 2; helps control volume. if run without, then resulting file is too soft. :-( 
     
     fs = FluidSynth(sound_font=soundfont, gain=gain)
-    fs.midi_to_audio(midi_savename, wav_savename)
-    
+    fs.midi_to_audio(midi_savename, wav_savename)  
     
 if __name__ == '__main__':
     
     
     if '-h' in sys.argv or '--help' in sys.argv:
-        print("Usage: %s [-param_file (name of parameter file, no single or double quotation marks)]")
+        print("Usage: %s [-param_path (path to location of the parameter file, no single or double quotation marks)] [-param_file (name of parameter file, no single or double quotation marks)]")
         sys.exit(1)
+    
+    if '-param_path' in sys.argv:
+        p = sys.argv.index('-param_path')
+        path_to_paramfile = str(sys.argv[p+1])
     
     if '-param_file' in sys.argv:
         p = sys.argv.index('-param_file')
         param_file = str(sys.argv[p+1])
     
-    
     homedir = os.getenv("HOME")
-    
     
     #create dictionary with keywords and values, from parameter .txt file
 
     param_dict = {}
-    with open(homedir+'/sonification/galaxyfits/'+param_file) as f:
+    with open(homedir+path_to_paramfile+param_file) as f:
         for line in f:
             try:
                 key = line.split()[0]
@@ -326,21 +327,18 @@ if __name__ == '__main__':
             except:
                 continue
     
-    
     #extracting parameters and assigning to variables
     
     VFID_or_objname = param_dict['VFID_or_objname']
-    
     pathname = homedir+param_dict['pathname']
-    
     filename = param_dict['filename']
     
-    
-    #note: 
     if VFID_or_objname == 'VFID':
         gal_name = filename.split('-')[1]  #isolates VFID from filename string
-    if VFID_or_objname == 'objname':
+    elif VFID_or_objname == 'objname':
         gal_name = filename.split('-')[0]  #isolates objname from filename string
+    else:
+        gal_name = 'central_obj'
     
     gal_VFID = param_dict['galaxy_VFID']
     
@@ -349,7 +347,6 @@ if __name__ == '__main__':
     csv_savename = gal_name+param_dict['csv_savename']
     
     vid_name_cutout = pathname + gal_VFID+ param_dict['vid_name_cutout']
-    
     vid_name_midi = pathname + param_dict['vid_name_midi']
     
     r25_multiple_x = float(param_dict['r25_multiple_x'])

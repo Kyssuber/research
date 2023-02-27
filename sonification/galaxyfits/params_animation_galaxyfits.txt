@@ -6,8 +6,8 @@ pathname          /NGC2273A/                              # where files are/will
 vid_name_cutout   .mp4                                    # filename of cutout video animation
 vid_name_midi     midi_notes.mp4                          # filename of midi video animation
 savedir           /Desktop/                               # directory to save full video animations
-outputvid_midi    _midi.mp4                               # desired filename of full midi video
-outputvid_cutout  _cutout.mp4                             # desired filename of full cutout video
+outputvid_midi    _midi.mp4                               # desired filename of full midi video (if no prefix, default is VFID)
+outputvid_cutout  _cutout.mp4                             # desired filename of full cutout video (if no prefix, default is VFID)
 
 #------------------------------------------- Parameters --------------------------------------------
 
