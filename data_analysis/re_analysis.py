@@ -1,5 +1,10 @@
 '''
 GOAL: analyze GALFIT output parameters for Virgowise subsample galaxies.
+
+pixel_scale = {'FUV':1.5,'NUV':1.5,'g':0.262,'r':0.262,'z':0.262,'W1':2.75,'W2':2.75,'W3':2.75,'W4':2.75}
+psf_oversampling = {'FUV':1,'NUV':1,'g':1,'r':1,'g':1,'W1':1,'W2':1,'W3':1,'W4':1}
+mag_zeropoint = {'FUV':22.5,'NUV':22.5,'g':22.5,'r':22.5,'g':22.5,'W1':22.5,'W2':22.5,'W3':22.5,'W4':22.5}
+image_resolution = {'FUV':6,'NUV':6,'g':1.5,'r':1.5,'z':1.5,'W1':6.1,'W2':6.4,'W3':6.5,'W4':12}
 '''
 
 import numpy as np
@@ -26,6 +31,8 @@ class catalogs:
         if self.conv==True:
             self.rdat = Table.read(homedir+'/output_params_r_psf.fits')
             self.w3dat = Table.read(homedir+'/output_params_W3_psf.fits')
+            
+        self.cut_cats()
             
     def cut_cats(self):
         subsample_flag = self.v2_main['sgacut_flag']
@@ -80,13 +87,13 @@ class catalogs:
         print(f'Total number of galaxies with GALFIT error flags: {int(np.sum(np.ones(len(err_flag))*err_flag))}')
         print(f'Total number of galaxies: {n_tot}')
 
-        self.sizerats = self.re_w3band_cut/self.re_rband_cut
+        self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
         self.PArats = self.PA_w3band_cut/self.PA_rband_cut
 
     def envbins(self, savefig=False):
 
         #plot num of galaxies in each bin
-        fig = plt.figure(figsize=(8,4))
+        fig = plt.figure(figsize=(10,6))
         ax = fig.add_subplot(111)
         ind=np.arange(0,5,1)
         width=0.15
@@ -96,18 +103,16 @@ class catalogs:
                                 len(self.v2_envcut[self.pgflag]), len(self.v2_envcut[self.filflag]), 
                                 len(self.v2_envcut[self.fieldflag])])
 
-        plt.scatter(x,env_bin_dat)
-        plt.title('Number of galaxies in each bin (tot='+str(len(self.v2_envcut))+')',fontsize=15)
-        plt.ylabel('# Galaxies',fontsize=15)
+        plt.scatter(x,env_bin_dat,color='purple')
+        plt.title('Number of galaxies in each bin (tot='+str(len(self.v2_envcut))+')',fontsize=18)
+        plt.ylabel('# Galaxies',fontsize=18)
 
         ax.set_xlim(-width,len(ind)-1.5*width)
         xTickMarks= ['Cluster','Rich \n Group','Poor \n Group','Filament','Field']
-        ax.set_xticks(ind+width)
-        xtickNames=ax.set_xticklabels(xTickMarks)
-        plt.setp(xtickNames,rotation=45,fontsize=13)
+        plt.xticks(ind, xTickMarks, rotation=10, fontsize=18)
         plt.xlim(-0.5,4.5)
         plt.ylim(0,200)
-        plt.grid(alpha=0.5)
+        plt.grid(color='purple',alpha=0.2)
         plt.show()
 
         if savefig==True:
@@ -165,8 +170,9 @@ class catalogs:
 
         env_names = ['cluster','rich group','poor group','filament','field']
         
-        n_bins_mag = [12,12,12,12,12]
-        n_bins_z0 = [3,12,12,12,6]
+        #n_bins_mag = [12,12,12,12,12]
+        #n_bins_z0 = [12,12,12,12,12]
+        mybins=np.linspace(7.5,11.5,12)
         
         fig = plt.figure(figsize=(15,10))
         plt.subplots_adjust(hspace=.4,wspace=.2)
@@ -178,11 +184,10 @@ class catalogs:
             if i == 5:
                 ax.set_position([0.55,0.125,0.228,0.3])
             
-            plt.hist(magphys_env_mass[i-1],bins=n_bins_mag[i-1],alpha=0.2,label='Magphys')
-            #plt.hist(magphys_env_mass[i-1][magphys_env_mass[i-1]>0],alpha=0.2,label='Magphys')
+            plt.hist(magphys_env_mass[i-1],bins=mybins,alpha=0.2,cumulative=True,density=True,label='Magphys')
             
             if z0mgs_comp==True:
-                plt.hist(z0mgs_env_mass[i-1],bins=n_bins_z0[i-1],alpha=0.2,label='z0mgs')
+                plt.hist(z0mgs_env_mass[i-1],bins=mybins,alpha=0.2,cumulative=True,density=True,label='z0mgs')
             
             if i == 1:
                 plt.legend(fontsize=18)
@@ -197,7 +202,6 @@ class catalogs:
     
 if __name__ == '__main__':
     cat = catalogs()
-    cat.cut_cats()
     cat.envbins()
     cat.env_means()
     cat.mass_hist(z0mgs_comp=True)
