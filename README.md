@@ -82,6 +82,8 @@ GOAL:
 
 ### galaxyfits
 - the first (and presently only) addition to this larger blanket project. galaxyfits consists of code that takes the fits image of a 2D galaxy cutout and traces the length of the image with a 1-px wide red bar whose height is based on the central galaxy's (OPTICAL) diameter. For each step, this bar occupies a column of pixels, with a mean value that the code maps onto a set of user-defined midi notes. The string of these notes is then converted into a .wav file, plastered onto an animation of this bar sweeping the image and synchronized as well as my wittle program can manage, and saved as a .mp4. As this text is a miserable attempt at an explanation, I include a YouTube link below to an example galaxy (NGC2273A - see video description).
+- the textfiles allow for convenient tweaking of certain parameters, such as the desired soundfont as well as the chords/midi notes. 
+- NOTE: the 'optical diameter' aspect of the code currently relies on our collaboration's VF catalog as well as the galaxies' unique VFIDs in order to extract the radii from said catalog. I include the catalog along with an example fits file in order to test the code (I cannot supply the soundfont because it is a rather hefty bugger), but users will have to manipulate the source code a bit to align with their own purposes. (I find is comedic how I am assuming that any human aside from myself will desire to use this.)
 - example: https://www.youtube.com/watch?v=ff8R6JEHp7c
 > python sonification_galaxyfits.py -param_file params_sonification_galaxyfits.txt
 
