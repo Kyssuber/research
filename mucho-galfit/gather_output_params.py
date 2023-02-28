@@ -51,6 +51,8 @@ class output_galaxy:
         #outimage = str(self.galname)+'-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.fits'
         #self.outimage=outimage
         outimage = str(self.objname)+'-'+str(self.band)+'-out1.fits'
+        if convflag==1:
+            outimage = str(self.objname)+'-'+str(self.band)+'out2.fits'
         self.outimage=outimage
         print(self.outimage)
         
@@ -137,7 +139,7 @@ if __name__ == '__main__':
     for i in range(len(cat)):        
         
         #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
-        g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], band=band) 
+        g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], convflag=convflag, band=band) 
         num_rows = int(g.ncomp)
         
         for num in range(num_rows):
@@ -155,9 +157,6 @@ if __name__ == '__main__':
         
             one_gal_table = Table(names=header,dtype=[str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float])
 
-            if convflag == 1:
-                g.outimage = str(g.galname)+str(g.band)+'-'+str(g.ncomp)+'Comp-galfit-out-conv.fits'
-
             param_rows = g.parse_galfit()
 
             for n in range(0,len(param_rows)):
@@ -171,7 +170,7 @@ if __name__ == '__main__':
                 zeroth_row_index = int(zeroth_row_index)
                 #repopulate row at this index with n
                 full_sample_table[zeroth_row_index] = param_rows[n]
-#no need for such trickery with the central galaxy table...simply add the row
+                #no need for such trickery with the central galaxy table...simply add the row
                 one_gal_table.add_row(param_rows[n])
                 
 
