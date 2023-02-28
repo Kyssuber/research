@@ -10,6 +10,7 @@ image_resolution = {'FUV':6,'NUV':6,'g':1.5,'r':1.5,'z':1.5,'W1':6.1,'W2':6.4,'W
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.table import Table
+from scipy import stats
 
 import os
 homedir = os.getenv("HOME")
@@ -24,6 +25,7 @@ class catalogs:
         self.z0mgs = Table.read(path_to_dir+'vf_v2_z0mgs.fits')
         
         self.conv = conv
+        print('Convolution: ',str(self.conv))
         
         if self.conv==False:
             self.rdat = Table.read(homedir+'/output_params_r_nopsf.fits')
@@ -33,6 +35,9 @@ class catalogs:
             self.w3dat = Table.read(homedir+'/output_params_W3_psf.fits')
             
         self.cut_cats()
+        
+        self.envbins()
+        self.env_means()
             
     def cut_cats(self):
         subsample_flag = self.v2_main['sgacut_flag']
@@ -58,21 +63,23 @@ class catalogs:
         
         n_fails_w3 = len(self.re_rband[r_flag])
         n_fails_r = len(self.re_w3band[w3_flag])
-
-        self.re_rband_cut = self.re_rband[~group_flag & ~err_flag]
-        self.re_w3band_cut = self.re_w3band[~group_flag & ~err_flag]
-
-        self.PA_rband_cut = self.PA_rband[~group_flag & ~err_flag]
-        self.PA_w3band_cut = self.PA_w3band[~group_flag & ~err_flag]
-
-        self.BA_rband_cut = self.BA_rband[~group_flag & ~err_flag]
-        self.BA_w3band_cut = self.BA_w3band[~group_flag & ~err_flag]
         
-        #apply final-ish cut to envcut and maincut catalogs
-        self.v2_envcut = self.v2_envcut[~group_flag & ~err_flag]
-        self.v2_maincut = self.v2_maincut[~group_flag & ~err_flag]
-        self.magphyscut = self.magphyscut[~group_flag & ~err_flag]
-        self.z0mgscut = self.z0mgscut[~group_flag & ~err_flag]
+        self.cut_flags = (~group_flag)&(~err_flag)
+        
+        self.re_rband_cut = self.re_rband[self.cut_flags]
+        self.re_w3band_cut = self.re_w3band[self.cut_flags]
+
+        self.PA_rband_cut = self.PA_rband[self.cut_flags]
+        self.PA_w3band_cut = self.PA_w3band[self.cut_flags]
+
+        self.BA_rband_cut = self.BA_rband[self.cut_flags]
+        self.BA_w3band_cut = self.BA_w3band[self.cut_flags]
+        
+        #apply final cut to envcut and maincut catalogs
+        self.v2_envcut = self.v2_envcut[self.cut_flags]
+        self.v2_maincut = self.v2_maincut[self.cut_flags]
+        self.magphyscut = self.magphyscut[self.cut_flags]
+        self.z0mgscut = self.z0mgscut[self.cut_flags]
         
         #define env flags
         self.clusflag = self.v2_envcut['cluster_member']
@@ -199,9 +206,92 @@ class catalogs:
         if savefig==True:
             plt.savefig('mass_hist.png',dpi=300)
  
+    def compareSGA(self,savefig=False):
+        
+        r50_sga_r = self.v2_maincut['SGA_r50_arcsec']  #arcsec
+        r50_gal_r = self.re_rband_cut.copy()*0.262 #arcsec
+        
+        plt.figure(figsize=(8,6))
+        plt.scatter(r50_sga_r,r50_gal_r,color='orange')
+        plt.axline([0, 0], [1, 1], color='black',label='1-to-1')
+        
+        plt.xlabel('SGA r50 (r-band)',fontsize=18)
+        plt.ylabel('GALFIT r50 (r-band)',fontsize=18)
+        if self.conv==True:
+            plt.title('Re Comparison (PSF)',fontsize=20)
+        if self.conv==False:
+            plt.title('Re Comparison (noPSF)',fontsize=20)
+        
+        slope, intercept, r_value, p_value, std_err = stats.linregress(r50_sga_r,r50_gal_r)
+        # Create empty plot with blank marker containing the extra label
+        plt.plot([], [], ' ', label=f'Slope (linregress) {round(slope,3)}')
+                
+        plt.legend(fontsize=16)
+                
+        plt.xscale('log')
+        plt.yscale('log')
+        
+        plt.show()
+        
+        if savefig==True:
+            plt.savefig('SGA_r50_comparison.png',dpi=300)
+    
+    def comparePSF(self,savefig=False):
+        
+        if self.conv==False:
+            self.rdat_comp = Table.read(homedir+'/output_params_r_psf.fits')
+            self.w3dat_comp = Table.read(homedir+'/output_params_W3_psf.fits')
+            xlabels = ['nopsf Re (px)','nopsf Re (px)']
+            ylabels = ['psf Re (px)','psf Re (px)']
+        if self.conv==True:
+            self.rdat_comp = Table.read(homedir+'/output_params_r_nopsf.fits')
+            self.w3dat_comp = Table.read(homedir+'/output_params_W3_nopsf.fits')
+            xlabels = ['psf Re (px)','psf Re (px)']
+            ylabels = ['nopsf Re (px)','nopsf Re (px)']
+        
+        titles = ['w3 Re Comparison','r-band Re Comparison']
+                        
+        rdat_comp = self.rdat_comp[self.cut_flags]
+        w3dat_comp = self.w3dat_comp[self.cut_flags]
+                
+        err_flag_comp_r = (rdat_comp['err_flag']==1)
+        err_flag_comp_w3 = (w3dat_comp['err_flag']==1)
+        err_flag_comp = err_flag_comp_r | err_flag_comp_w3
+        
+        re_rband_comp = rdat_comp['re'][~err_flag_comp]
+        re_w3band_comp = w3dat_comp['re'][~err_flag_comp]
+        re_rband = self.re_rband_cut.copy()[~err_flag_comp]
+        re_w3band = self.re_w3band_cut.copy()[~err_flag_comp]
+        
+        re_data_init = [re_w3band,re_rband]
+        re_data_comp = [re_w3band_comp,re_rband_comp]
+                
+        plt.figure(figsize=(14,6))
+        for panel in range(2):
+            ax = plt.subplot(1,2,panel+1)
+            plt.scatter(re_data_comp[panel], re_data_init[panel], color='crimson', alpha=0.5)
+            plt.title(titles[panel],fontsize=16)
+            ax.set_xlabel(xlabels[panel],fontsize=16)
+            ax.set_ylabel(ylabels[panel],fontsize=16)
+            ax.axline((0, 0), slope=1, label='1-to-1',color='black')
+            
+            slope, intercept, r_value, p_value, std_err = stats.linregress(re_data_comp[panel], re_data_init[panel])
+            # Create empty plot with blank marker containing the extra label
+            plt.plot([], [], ' ', label=f'Slope (linregress) {round(slope,3)}')
+            
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.legend(fontsize=14)
+        plt.show()
+ 
+        if savefig==True:
+            plt.savefig('PSF_r50_comparison',dpi=300)
+    
+    
     
 if __name__ == '__main__':
-    cat = catalogs()
-    cat.envbins()
-    cat.env_means()
+    cat = catalogs(conv=True)
+
     cat.mass_hist(z0mgs_comp=True)
+    cat.compareSGA()
+    cat.comparePSF()
