@@ -52,7 +52,7 @@ class output_galaxy:
         #self.outimage=outimage
         outimage = str(self.objname)+'-'+str(self.band)+'-out1.fits'
         if convflag==str(1):
-            outimage = str(self.objname)+'-'+str(self.band)+'out2.fits'
+            outimage = str(self.objname)+'-'+str(self.band)+'-out2.fits'
         self.outimage=outimage
         print(self.outimage)
         
