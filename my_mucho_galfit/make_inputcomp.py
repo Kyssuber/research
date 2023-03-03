@@ -314,8 +314,9 @@ if __name__ == '__main__':
 
         #if nopsf already run, then use output params as initial input parameter guesses
         #otherwise, use default guesses entered when creating gal class
+        '''
         if gal.convflag == 1:
-            params = Table.read('/mnt/astrophysics/kconger_wisesize/gal_output/output_params_'+gal.band+'_nopsf.fits')
+            params = Table.read('/mnt/astrophysics/kconger_wisesize/github/gal_output/output_params_'+gal.band+'_nopsf.fits')
             ind = np.where(cat['galname'][i] == params['galname'])[0]
             gal.xobj=params['xc'][ind]
             gal.yobj=params['yc'][ind]
@@ -329,7 +330,7 @@ if __name__ == '__main__':
                 gal.rad=params['re'][ind]
             gal.BA=params['BA'][ind]
             gal.PA=params['PA'][ind]
-        
+        '''
         print(gal.vfid)
         gal.create_output_names()
         gal.set_sky(0)
