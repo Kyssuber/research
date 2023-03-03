@@ -59,22 +59,25 @@ class galfit:
         try:
             os.chdir(self.directory+str(self.vfid_v1))
         except:
-            print('self.directory did not work')
+            print('self.directory did not work. defaulting to /mnt/astrophysics/wisesize/VFIDxxxx (xxxx is VFID_V1 code)')
             print(self.directory)
-            os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid_v1))   #use as default path...
+            os.chdir('/mnt/astrophysics/wisesize/'+str(self.vfid_v1))
+        
+        path_to_input_im = '/mnt/astrophysics/wisesize/'+str(self.vfid_v1)+'/'
         
         im = glob.glob('*'+str(self.band)+'-img-m.fits')[0]
-        self.image = im
+        self.image = path_to_input_im+im
         im_mask = glob.glob('*-m-mask.fits')[0]
-        self.mask_image = im_mask
+        self.mask_image = path_to_input_im+im_mask
 
-        self.sigma_image = glob.glob('*-std-m.fits')[0]
+        sigma_image = glob.glob('*-std-m.fits')[0]
+        self.sigma_image = path_to_input_im+sigma_image
         
         try:
-            self.invvar_image = glob.glob('*-inv-mask.fits')[0]
+            invvar_image = glob.glob('*-inv-mask.fits')[0]
+            self.invvar_image = path_to_input_im+invvar_image
         except:
             print('no invvar mask')
-        
         
         #determining arcsec-to-pixel conversion factor from im header information
         
@@ -83,7 +86,6 @@ class galfit:
         #use header information to generalize conversion from arcseconds to pixels (for 12-micron, 2.75 arcsec per px),
         len_image_arcsec = np.abs(header['NAXIS1']*header['CD1_1'])*3600
         arcsec_per_pixel = len_image_arcsec/header['NAXIS1']       
-        
         
         #determining image shape
         
@@ -103,7 +105,7 @@ class galfit:
         try: 
             os.chdir(self.gal_output_path)
         except:
-            print('self.gal_output_path did not work')
+            print('self.gal_output_path did not work. defaulting to /mnt/astrophysics/kconger_wisesize/github/gal_output')
             os.chdir('/mnt/astrophysics/kconger_wisesize/github/gal_output/')
         
         try:
@@ -112,7 +114,8 @@ class galfit:
             print('self.psf_filepath did not work')
             os.system('cp '+homedir+'/github/virgowise/sgacut_psfs/'+str(self.vfid)+'* .')
         
-        self.psf_image = glob.glob(str(self.vfid)+'*psf.fits')[0]
+        psf_image = glob.glob(str(self.vfid)+'*psf.fits')[0]
+        psf_image = self.gal_output_path+psf_image
         
         #value from original script
         self.psf_oversampling=8
@@ -310,27 +313,36 @@ if __name__ == '__main__':
     
     for i in range(0,len(cat)):
     
-        gal = galfit(galname=cat['prefix'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], r25 = cat['radius'][i], band=band, directory=directory, gal_output_path=gal_output_path, psf_filepath=psf_filepath, psf_oversampling=psf_oversampling, magzp=magzp, pscale=pscale, convflag=convflag, constraintflag=1, fitallflag=0, ncomp=1, mag=mag, rad=rad, nsersic=nsersic, BA=BA, PA=PA, fitmag=fitmag, fitcenter=fitcenter, fitrad=fitrad, fitBA=fitBA, fitPA=fitPA, fitn=fitn, first_time=0, asymmetry=asymmetry)
+        gal = galfit(galname=cat['prefix'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], 
+                     r25 = cat['radius'][i], band=band, directory=directory, gal_output_path=gal_output_path, 
+                     psf_filepath=psf_filepath, psf_oversampling=psf_oversampling, magzp=magzp, pscale=pscale, 
+                     convflag=convflag, constraintflag=1, fitallflag=0, ncomp=1, mag=mag, rad=rad, nsersic=nsersic, 
+                     BA=BA, PA=PA, fitmag=fitmag, fitcenter=fitcenter, fitrad=fitrad, fitBA=fitBA, fitPA=fitPA, 
+                     fitn=fitn, first_time=0, asymmetry=asymmetry)
 
         #if nopsf already run, then use output params as initial input parameter guesses
         #otherwise, use default guesses entered when creating gal class
-        '''
+        
         if gal.convflag == 1:
-            params = Table.read('/mnt/astrophysics/kconger_wisesize/github/gal_output/output_params_'+gal.band+'_nopsf.fits')
-            ind = np.where(cat['galname'][i] == params['galname'])[0]
-            gal.xobj=params['xc'][ind]
-            gal.yobj=params['yc'][ind]
-            gal.mag=params['mag'][ind]
-            #help prevent errors associated with unphysical nopsf output params
-            if int(params['nsersic'][ind])>5:
-                gal.nsersic=5 #restrict nser initial guess to n=5
-                gal.rad=5     #revert to default initial guess for Re
-            else:
-                gal.nsersic=params['nsersic'][ind]
-                gal.rad=params['re'][ind]
-            gal.BA=params['BA'][ind]
-            gal.PA=params['PA'][ind]
-        '''
+            print('Checking for noPSF parameter table at',gal_output_path+'output_params_'+gal.band+'_nopsf.fits','...')
+            try:
+                params = Table.read(gal.gal_output_path+'output_params_'+gal.band+'_nopsf.fits')
+                ind = np.where(cat['galname'][i] == params['galname'])[0]
+                gal.xobj=params['xc'][ind]
+                gal.yobj=params['yc'][ind]
+                gal.mag=params['mag'][ind]
+                #help prevent errors associated with unphysical nopsf output params
+                if int(params['nsersic'][ind])>5:
+                    gal.nsersic=5 #restrict nser initial guess to n=5
+                    gal.rad=5     #revert to default initial guess for Re
+                else:
+                    gal.nsersic=params['nsersic'][ind]
+                    gal.rad=params['re'][ind]
+                gal.BA=params['BA'][ind]
+                gal.PA=params['PA'][ind]
+            except:
+                print('ERROR: noPSF parameter file not found. defaulting to initial guesses in param_file.')
+        
         print(gal.vfid)
         gal.create_output_names()
         gal.set_sky(0)
