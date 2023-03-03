@@ -2,7 +2,7 @@
 
 vf_catalog       /mnt/astrophysics/muchogalfit-input-cats/sgacut_coadd.fits   # VFS subsample
 dummycat         /mnt/astrophysics/muchogalfit-input-cats/dummycat.fits       # off-centered galaxy catalog
-directory        /mnt/astrophysics/wisesize/                                  # loc. of [insert band] images
+directory        /mnt/astrophysics/wisesize/                                  # loc. of [insert band] images; dirs will have VFID_V1 names
 psf_filepath     /github/virgowise/sgacut_psfs/                               # loc. of [insert band] psfs
 gal_output_path  /mnt/astrophysics/kconger_wisesize/github/gal_output/        # where galfit output will go
 
