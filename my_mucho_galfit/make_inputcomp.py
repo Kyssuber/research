@@ -100,13 +100,14 @@ class galfit:
         psf_image = glob.glob(self.psf_filepath+str(self.vfid)+'*psf.fits')[0]
         self.psf_image = psf_image
         
-        '''
+        
         try: 
             os.chdir(self.gal_output_path)
         except:
             print('self.gal_output_path did not work. defaulting to /mnt/astrophysics/kconger_wisesize/github/gal_output')
             os.chdir('/mnt/astrophysics/kconger_wisesize/github/gal_output/')
-        
+       
+        '''
         try:
             os.system('cp '+self.psf_filepath+str(self.vfid)+'* .')
         except:
@@ -180,12 +181,7 @@ class galfit:
         if self.convflag==1:
             self.galfit_input.write('D) '+self.psf_image+'  # Input PSF image and (optional) diffusion kernel\n')
             self.galfit_input.write('E) %i                   # PSF oversampling factor relative to data\n'%(self.psf_oversampling))
-            print(self.psf_image)
         self.galfit_input.write('F) %s                # Bad Pixel Mask (i.e., obj mask; blank or "none") \n'%(self.mask_image))
-         
-         #if self.constraintflag:
-        #    self.galfit_input.write('G) /Users/rfinn/research/LocalClusters/GalfitAnalysis/sersic.constraint        # Parameter constraint file (ASCII)\n')   
-            
         self.galfit_input.write('H) '+str(int(round(self.xminfit)))+' '+str(int(round(self.xmaxfit)))+' '+str(int(round(self.yminfit)))+' '+str(int(round(self.ymaxfit)))+'     # Image region to fit (xmin xmax ymin ymax)\n')
         if self.convflag==1:
             self.galfit_input.write('I) '+str(int(round(self.convolution_size)))+' '+str(int(round(self.convolution_size)))+'             # Size of convolution box (x y)\n')
@@ -298,9 +294,7 @@ if __name__ == '__main__':
     fitBA = int(param_dict['fitBA'])
     fitPA = int(param_dict['fitPA'])
     fitcenter = int(param_dict['fitcenter'])
-    
-    print('convflag:', str(convflag))
-    
+        
     for i in range(0,len(cat)):
     
         gal = galfit(galname=cat['prefix'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], 
