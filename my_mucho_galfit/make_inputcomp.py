@@ -53,7 +53,7 @@ class galfit:
         
         try:
             os.chdir(self.directory+str(self.vfid_v1))
-            path_to_input_im = self.directory+str(self.vfid_v1)
+            path_to_input_im = self.directory+str(self.vfid_v1)+'/'
         except:
             print('self.directory did not work. defaulting to /mnt/astrophysics/wisesize/VFIDxxxx (xxxx is VFID_V1 code)')
             print(self.directory)
