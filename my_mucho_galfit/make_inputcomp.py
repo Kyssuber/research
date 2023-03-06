@@ -1,6 +1,3 @@
-
-
-
 '''
 GOAL:
 - generate galfit input scripts for sample galaxies
@@ -26,8 +23,6 @@ from astropy.wcs import WCS
 from astropy.io import ascii
 from astropy.io import fits
 import sys
-
-
 
 class galfit:
     def __init__(self, galname=None, vfid=None, vfid_v1=None, r25=None, band=None, directory=None, gal_output_path=None, psf_filepath=None, image=None, sigma_image=None, psf_image=None, psf_oversampling=None, mask_image=None, xminfit=None, yminfit=None, xmaxfit=None, ymaxfit=None, convolution_size=None, magzp=None, pscale=None, galfile=None, convflag=1, constraintflag=1, fitallflag=0, ncomp=1, xobj=None, yobj=None, mag=None, rad=None, nsersic=None, BA=None, PA=None, fitmag=1, fitcenter=1, fitrad=1, fitBA=1, fitPA=1, fitn=1, first_time=0, asymmetry=0):
@@ -126,8 +121,6 @@ class galfit:
         
         self.convflag=convflag
 
-        self.xobj=self.ximagesize/2
-        self.yobj=self.yimagesize/2
         self.mag=mag
         self.rad=rad
         self.nsersic=nsersic
@@ -146,8 +139,7 @@ class galfit:
         #self.xminfit=0
         #self.yminfit=0
         #self.convolution_size=self.ximagesize
-        
-        
+           
         #each cutout from Dustin is 500x500 px; the aim here is instruct GALFIT to only model a certain region about this central galaxy (which I quasi-arbitrarily choose to be a cutout size of 3*d25)
         xc = self.ximagesize/2
         yc = self.yimagesize/2
@@ -160,7 +152,9 @@ class galfit:
         self.xmaxfit = xc + size
         self.ymaxfit = yc + size
         self.convolution_size = self.xmaxfit - self.xminfit
-
+        
+        self.xobj=(self.xmaxfit-self.xminfit)/2
+        self.yobj=(self.ymaxfit-self.yminfit)/2
 
     def create_output_names(self):
         if self.asymmetry == 1:
@@ -168,12 +162,10 @@ class galfit:
         elif self.convflag == 1:
             self.output_image=str(self.galname)+'-'+ str(self.band)+'-'+ str(self.ncomp) +'Comp-galfit-out-conv.fits'
         else:
-            self.output_image=str(self.galname)+'-'+ str(self.band)+'-'+ str(self.ncomp) +'Comp-galfit-out.fits'
-            
+            self.output_image=str(self.galname)+'-'+ str(self.band)+'-'+ str(self.ncomp) +'Comp-galfit-out.fits'      
 
     def open_galfit_input(self):
         self.galfit_input=open(self.galfile,'w')
-
 
     def write_image_params(self): 
         
@@ -198,11 +190,9 @@ class galfit:
         self.galfit_input.write('O) regular                # Display type (regular, curses, both)\n')
         self.galfit_input.write('P) 0                   # Create output image only? (1=yes; 0=optimize) \n')
         self.galfit_input.write('S) 0                   # Modify/create objects interactively?\n')
-
         
     def set_sky(self,sky):
         self.sky=sky
-
 
     def write_sersic(self,objnumber,profile):
 
@@ -222,7 +212,6 @@ class galfit:
             self.galfit_input.write('F1) 0.0001 0.00   1  1     # azim. Fourier mode 1, amplitude & phase angle \n')
         self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")
         
-
     def write_sky(self,objnumber):
         self.galfit_input.write(' \n')
         self.galfit_input.write('# Object number: %i \n'%(objnumber))
@@ -231,7 +220,6 @@ class galfit:
         self.galfit_input.write(' 2) 0      0       # dsky/dx (sky gradient in x)    \n')
         self.galfit_input.write(' 3) 0      0       # dsky/dy (sky gradient in y) \n')
         self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")
-
 
     def add_simple_sersic_object(self,objnumber,profile,x,y,mag,rad,nsersic,BA,PA):
         self.galfit_input.write(' \n')
@@ -245,10 +233,8 @@ class galfit:
         self.galfit_input.write('10) %5.2f       1       # position angle (PA)  [Degrees: Up=0, Left=90] \n'%(PA))
         self.galfit_input.write(" Z) 0                  # Output option (0 = residual, 1 = Don't subtract)  \n")
 
-
     def close_input_file(self):
         self.galfit_input.close()
-
 
 if __name__ == '__main__':    
     
@@ -258,8 +244,7 @@ if __name__ == '__main__':
     
     if '-param_file' in sys.argv:
         p = sys.argv.index('-param_file')
-        param_file = str(sys.argv[p+1])
-    
+        param_file = str(sys.argv[p+1]) 
     
     homedir = os.getenv("HOME")
        
@@ -309,7 +294,6 @@ if __name__ == '__main__':
     fitBA = int(param_dict['fitBA'])
     fitPA = int(param_dict['fitPA'])
     fitcenter = int(param_dict['fitcenter'])
-    
     
     for i in range(0,len(cat)):
     
