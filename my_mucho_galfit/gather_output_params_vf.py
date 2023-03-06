@@ -37,7 +37,7 @@ class output_galaxy:
         else:
             self.ncomp=ncomp
         
-        self.ncomp=ncomp
+        #self.ncomp=ncomp
         
         #if band is an integer, than prepend with w to indicate that the 'band' is a WISE channel
         self.band = band
