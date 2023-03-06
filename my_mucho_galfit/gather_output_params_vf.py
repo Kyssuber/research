@@ -43,7 +43,7 @@ class output_galaxy:
         self.band = band
         
         outimage = str(self.galname)+'-'+ str(self.band)+'-'+ str(self.ncomp) +'Comp-galfit-out.fits'
-        if convflag==str(1):
+        if int(convflag)==1:
             outimage = str(self.galname)+'-'+ str(self.band)+'-'+ str(self.ncomp) +'Comp-galfit-out-conv.fits'
         
         self.outimage=outimage
