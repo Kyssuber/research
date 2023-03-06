@@ -156,8 +156,6 @@ if __name__ == '__main__':
         #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
         g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], convflag=convflag, band=band) 
         num_rows = int(g.ncomp)
-        g.outimage = gal_output_path+g.outimage
-        print(str(convflag))
         for num in range(num_rows):
             zero_row = np.zeros(len(dtype))
             zero_row = np.ndarray.tolist(zero_row) #convert to list, as the np array is all floats and won't allow the zeroth index element to be replaced with a string.
@@ -173,22 +171,22 @@ if __name__ == '__main__':
             print(gal_output_path,'not found. defaulting to '+galfit_dir)
             os.chdir(galfit_dir)
         
-            param_rows = g.parse_galfit()
+        param_rows = g.parse_galfit()
 
-            for n in range(0,len(param_rows)):
-                
-                '''FUNCTIONALITY EXAMPLE: if ncomp=2, then there should be 2 additional zero rows for ith galaxy, appended at the bottom of the table. 
-                Beginning with n=1 (central galaxy), its corresponding zeroth row will be at index tab_length - (n) - 1. the -1 is to accommodate the length being some number N but the final index of the table being N-1.
-                We replace that row of zeros with the output parameters, if the galaxy output directory exists, then proceed to the n=2 galaxy. repeat.'''
-                
-                current_table_length = len(full_sample_table)   #determine current number of populated rows
-                zeroth_row_index = current_table_length-n-1     #identify the index of the row to be populated
-                zeroth_row_index = int(zeroth_row_index)        #convert to integer, just in case
-                
-                #repopulate row at this index with n
-                full_sample_table[zeroth_row_index] = param_rows[n]
-            
-            index=len(full_sample_table)-1
+        for n in range(0,len(param_rows)):
+
+            '''FUNCTIONALITY EXAMPLE: if ncomp=2, then there should be 2 additional zero rows for ith galaxy, appended at the bottom of the table. 
+            Beginning with n=1 (central galaxy), its corresponding zeroth row will be at index tab_length - (n) - 1. the -1 is to accommodate the length being some number N but the final index of the table being N-1.
+            We replace that row of zeros with the output parameters, if the galaxy output directory exists, then proceed to the n=2 galaxy. repeat.'''
+
+            current_table_length = len(full_sample_table)   #determine current number of populated rows
+            zeroth_row_index = current_table_length-n-1     #identify the index of the row to be populated
+            zeroth_row_index = int(zeroth_row_index)        #convert to integer, just in case
+
+            #repopulate row at this index with n
+            full_sample_table[zeroth_row_index] = param_rows[n]
+
+        index=len(full_sample_table)-1
                    
     band=g.band  
         
