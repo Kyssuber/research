@@ -195,6 +195,7 @@ if __name__ == '__main__':
     for name in full_sample_table['VFID']:
         if 'index' in name:
             print('external ID not in vf catalog, removed')
+            print(np.where(full_sample_table['VFID']==name)[0])
             full_sample_table.remove_row(np.where(full_sample_table['VFID']==name)[0])
             
     if int(convflag) == 1:
