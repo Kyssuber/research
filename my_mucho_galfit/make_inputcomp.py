@@ -312,8 +312,6 @@ if __name__ == '__main__':
             print('Checking for noPSF parameter table at',gal_output_path+'output_params_'+gal.band+'_nopsf.fits','...')
             try:
                 params = Table.read(gal.gal_output_path+'output_params_'+gal.band+'_nopsf.fits')
-                print(cat['galname'])
-                print(cat['VFID'])
                 ind = np.where(cat['VFID'][i] == params['VFID'])[0]
                 print(ind)
                 gal.xobj=params['xc'][ind]
