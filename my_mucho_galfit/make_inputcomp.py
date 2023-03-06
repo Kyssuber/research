@@ -110,7 +110,7 @@ class galfit:
             os.system('cp '+homedir+'/github/virgowise/sgacut_psfs/'+str(self.vfid)+'* .')
         
         psf_image = glob.glob(str(self.vfid)+'*psf.fits')[0]
-        psf_image = self.gal_output_path+psf_image
+        self.psf_image = self.gal_output_path+psf_image
         
         #value from original script
         self.psf_oversampling=8
