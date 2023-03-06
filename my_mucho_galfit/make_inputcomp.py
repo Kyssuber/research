@@ -307,11 +307,13 @@ if __name__ == '__main__':
 
         #if nopsf already run, then use output params as initial input parameter guesses
         #otherwise, use default guesses entered when creating gal class
-        
-        if gal.convflag == 1:
+        print(str(gal.convflag))
+        if int(gal.convflag) == 1:
             print('Checking for noPSF parameter table at',gal_output_path+'output_params_'+gal.band+'_nopsf.fits','...')
             try:
+                print('reading in table')
                 params = Table.read(gal.gal_output_path+'output_params_'+gal.band+'_nopsf.fits')
+                print('params have been read')
                 ind = np.where(cat['galname'][i] == params['galname'])[0]
                 print(ind)
                 gal.xobj=params['xc'][ind]
