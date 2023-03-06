@@ -22,7 +22,6 @@ from astropy.io import fits
 homedir = os.getenv("HOME")
 
 header = ['VFID','xc','xc_err','yc','yc_err','mag','mag_err','re','re_err','nsersic','nsersic_err','BA','BA_err','PA','PA_er','sky','sky_err','err_flag','chi2nu','central_flag']
-    
 
 class output_galaxy:
     def __init__(self,galname=None,vfid=None,objname=None,vfid_v1=None,outimage=None,convflag=None,band='W3',ncomp=1):
@@ -79,6 +78,7 @@ class output_galaxy:
                 temp.append(dummycat['ID'][index])   #append the name (ID) of the external galaxy
             
             image_header = fits.getheader(self.outimage,2)
+            print(image_header)
             for hkey in header_keywords[n]:
                 s=str(image_header[hkey])
                 if s.find('[') > -1:
