@@ -76,9 +76,7 @@ class output_galaxy:
                 indices = np.where(dummycat['central galaxy'] == self.vfid)[0]  #find where external(s) have self.vfid as 'host'
                 index = indices[n-1]   #only want one index; if n=1, then we want the first external galaxy, meaning the 0th element in the indices list
                 temp.append(dummycat['ID'][index])   #append the name (ID) of the external galaxy
-            print(self.outimage)
             image_header = fits.getheader(self.outimage,2)
-            print(image_header)
             for hkey in header_keywords[n]:
                 s=str(image_header[hkey])
                 if s.find('[') > -1:
