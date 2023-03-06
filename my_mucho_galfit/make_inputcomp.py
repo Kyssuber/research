@@ -99,8 +99,7 @@ class galfit:
         
         psf_image = glob.glob(self.psf_filepath+str(self.vfid)+'*psf.fits')[0]
         print(psf_image)
-        self.psf_image = self.psf_filepath+psf_image
-        print(self.psf_image)
+        self.psf_image = psf_image
         
         '''
         try: 
