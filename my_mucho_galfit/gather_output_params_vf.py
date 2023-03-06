@@ -76,7 +76,7 @@ class output_galaxy:
                 indices = np.where(dummycat['central galaxy'] == self.vfid)[0]  #find where external(s) have self.vfid as 'host'
                 index = indices[n-1]   #only want one index; if n=1, then we want the first external galaxy, meaning the 0th element in the indices list
                 temp.append(dummycat['ID'][index])   #append the name (ID) of the external galaxy
-            
+            print(self.outimage)
             image_header = fits.getheader(self.outimage,2)
             print(image_header)
             for hkey in header_keywords[n]:
@@ -156,6 +156,7 @@ if __name__ == '__main__':
         #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
         g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], convflag=convflag, band=band) 
         num_rows = int(g.ncomp)
+        g.out_image = gal_output_path+g.out_image
         print(str(convflag))
         for num in range(num_rows):
             zero_row = np.zeros(len(dtype))
