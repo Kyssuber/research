@@ -97,6 +97,9 @@ class galfit:
         self.gal_output_path = gal_output_path
         self.psf_filepath = psf_filepath
         
+        self.psf_image = glob.glob(self.psf_filepath+str(self.vfid)+'*psf.fits')[0]
+        
+        '''
         try: 
             os.chdir(self.gal_output_path)
         except:
@@ -111,6 +114,7 @@ class galfit:
         
         psf_image = glob.glob(str(self.vfid)+'*psf.fits')[0]
         self.psf_image = self.gal_output_path+psf_image
+        '''
         
         #value from original script
         self.psf_oversampling=8
@@ -173,7 +177,7 @@ class galfit:
         self.galfit_input.write('B) '+self.output_image+'       # Name for the output image\n')
         self.galfit_input.write('C) %s                # Sigma image name (made from data if blank or "none") \n'%(self.sigma_image))
         if self.convflag==1:
-            self.galfit_input.write('D) '+self.psf_image+'     # Input PSF image and (optional) diffusion kernel\n')
+            self.galfit_input.write('D) '+self.psf_image+'  # Input PSF image and (optional) diffusion kernel\n')
             self.galfit_input.write('E) %i                   # PSF oversampling factor relative to data\n'%(self.psf_oversampling))
             
         self.galfit_input.write('F) %s                # Bad Pixel Mask (i.e., obj mask; blank or "none") \n'%(self.mask_image))
