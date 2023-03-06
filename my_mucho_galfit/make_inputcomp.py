@@ -250,7 +250,7 @@ if __name__ == '__main__':
     #create dictionary with keywords and values, from parameter .txt file
 
     param_dict = {}
-    with open(homedir+'/'+param_file) as f:
+    with open(param_file) as f:
         for line in f:
             try:
                 key = line.split()[0]
