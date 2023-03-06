@@ -10,6 +10,7 @@ GOAL:
 '''
 
 import numpy as np
+import sys
 import os
 import glob
 from astropy.table import Table
@@ -32,7 +33,7 @@ class output_galaxy:
         self.vfid_v1=vfid_v1
         
         if vfid in dummycat['central galaxy']:
-            self.ncomp = len(np.where(dummycat['central galaxy'] == vfid)[0]) + 1
+            self.ncomp = len(np.where(dummycat['central galaxy'] == self.vfid)[0]) + 1
         else:
             self.ncomp=ncomp
         
