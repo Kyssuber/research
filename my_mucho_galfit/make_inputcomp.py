@@ -25,7 +25,7 @@ from astropy.io import fits
 import sys
 
 class galfit:
-    def __init__(self, galname=None, vfid=None, vfid_v1=None, r25=None, band=None, directory=None, gal_output_path=None, psf_filepath=None, image=None, sigma_image=None, psf_image=None, psf_oversampling=None, mask_image=None, xminfit=None, yminfit=None, xmaxfit=None, ymaxfit=None, convolution_size=None, magzp=None, pscale=None, galfile=None, convflag=1, constraintflag=1, fitallflag=0, ncomp=1, xobj=None, yobj=None, mag=None, rad=None, nsersic=None, BA=None, PA=None, fitmag=1, fitcenter=1, fitrad=1, fitBA=1, fitPA=1, fitn=1, first_time=0, asymmetry=0):
+    def __init__(self, galname=None, vfid=None, vfid_v1=None, r25=None, band=None, directory=None, gal_output_path=None, psf_filepath=None, image=None, sigma_image=None, psf_image=None, psf_oversampling=None, mask_image=None, xminfit=None, yminfit=None, xmaxfit=None, ymaxfit=None, convolution_size=None, magzp=None, pscale=None, galfile=None, convflag=None, constraintflag=1, fitallflag=0, ncomp=1, xobj=None, yobj=None, mag=None, rad=None, nsersic=None, BA=None, PA=None, fitmag=1, fitcenter=1, fitrad=1, fitBA=1, fitPA=1, fitn=1, first_time=0, asymmetry=0):
         
         self.galname=galname
         self.vfid=vfid
@@ -293,6 +293,8 @@ if __name__ == '__main__':
     fitBA = int(param_dict['fitBA'])
     fitPA = int(param_dict['fitPA'])
     fitcenter = int(param_dict['fitcenter'])
+    
+    print('convflag:', str(convflag))
     
     for i in range(0,len(cat)):
     
