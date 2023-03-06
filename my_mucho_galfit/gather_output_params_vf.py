@@ -72,7 +72,7 @@ class output_galaxy:
         for n in range(self.ncomp):
             temp=[]
             if n == 0:
-                temp.append(self.galname)   #if no external galaxies, only include central galaxy; if external galaxies, then first index will represent the central galaxy...then proceed to next index.
+                temp.append(self.galname[0:8])   #if no external galaxies, only include central galaxy; if external galaxies, then first index will represent the central galaxy...then proceed to next index.
             else:
                 indices = np.where(dummycat['central galaxy'] == self.vfid)[0]  #find where external(s) have self.vfid as 'host'
                 index = indices[n-1]   #only want one index; if n=1, then we want the first external galaxy, meaning the 0th element in the indices list
@@ -156,7 +156,7 @@ if __name__ == '__main__':
         #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
         g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], convflag=convflag, band=band) 
         num_rows = int(g.ncomp)
-        
+        print(str(conflag))
         for num in range(num_rows):
             zero_row = np.zeros(len(dtype))
             zero_row = np.ndarray.tolist(zero_row) #convert to list, as the np array is all floats and won't allow the zeroth index element to be replaced with a string.
