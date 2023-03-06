@@ -120,7 +120,9 @@ class galfit:
         self.pscale=pscale
         
         self.convflag=convflag
-
+        
+        self.xobj=self.ximagesize/2
+        self.yobj=self.yimagesize/2
         self.mag=mag
         self.rad=rad
         self.nsersic=nsersic
@@ -152,9 +154,6 @@ class galfit:
         self.xmaxfit = xc + size
         self.ymaxfit = yc + size
         self.convolution_size = self.xmaxfit - self.xminfit
-        
-        self.xobj=(self.xmaxfit-self.xminfit)/2
-        self.yobj=(self.ymaxfit-self.yminfit)/2
 
     def create_output_names(self):
         if self.asymmetry == 1:
