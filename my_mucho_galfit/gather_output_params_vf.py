@@ -166,7 +166,7 @@ if __name__ == '__main__':
         #if path exists (os.path.exists() returns True), then galaxy directory exists...
         #helpful for testing purposes
         galfit_dir = '/mnt/astrophysics/kconger_wisesize/github/gal_output/'
-        if os.path.isfile(gal_output_path):
+        if os.path.exists(gal_output_path):
             os.chdir(gal_output_path)
         else:
             print(gal_output_path,'not found. defaulting to '+galfit_dir)
