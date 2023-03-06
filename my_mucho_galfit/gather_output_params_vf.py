@@ -201,4 +201,4 @@ if __name__ == '__main__':
     if int(convflag) == 1:
         full_sample_table.write(gal_output_path+'output_params_'+band+'_psf.fits', format='fits', overwrite=True)
     if int(convflag) == 0:
-        full_sample_table.write(galfit_output_path+'output_params_'+band+'_nopsf.fits', format='fits', overwrite=True)
+        full_sample_table.write(gal_output_path+'output_params_'+band+'_nopsf.fits', format='fits', overwrite=True)
