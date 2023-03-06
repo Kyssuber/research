@@ -156,7 +156,7 @@ if __name__ == '__main__':
         #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
         g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], convflag=convflag, band=band) 
         num_rows = int(g.ncomp)
-        g.out_image = gal_output_path+g.out_image
+        g.outimage = gal_output_path+g.outimage
         print(str(convflag))
         for num in range(num_rows):
             zero_row = np.zeros(len(dtype))
