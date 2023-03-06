@@ -33,6 +33,8 @@ def run_galfit(cat,gal_output_path):
         except:
             os.chdir('/mnt/astrophysics/kconger_wisesize/github/gal_output/')
         
+        input_script = glob.glob(cat['VFID'][i]+'*'+'galfit.input.'+'*')[0]
+        
         s = 'galfit '+input_script
         print('Executing: '+s)
         os.system(s)
