@@ -313,6 +313,7 @@ if __name__ == '__main__':
             try:
                 params = Table.read(gal.gal_output_path+'output_params_'+gal.band+'_nopsf.fits')
                 ind = np.where(cat['galname'][i] == params['galname'])[0]
+                print(ind)
                 gal.xobj=params['xc'][ind]
                 gal.yobj=params['yc'][ind]
                 gal.mag=params['mag'][ind]
