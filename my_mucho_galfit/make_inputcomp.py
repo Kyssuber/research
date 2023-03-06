@@ -78,7 +78,7 @@ class galfit:
         
         hdu1=fits.open(self.image)
         header = hdu1[0].header
-        #use header information to generalize conversion from arcseconds to pixels (for 12-micron, 2.75 arcsec per px),
+        #use header  information to generalize conversion from arcseconds to pixels (for 12-micron, 2.75 arcsec per px),
         len_image_arcsec = np.abs(header['NAXIS1']*header['CD1_1'])*3600
         arcsec_per_pixel = len_image_arcsec/header['NAXIS1']       
         
@@ -98,6 +98,7 @@ class galfit:
         self.psf_filepath = psf_filepath
         
         psf_image = glob.glob(self.psf_filepath+str(self.vfid)+'*psf.fits')[0]
+        print(psf_image)
         self.psf_image = self.psf_filepath+psf_image
         print(self.psf_image)
         
