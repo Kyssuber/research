@@ -99,6 +99,7 @@ class galfit:
         
         psf_image = glob.glob(self.psf_filepath+str(self.vfid)+'*psf.fits')[0]
         self.psf_image = self.psf_filepath+psf_image
+        print(self.psf_image)
         
         '''
         try: 
@@ -180,7 +181,7 @@ class galfit:
         if self.convflag==1:
             self.galfit_input.write('D) '+self.psf_image+'  # Input PSF image and (optional) diffusion kernel\n')
             self.galfit_input.write('E) %i                   # PSF oversampling factor relative to data\n'%(self.psf_oversampling))
-            
+            print(self.psf_image)
         self.galfit_input.write('F) %s                # Bad Pixel Mask (i.e., obj mask; blank or "none") \n'%(self.mask_image))
          
          #if self.constraintflag:
