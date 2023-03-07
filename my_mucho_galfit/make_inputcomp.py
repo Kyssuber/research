@@ -106,17 +106,6 @@ class galfit:
         except:
             print('self.gal_output_path did not work. defaulting to /mnt/astrophysics/kconger_wisesize/github/gal_output')
             os.chdir('/mnt/astrophysics/kconger_wisesize/github/gal_output/')
-       
-        '''
-        try:
-            os.system('cp '+self.psf_filepath+str(self.vfid)+'* .')
-        except:
-            print('self.psf_filepath did not work')
-            os.system('cp '+homedir+'/github/virgowise/sgacut_psfs/'+str(self.vfid)+'* .')
-        
-        psf_image = glob.glob(str(self.vfid)+'*psf.fits')[0]
-        self.psf_image = self.gal_output_path+psf_image
-        '''
         
         #value from original script
         self.psf_oversampling=8
@@ -142,11 +131,11 @@ class galfit:
         self.fitPA=fitPA
         
         # default max and min fits
-        #self.xmaxfit=self.ximagesize
-        #self.ymaxfit=self.yimagesize
-        #self.xminfit=0
-        #self.yminfit=0
-        #self.convolution_size=self.ximagesize
+        self.xmaxfit=self.ximagesize
+        self.ymaxfit=self.yimagesize
+        self.xminfit=0
+        self.yminfit=0
+        self.convolution_size=self.ximagesize
            
         #each cutout from Dustin is 500x500 px; the aim here is instruct GALFIT to only model a certain region about this central galaxy (which I quasi-arbitrarily choose to be a cutout size of 3*d25)
         xc = self.ximagesize/2
@@ -155,11 +144,16 @@ class galfit:
         #convert arcseconds to pixels
         r25_px = self.r25/arcsec_per_pixel     #see about 70 lines above for conversion factor
         size = r25_px * 3
-        self.xminfit = xc - size
-        self.yminfit = yc - size
-        self.xmaxfit = xc + size
-        self.ymaxfit = yc + size
-        self.convolution_size = self.xmaxfit - self.xminfit
+        if (xc-size)>=0:
+            self.xminfit = xc - size
+        if (yc-size)>=0:
+            self.yminfit = yc - size
+        if (xc+size)<=self.ximagesize:
+            self.xmaxfit = xc + size
+        if (yc+size)<=self.yimagesize:    
+            self.ymaxfit = yc + size
+        if (self.xmaxfit-self.xminfit)<=self.ximagesize:
+            self.convolution_size = self.xmaxfit - self.xminfit
 
     def create_output_names(self):
         if self.asymmetry == 1:
