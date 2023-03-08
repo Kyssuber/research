@@ -79,11 +79,14 @@ class output_galaxy:
             image_header = fits.getheader(self.outimage,2)
             for hkey in header_keywords[n]:
                 s=str(image_header[hkey])
+                #if I held n constant at 5 due to a nopsf error in which n-->20, the procedure will be a wee different.
                 if s.find('[') > -1:
                     s=s.replace('[','')
                     s=s.replace(']','')
                     t=s.split('+/-')
                     values=(float(t[0]),0.)# fit and error
+                    temp.append(values[0])
+                    temp.append(values[1])
                 else:
                     t=s.split('+/-')
                     try:
