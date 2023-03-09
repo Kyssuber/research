@@ -44,4 +44,4 @@ for i in range(len(finalcat)):
     # write out one line with VFID, objname, RA, DEC, wavelength
     output_string = finalcat['VFID'][i] + ' ' + finalcat['objname'][i] + ' ' + str(finalcat['RA_1'][i]) + ' ' + str(finalcat['DEC_1'][i]) + ' ' + str(wavelength) + ' \n'.format()
     sourcelist.write(output_string)
-    sourcelist.close()    
+    sourcelist.close()

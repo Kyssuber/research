@@ -19,6 +19,8 @@ import matplotlib.image as mpimg
 from astropy.wcs import WCS
 from scipy.stats import scoreatpercentile
 from astropy.visualization import simple_norm
+from reproject import reproject_interp
+
 '''
 #NOTES:
 #need some way to filter out the group galaxies, or at least disable the hyperlink on homepage that would otherwise lead to galfit params. also dummycat...
@@ -35,7 +37,7 @@ class HomePage(homepage_name='home_local.html'catalog=None,dummycat=None,local_p
         
         self.local_path = local_path   #path to the folder containing html folder when running the website locally
         self.homepage_name = homepage_name
-        self.mask_mosaics = self.local_path+mask_folder   #path to the folder holding the mask mosaics
+        self.mask_mosaics = self.local_path+mask_folder   #path to the folder holding the .png mask mosaics
         self.LS_mosaics = self.local_path+LS_mosaic_folder   #contains mosaics of w3 cutout, r-band cutout, and LS cutout
         self.htmlpath = self.local_path+self.homepage_name   #path to homepage html
         self.fits_folder = fits_folder   #path to all w3, r-band postage stamps
@@ -146,8 +148,12 @@ class GalPage(galaxy_index=None, page_name=None, catalog=None, dummycat=None, lo
             image = wget.download(image_url,out=self.filename_LS)
     
     def create_LS_mosaics(self):
+        
+        #first must be sure that r-band is projected onto w3 coordinates (ensures all images have same size)
+        r_scaled, footprint = reproject_interp((self.r_im, self.r_header), wise_hdu.header)
+        
         titles = ['W3 Image', 'r-band Image', 'LS Image']
-        images = [self.wise_im, self.r_im, self.filename_LS]
+        images = [self.wise_im, r_scaled, self.filename_LS]
         
         plt.figure(figsize=(12,6))
         for i,im in enumerate(images):
@@ -246,28 +252,21 @@ class GalPage(galaxy_index=None, page_name=None, catalog=None, dummycat=None, lo
                 ax.set_yticks([])
             plt.title(titles[i],fontsize=16)
         plt.savefig(pngname,dpi=300)
-        plt.close()
-        
-        
-        #self.gal_mosaic_folder
-        
-        
-        #w3 nopsf
-        #w3 psf
-        #r-band nopsf
-        #r-band psf
-        return
-    
-    
+        plt.close()    
     
     def create_mask_mosaics(self):
-        #w3 nopsf
-        #w3 psf
-        #r-band nopsf
-        #r-band psf
+        print('Under development, pending completion of masking.')
+        #w3
+        #r-band
         return
     
     def tablulate_parameters(self):
+        
+        self.w3params_nopsf = self.path_to_params+'/'
+        self.w3params_psf = self.path_to_params+'/'
+        self.rparams_nopsf = self.path_to_params+'/'
+        self.rparams_psf = self.path_to_params+'/'
+        
         #w3 nopsf
         #w3 psf
         #r-band nopsf

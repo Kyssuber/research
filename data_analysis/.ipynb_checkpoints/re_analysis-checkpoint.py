@@ -33,13 +33,13 @@ class catalogs:
         if self.conv==False:
             self.rdat = Table.read(homedir+'/output_params_r_nopsf.fits')
             self.w3dat = Table.read(homedir+'/output_params_W3_nopsf.fits')
+            self.kimparams = Table.read(homedir+'/kimparams_nopsf.fits')   #my nopsf galfit parameters
         if self.conv==True:
             self.rdat = Table.read(homedir+'/output_params_r_psf.fits')
             self.w3dat = Table.read(homedir+'/output_params_W3_psf.fits')
+            self.kimparams = Table.read(homedir+'/kimparams_psf.fits')   #my psf galfit parameters
         
-        self.roseparams = Table.read(homedir+'/output_params_W3_nopsf.fits') #Rose's nopsf parameters; if conv=False, read twice
-        self.kimparams = Table.read(path_to_dir+'/kimparams_nopsf.fits')   #my nopsf galfit parameters to compare with Rose's
-        
+        self.roseparams = self.w3dat.copy()        
         self.cut_cats()
             
     def cut_cats(self):
@@ -338,7 +338,10 @@ class catalogs:
         
         plt.xlabel('Kim w3 Parameters (masking)',fontsize=18)
         plt.ylabel('Rose w3 Parameters (no masking)',fontsize=18)
-        plt.title('Re Comparison',fontsize=20)
+        if self.conv==True:
+            plt.title('Re Comparison (PSF)',fontsize=20)
+        if self.conv==False:
+            plt.title('Re Comparison (noPSF)',fontsize=20)
         plt.show()
 
         if savefig==True:

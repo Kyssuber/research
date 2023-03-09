@@ -1,17 +1,3 @@
-what to add:
-
-pathname (where the main/home html file will be located) --> LOCAL
-htmlpath (where html files will be written and stored) --> VIRTUAL MACHINE
-maskpath (path to mask mosaic) --> LOCAL
-LSpath (path to LS mosaic) --> LOCAL
-stamppath (path to LS optical cutouts) --> LOCAL
-galhtmlpath (path to folder containing all galaxy html files, including main/home) --> LOCAL
-mosaicpath (path to folder containing .png galfit mosaics) --> LOCAL
-
---will have to create mask mosaics
---need LS mosaics? 
---when creating wavelength band mosaics, be sure cutouts are same dimensions!
-
 html_main (desired name of html main filename, append .html)
 html_gal (desired name of html galaxy filename, append.html)
 
