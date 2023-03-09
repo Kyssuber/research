@@ -13,7 +13,7 @@ magzp              22.5                                                       # 
 convflag           1                                                          # 0 for conv, 1 for conv
 asymmetry          0                                                          # asymmetric fit?
 pscale             0.344                                                      # not too sure. pixel scale?
-psf_oversampling   8                                                          # value taken from Rose's code
+psf_oversampling   1                                                          # value taken from Rose's code
 
 #--------------------------------------------- Initial Guesses ---------------------------------------------
 

@@ -107,8 +107,8 @@ class galfit:
             print('self.gal_output_path did not work. defaulting to /mnt/astrophysics/kconger_wisesize/github/gal_output')
             os.chdir('/mnt/astrophysics/kconger_wisesize/github/gal_output/')
         
-        #value from original script
-        self.psf_oversampling=8
+        #value of psf pixelscale relative to cutout; GALFIT works in pixel scales, so if the PSF scale is 1-to-8 of the cutouts (as with the default psf image) then self.psf_oversampling=8. if scale is the same, then self-psf_oversampling=1.
+        self.psf_oversampling=psf_oversampling
         
         #for WISE
         self.magzp=magzp     #magnitude zeropoint
