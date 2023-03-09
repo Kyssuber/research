@@ -32,6 +32,9 @@ class HomePage(homepage_name='home_local.html'catalog=None,dummycat=None,local_p
     
     def __init__(self):
         
+        #index = 0 for w3_nopsf, 1 for w3_psf, 2 for r_nopsf, 3 for r_psf --> add this key to params.txt
+        self.indices = indices
+        
         self.cat = catalog   #vf subsample catalog
         self.dummycat = dummycat   #catalog flagging galaxies with 2+ Sersic objects in their cutouts
         
@@ -46,10 +49,14 @@ class HomePage(homepage_name='home_local.html'catalog=None,dummycat=None,local_p
         self.path_to_params = path_to_params   #path to galfit output parameter files
         self.LS_cutouts = self.local_path+LS_cutout_folder   #will contain the .png files of LS cutouts        
         
-        self.group_flag = (self.path_to_params['xc'] == 0)   #the first run of galfit did not produce any params if the filename include the word 'group.' this flag will filter out these galaxies (or simply leave them be once problem is resolved).
-        
-        self.cutcat = self.cat[self.group_flag]     
-    
+        #call one of the parameter textfiles in order to identify galaxies belonging to groups.
+        self.w3params_nopsf = Table.read(self.path_to_params+'/output_params_W3_nopsf.fits')        
+        self.params_w3_nopsf = Table.read(self.w3params_nopsf)
+
+        #if I am using the v2_snrcoadd.fits file, the length is 6780
+        if len(self.cat)>702:
+            self.cutcat = self.cat[self.cat['sgacut_flag']]
+            
     def html_setup(self):
         
         with open(self.htmlpath, 'w') as html:
@@ -72,12 +79,18 @@ class HomePage(homepage_name='home_local.html'catalog=None,dummycat=None,local_p
                 
                 html.write('<td><img src = "' + self.LS_cutouts + str(self.cutcat['VFID'][i]) + '-LS.jpg' + '" height="50%" width = "50%"></img></td>\n')   #cutouts will have the name VFIDxxxx-LS.png, using the v2 IDs
                 
-                #CREATE SINGLE GALPAGE using the GalPage class (see below)
-                single_galpage = GalPage(galaxy_index=i, page_name=self.cutcat['VFID'][i]+'.html', catalog=self.cutcat, dummycat=self.dummycat, local_path=self.local_path, LS_mosaic_folder=self.LS_mosaics, mask_folder=self.mask_mosaics, fits_folder = self.fits_folder, gal_mosaic_folder=self.gal_mosaic_folder)
+                #if galaxy is part of a group, then all parameters will be zeros, and heaps of trouble in terms of generating the galaxy page arises. As such, we effectively disable the hyperlinks in these cases.
+                if self.params_w3_nopsf['xc']>0:
+                    
+                    #CREATE SINGLE GALPAGE using the GalPage class (see below)
+                    single_galpage = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', catalog=self.cutcat, dummycat=self.dummycat, local_path=self.local_path, LS_mosaic_folder=self.LS_mosaics, mask_folder=self.mask_mosaics, fits_folder = self.fits_folder, gal_mosaic_folder=self.gal_mosaic_folder)
+
+                    pagename = single_galpage.page_name
+
+                    hmtl.write('<td><a href='+self.local_path+pagename+'>'+str(self.cutcat['prefix'][i])+'</a></td>\n')   #text hyperlink to galaxy page VFIDxxxx.html (pagename)
                 
-                pagename = single_galpage.page_name
-                
-                hmtl.write('<td><a href='+self.local_path+pagename+'>'+str(self.cutcat['prefix'][i])+'</a></td>\n')   #prefix text hyperlink to galaxy page VFIDxxxx.html (pagename)
+                else:
+                    hmtl.write('<td>'+str(self.cutcat['prefix'][i])+'</a></td>\n')
                 
                 html.write('<td>'+str(self.cutcat['RA'][i])+'</td>\n')
                 html.write('<td>'+str(self.cutcat['DEC'][i])+'</td>\n')
@@ -182,6 +195,7 @@ class GalPage(galaxy_index=None, page_name=None, catalog=None, dummycat=None, lo
         plt.close()
     
     def create_model_mosaics_names(self):
+
         self.file_w3_nopsf = self.fits_folder+self.objname+'-W3-out1.fits'
         self.file_w3_psf = self.fits_folder+self.objname+'-W3-out2.fits'
         self.file_r_nopsf = self.fits_folder+self.objname+'-r-out1.fits'
@@ -206,7 +220,7 @@ class GalPage(galaxy_index=None, page_name=None, catalog=None, dummycat=None, lo
         
         print('For self.create_model_mosaics(index), index=0 is w3_nopsf, 1 is w3_psf, 2 is r_nopsf, 3 is r_psf.')
 
-    def create_model_mosaics(self, index, percentile1=.5, percentile2=99.5, p1residual=5, p2residual=99, cmap='viridis'):
+    def create_model_mosaics(self, percentile1=.5, percentile2=99.5, p1residual=5, p2residual=99, cmap='viridis'):
         
         '''
         ARGS:
@@ -218,106 +232,79 @@ class GalPage(galaxy_index=None, page_name=None, catalog=None, dummycat=None, lo
         cmap = colormap, default is viridis
         ''' 
         
-        if index<2:   #w3 is index=0 or index=1
-            images = [self.wise_im,self.models[index],self.residuals[index],self.residuals[index]]
-        if index>=2:   #r-band is index=2 or index=3
-            images = [self.r_im,self.models[index],self.residuals[index],self.residuals[index]]
-        titles = ['Image','Model','Residual (img stretch)','Residual (res stretch)']
-        
-        v1 = [scoreatpercentile(images[0],percentile1),
-            scoreatpercentile(images[0],percentile1),
-            scoreatpercentile(images[0],percentile1),
-            scoreatpercentile(images[3],p1residual)]
-        v2 = [scoreatpercentile(images[0],percentile2),
-            scoreatpercentile(images[0],percentile2),
-            scoreatpercentile(images[0],percentile2),
-            scoreatpercentile(images[3],p2residual)]
-        
-        norms = [simple_norm(images[0],'asinh',max_percent=percentile2),
-               simple_norm(images[0],'asinh',max_percent=percentile2),
-               simple_norm(images[0],'asinh',max_percent=percentile2),
-               simple_norm(images[0],'linear',max_percent=p2residual)]
-               
-        plt.figure(figsize=(14,6))
-        plt.subplots_adjust(wspace=.0)
-        for i,im in enumerate(images): 
-            ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)
-            plt.imshow(im,origin='lower',cmap=cmap,vmin=v1[i],vmax=v2[i],norm=norms[i])
-            ax.set_xlabel('RA')
-            if i == 0:
-                ax.set_ylabel('DEC')
-            else:
-                plt.ylabel(' ')
-                ax = plt.gca()
-                ax.set_yticks([])
-            plt.title(titles[i],fontsize=16)
-        plt.savefig(pngname,dpi=300)
-        plt.close()    
-    
+        for index in self.index_list:
+            if index<2:   #w3 is index=0 or index=1
+                images = [self.wise_im,self.models[index],self.residuals[index],self.residuals[index]]
+            if index>=2:   #r-band is index=2 or index=3
+                images = [self.r_im,self.models[index],self.residuals[index],self.residuals[index]]
+            titles = ['Image','Model','Residual (img stretch)','Residual (res stretch)']
+
+            v1 = [scoreatpercentile(images[0],percentile1),
+                scoreatpercentile(images[0],percentile1),
+                scoreatpercentile(images[0],percentile1),
+                scoreatpercentile(images[3],p1residual)]
+            v2 = [scoreatpercentile(images[0],percentile2),
+                scoreatpercentile(images[0],percentile2),
+                scoreatpercentile(images[0],percentile2),
+                scoreatpercentile(images[3],p2residual)]
+
+            norms = [simple_norm(images[0],'asinh',max_percent=percentile2),
+                   simple_norm(images[0],'asinh',max_percent=percentile2),
+                   simple_norm(images[0],'asinh',max_percent=percentile2),
+                   simple_norm(images[0],'linear',max_percent=p2residual)]
+
+            plt.figure(figsize=(14,6))
+            plt.subplots_adjust(wspace=.0)
+            for i,im in enumerate(images): 
+                ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)
+                plt.imshow(im,origin='lower',cmap=cmap,vmin=v1[i],vmax=v2[i],norm=norms[i])
+                ax.set_xlabel('RA')
+                if i == 0:
+                    ax.set_ylabel('DEC')
+                else:
+                    plt.ylabel(' ')
+                    ax = plt.gca()
+                    ax.set_yticks([])
+                plt.title(titles[i],fontsize=16)
+            plt.savefig(pngname,dpi=300)
+            plt.close()    
+
     def create_mask_mosaics(self):
         print('Under development, pending completion of masking.')
         #w3
         #r-band
         return
     
+    #will have to edit once we incorporate group galaxies.
     def tablulate_parameters(self):
+
+        self.w3params_nopsf = Table.read(self.path_to_params+'/output_params_W3_nopsf.fits')
+        self.w3params_psf = Table.read(self.path_to_params+'/output_params_W3_psf.fits')
+        self.rparams_nopsf = Table.read(self.path_to_params+'/output_params_r_nopsf.fits')
+        self.rparams_psf = Table.read(self.path_to_params+'/output_params_r_psf.fits')
         
-        self.w3params_nopsf = self.path_to_params+'/'
-        self.w3params_psf = self.path_to_params+'/'
-        self.rparams_nopsf = self.path_to_params+'/'
-        self.rparams_psf = self.path_to_params+'/'
+        params_list = [self.w3params_nopsf,self.w3params_psf,self.rparams_nopsf,self.rparams_psf]
         
-        #w3 nopsf
-        #w3 psf
-        #r-band nopsf
-        #r-band psf
+        self.page_params = []
+        
+        for index in self.psf_indices:
+            params=params_list[index]
+            self.VFID = self.cutcat['VFID']
+            param_row=params[params['VFID']==self.VFID]
+            self.page_params.append(param_row)
+            
         return
+        
     
     def WRITETHEGALPAGE(self):
+        #use a loop for the html.write table hoohaw. PLEASE.
+        
         return
-
-
-def build_gal_html(i, vf_sample, galpath, htmlpath, galfit_params_nopsf, galfit_params_psf, dummycat = None, fixed_galfit_params_nopsf = None, fixed_galfit_params_psf = None):
     
-    #VFID (v2) html name of webpage
-    htmlname = str(vf_sample[i]['VFID']) + '.html'
     
-    #full local path to where this .html is stored
-    full_htmlpath = htmlpath + htmlname
     
-    #begin to write text in full_htmlpath file
-    with open(full_htmlpath, 'w') as html:
-        
-        #I think much of this is style preparation, similar to the initial lines in a LaTeX document
-        html.write('<html><body>\n')
-        html.write('<title>' + str(vf_sample['prefix'][i]) + '<\title>\n')  #title that appears on the browser tab
-        html.write('<style type="text/css">\n')
-        html.write('.img-container{text-align: left;}')
-        html.write('table, td, th {padding: 5px; text-align: center; border: 1px solid black;}\n')
-        html.write('p {display: inline-block;;}\n')
-        html.write('</style>\n')
-        
-        #name of central galaxy
-        html.write('<fontsize="40">Central Galaxy: ' + str(vf_sample['prefix'][i]) + '</font><br />\n')
-        
-        #add hyperlinks that return user to either homepage, next galaxy (if i != 0), or prev galaxy (if i != len(sample) - 1)
-        html.write('<a href=main.html>Return to Homepage</a></br />\n')
-        if i != len(vf_sample) - 1:
-            html.write('<a href='+str(vf_sample['VFID'][i+1])+'.html>Next Galaxy</a></br />\n')
-        if i != 0:
-            html.write('<a href='+str(vf_sample['VFID'][i-1])+'.html>Previous Galaxy</a></br />\n')
-        
-        '''
-        unclear how we will treat postage stamps with 2+ Sersic obj, so this and following relevant sections will be commented out until further notice.
-        
-        #if zero, then ncomp = 1
-        ncomp = len(np.where(dummycat['central galaxy'] == vf_sample['VFID'][i])[0]) + 1
-        '''
-        
-        ncomp = 1
-
-
-
+    
+    
 
 if __name__ == '__main__':    
     
