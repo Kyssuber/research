@@ -9,45 +9,55 @@ from astropy.table import Table
 from astropy.io import fits
 
 #convert cutouts from .fz to .fits, then save .fits to target_folder
-def fz_to_fits(path_to_im, galaxy_name, target_folder):
+def fz_to_fits(path_to_im, galaxy_name, target_folder, group_name=None, group_flag=False):
     galaxy_w3 = galaxy_name+'-custom-image-W3.fits.fz'
     galaxy_r = galaxy_name+'-custom-image-r.fits.fz'
     galaxies = [galaxy_w3,galaxy_r]
-    for galaxy in galaxies:
-        galaxy_path = path_to_im+galaxy
-        fz = fits.getdata(galaxy_path)
-        fz_header = (fits.open(galaxy_path)[1]).header
-        print('Adding '+target_folder+galaxy[:-3])
-        fits.writeto(target_folder+galaxy[:-3],fz,header=fz_header,overwrite=True)    #[:-3] removes the .fz from filename string
+    if group_name is not None:
+        group_w3 = group_name+'-custom-image-W3.fits.fz'
+        group_r = group_name+'-custom-image-r.fits.fz'
+        groups = [group_w3,group_r]
+    for n in range(2):
+        galaxy_path = path_to_im+galaxies[n]
+        if group_flag==True:
+            galaxy_path = path_to_im+groups[n]     
+        try:
+            fz = fits.getdata(galaxy_path)
+            fz_header = (fits.open(galaxy_path)[1]).header
+            print('Adding '+target_folder+galaxies[n][:-3])
+            fits.writeto(target_folder+galaxies[n][:-3],fz,header=fz_header,overwrite=True)    #[:-3] removes the .fz from filename string
+        except:
+            print('Unable to pull galaxy cutout file.')
 
 #should be two per galaxy - rband and w3
-def grab_input_cutouts(catalog, input_cutouts_path, target_folder):
+def grab_input_cutouts(catalog, sgaparams, input_cutouts_path, target_folder):
     VFIDs = catalog['VFID']
+    VFID_V1s = catalog['VFID_V1']
     objnames = catalog['objname']
     RAs = catalog['RA_1']
+    group_names = sgaparams['GROUP_NAME']
   
     #have to retrieve these images from the RA directories.
     for i in range(len(catalog)):
+        
         print(VFIDs[i])
+        group_name = group_names[sgaparams['VFID']==VFID_V1s[i]]
+        group_name = group_name[0]
+        print(group_name)
+
         ra_int = int(np.floor(RAs[i]))
-
         ra_folder = input_cutouts_path+str(ra_int)+'/'
+        
         galaxy_folder = ra_folder+objnames[i]+'/'
-        galaxy_folder_group = ra_folder+objnames[i]+'_GROUP/'
-
-        print(galaxy_folder)
 
         if os.path.isdir(galaxy_folder):
+            print(galaxy_folder)
             fz_to_fits(galaxy_folder,objnames[i],target_folder)
-            #input_cutouts = glob.glob(galaxy_folder+objnames[i]+'-custom-image-*.fits')
+        
         else:
-            objnames[i].remove('A')
-            fz_to_fits(galaxy_folder_group,objnames[i]+'_GROUP',target_folder)
-            #input_cutouts = glob.glob(galaxy_folder_group+objnames[i]+'-custom-image-*.fits')
-            
-        #for im in input_cutouts:
-        #    print('Moving '+im)
-        #    os.system('cp '+im+' '+target_folder)
+            galaxy_folder_group = ra_folder+group_name+'/'
+            print(galaxy_folder_group)
+            fz_to_fits(galaxy_folder_group,group_name,target_folder,group_name,group_flag=True)
 
 #should be four per galaxy - rband (nopsf, psf) and w3 (nopsf, psf)
 #if galfit 'failed', then out* images will not appear in the folder. 
@@ -58,7 +68,9 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
     for i in range(len(catalog)):
         print('Moving '+VFIDs[i])
         galaxy_folder = host_folder_path+VFIDs[i]+'/'
-        output_mosaics = glob.glob(galaxy_folder+objnames[i]+'*out*.fits')
+        output_mosaics_nopsf = glob.glob(galaxy_folder+'*out1.fits')
+        output_mosaics_psf = glob.glob(galaxy_folder+'*out2.fits')
+        output_mosaics = np.concatenate([output_mosaics_nopsf,output_mosaics_psf])
 
         for im in output_mosaics:
             print('Moving '+im)
@@ -67,7 +79,8 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
 if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
-  vf = Table.read(homedir+'/sgacut_coadd.fits')
+  vf = Table.read(homedir+'/sgacut_coadd.fits')   #contains objnames, RAs, and VFIDs
+  sga_params = Table.read(homedir+'/sga_params.fits')   #contains list of group names
   
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
   input_cutouts_path = '/mnt/virgofilaments-data/'
@@ -78,6 +91,6 @@ if __name__ == '__main__':
   os.system('mkdir '+onefolder_path)
   
   'Moving postage stamp cutouts for rband and W3...'
-  grab_input_cutouts(vf, input_cutouts_path, onefolder_path)
+  grab_input_cutouts(vf, sga_params, input_cutouts_path, onefolder_path)
   'Moving GALFIT output mosaics for rband and w3...'
   grab_output_cutouts(vf, host_folder_path, onefolder_path)
