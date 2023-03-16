@@ -1,5 +1,5 @@
 '''
-Aim: collect all relevant FITS files from /mnt/astrophysics/muchogalfit-output/ and port them to the fits_folder located in the home directory. These files will be necessary when running the build_html_website.py script (in my_mucho_galfit) either locally (will have to scp the folder) or on the virtual machine.
+Aim: collect all relevant FITS files from /mnt/astrophysics/muchogalfit-output/ and port them to the all_input_fits located in /mnt/astrophysics/kconger_wisesize/. These files will be necessary when running the build_html_website.py script (in my_mucho_galfit) either locally (will have to scp the folder) or on the virtual machine.
 '''
 
 import os
@@ -35,7 +35,7 @@ def grab_input_cutouts(catalog, host_folder_path, target_folder):
 if __name__ == '__main__':
   homedir=os.getenv("HOME")
   vf = Table.read(homedir+'/sgacut_coadd.fits')
-  onefolder_path = homedir+'/all_input_fits/'
+  onefolder_path = '/mnt/astrophysics/kconger_wisesize/all_input_fits/'
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
 
   'Moving postage stamp cutouts for rband and W3...'
