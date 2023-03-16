@@ -20,8 +20,8 @@ def grab_input_cutouts(catalog, input_cutouts_path, target_folder):
     ra_int = int(np.floor(RAs[i]))
     
     ra_folder = input_cutouts_path+str(ra_int)+'/'
-    galaxy_folder = ra_folder+objnames[i]
-    galaxy_folder_group = ra_folder+objnames[i]+'_GROUP'
+    galaxy_folder = ra_folder+objnames[i]+'/'
+    galaxy_folder_group = ra_folder+objnames[i]+'_GROUP/'
     
     print(galaxy_folder)
     
