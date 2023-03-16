@@ -23,6 +23,8 @@ def grab_input_cutouts(catalog, input_cutouts_path, target_folder):
     galaxy_folder = ra_folder+objnames[i]
     galaxy_folder_group = ra_folder+objnames[i]+'_GROUP'
     
+    print(galaxy_folder)
+    
     if os.path.isdir(galaxy_folder):
       input_cutouts = glob.glob(galaxy_folder+'-custom-image-*')
     else:
