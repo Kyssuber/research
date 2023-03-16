@@ -8,6 +8,16 @@ import glob
 import numpy as np
 from astropy.table import Table
 
+#convert cutouts from .fz to .fits
+def fz_to_fits(path_to_im, galaxy_name):
+    galaxy_w3 = path_to_im+galaxy_name+'-custom-image-W3.fits.fz'
+    galaxy_r = path_to_im+galaxy_name+'-custom-image-r.fits.fz'
+    galaxies = [galaxy_w3,galaxy_r]
+    for galaxy in galaxies:
+        fz = fits.getdata(galaxy)
+        fz_header = (fits.open(galaxy)[1]).header
+        fits.writeto(galaxy[:-3],fz,header=fz_header,overwrite=True)    #[:-3] removes the .fz from location string
+
 #should be two per galaxy - rband and w3
 def grab_input_cutouts(catalog, input_cutouts_path, target_folder):
     VFIDs = catalog['VFID']
@@ -26,9 +36,11 @@ def grab_input_cutouts(catalog, input_cutouts_path, target_folder):
         print(galaxy_folder)
 
         if os.path.isdir(galaxy_folder):
-            input_cutouts = glob.glob(galaxy_folder+objnames[i]+'-custom-image-*')
+            fz_to_fits(galaxy_folder,objnames[i])
+            input_cutouts = glob.glob(galaxy_folder+objnames[i]+'-custom-image-*.fits')
         else:
-            input_cutouts = glob.glob(galaxy_folder_group+objnames[i]+'-custom-image-*')
+            fz_to_fits(galaxy_folder_group,objnames[i])
+            input_cutouts = glob.glob(galaxy_folder_group+objnames[i]+'-custom-image-*.fits')
 
         for im in input_cutouts:
             print('Moving '+im)
