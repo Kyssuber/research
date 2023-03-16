@@ -35,7 +35,7 @@ def grab_input_cutouts(catalog, host_folder_path, target_folder):
 if __name__ == '__main__':
   homedir=os.getenv("HOME")
   vf = Table.read(homedir+'/sgacut_coadd.fits')
-  onefolder_path = homedir+'/all_input_fits'
+  onefolder_path = homedir+'/all_input_fits/'
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
 
   'Moving postage stamp cutouts for rband and W3...'
