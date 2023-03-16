@@ -41,9 +41,10 @@ def grab_input_cutouts(catalog, input_cutouts_path, target_folder):
             fz_to_fits(galaxy_folder,objnames[i],target_folder)
             #input_cutouts = glob.glob(galaxy_folder+objnames[i]+'-custom-image-*.fits')
         else:
+            objnames[i].remove('A')
             fz_to_fits(galaxy_folder_group,objnames[i]+'_GROUP',target_folder)
             #input_cutouts = glob.glob(galaxy_folder_group+objnames[i]+'-custom-image-*.fits')
-
+            
         #for im in input_cutouts:
         #    print('Moving '+im)
         #    os.system('cp '+im+' '+target_folder)
