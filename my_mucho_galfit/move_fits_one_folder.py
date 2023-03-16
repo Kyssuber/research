@@ -37,7 +37,13 @@ if __name__ == '__main__':
   vf = Table.read(homedir+'/sgacut_coadd.fits')
   onefolder_path = '/mnt/astrophysics/kconger_wisesize/all_input_fits/'
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
-
+  
+  try:
+    print('Creating target directory '+onefolder_path)
+    os.system('mkdir '+onefolder_path)
+  except:
+    print('Target directory already exists.')
+  
   'Moving postage stamp cutouts for rband and W3...'
   grab_input_cutouts(vf, host_folder_path, onefolder_path)
   'Moving GALFIT output mosaics for rband and w3...'
