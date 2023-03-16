@@ -3,10 +3,10 @@ Aim: collect all relevant FITS files from /mnt/astrophysics/muchogalfit-output/ 
 '''
 
 import os
-import sys
 import glob
 import numpy as np
 from astropy.table import Table
+from astropy.io import fits
 
 #convert cutouts from .fz to .fits
 def fz_to_fits(path_to_im, galaxy_name):
