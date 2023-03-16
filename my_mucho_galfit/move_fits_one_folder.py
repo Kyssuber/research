@@ -14,10 +14,12 @@ def grab_input_cutouts(catalog, host_folder_path, target_folder):
   objnames = catalog['objname']
   
   for i in range(len(catalog)):
+    print('Moving '+VFIDs[i])
     galaxy_folder = host_folder_path+VFIDs[i]+'/'
     input_cutouts = glob.glob(galaxy_folder+objnames[i]+'-custom-image-*')
     
     for im in input_cutouts:
+      print('Moving '+im)
       os.system('cp '+im+' '+target_folder)
   
 #should be four per galaxy - rband (nopsf, psf) and w3 (nopsf, psf)
@@ -26,10 +28,12 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
   objnames = catalog['objname']
 
   for i in range(len(catalog)):
+    print('Moving '+VFIDs[i])
     galaxy_folder = host_folder_path+VFIDs[i]+'/'
     output_mosaics = glob.glob(galaxy_folder+objnames[i]+'*out*.fits')
 
     for im in output_mosaics:
+      print('Moving '+im)
       os.system('cp '+im+' '+target_folder)
 
 if __name__ == '__main__':
