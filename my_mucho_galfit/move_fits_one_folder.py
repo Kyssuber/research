@@ -45,9 +45,9 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
         galaxy_folder = host_folder_path+VFIDs[i]+'/'
         output_mosaics = glob.glob(galaxy_folder+objnames[i]+'*out*.fits')
 
-          for im in output_mosaics:
-              print('Moving '+im)
-              os.system('cp '+im+' '+target_folder)
+        for im in output_mosaics:
+            print('Moving '+im)
+            os.system('cp '+im+' '+target_folder)
 
 if __name__ == '__main__':
   
