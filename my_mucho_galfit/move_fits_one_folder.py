@@ -25,14 +25,14 @@ def grab_input_cutouts(catalog, input_cutouts_path, target_folder):
 
         print(galaxy_folder)
 
-      if os.path.isdir(galaxy_folder):
-          input_cutouts = glob.glob(galaxy_folder+objnames[i]+'-custom-image-*')
-      else:
-          input_cutouts = glob.glob(galaxy_folder_group+objnames[i]+'-custom-image-*')
+        if os.path.isdir(galaxy_folder):
+            input_cutouts = glob.glob(galaxy_folder+objnames[i]+'-custom-image-*')
+        else:
+            input_cutouts = glob.glob(galaxy_folder_group+objnames[i]+'-custom-image-*')
 
-      for im in input_cutouts:
-          print('Moving '+im)
-          os.system('cp '+im+' '+target_folder)
+        for im in input_cutouts:
+            print('Moving '+im)
+            os.system('cp '+im+' '+target_folder)
 
 #should be four per galaxy - rband (nopsf, psf) and w3 (nopsf, psf)
 #if galfit 'failed', then out* images will not appear in the folder. 
@@ -45,9 +45,9 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
         galaxy_folder = host_folder_path+VFIDs[i]+'/'
         output_mosaics = glob.glob(galaxy_folder+objnames[i]+'*out*.fits')
 
-      for im in output_mosaics:
-          print('Moving '+im)
-          os.system('cp '+im+' '+target_folder)
+          for im in output_mosaics:
+              print('Moving '+im)
+              os.system('cp '+im+' '+target_folder)
 
 if __name__ == '__main__':
   
