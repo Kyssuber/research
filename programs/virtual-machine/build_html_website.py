@@ -76,16 +76,16 @@ class HomePage():
             html.write('<html><body>\n')
             html.write('<title>Virgowise Project</title>\n')
             html.write('<body style="background-color:powderblue;">\n')   #be gentle with the background color (e.g., no limegreen)
-            html.write('<style type="text-css">\n>')
+            html.write('<style type="text/css">\n')
             html.write('table, td, th {padding: 5px; text-align: center; border: 2px solid black;}\n')
             html.write('p {display: inline-block;;}\n')
             html.write('</style>\n')
             html.write('<font size="40">GALFIT Data for Virgowise VF Galaxies</font>\n')
             
             #begin and populate the table. first line is header information; loop creates the data rows.
-            html.write('<table><tr><th>Index</th><th>LS Cutout</th><th>Prefix</th><th>RA</th><th>DEC</th><th>Comments</th>')
+            html.write('<table><tr><th>Index</th><th>LS Cutout</th><th>Prefix</th><th>RA</th><th>DEC</th><th>Comments</th>\n')
             
-            for i in range(0,len(self.cutcat)):
+            for i in range(len(self.cutcat)):
                 html.write('<tr><td>'+str(i)+'</td>\n')   #add index number
                 html.write('<td><img src = "' + self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg' + '" height="25%" width = "25%"></img></td>\n')   #cutouts will have the name VFIDxxxx-LS.png, using the v2 IDs
                 
@@ -118,15 +118,55 @@ class HomePage():
 
                 #if the VFID (v2) is in the dummycat central galaxy column, then write in the Comments column that this particular galaxy is a member of a "Moustakas group"
                 if self.cutcat['VFID'][i] in self.dummycat['central galaxy']:
-                    html.write('<td>Group Galaxy</td>')
+                    html.write('<td>Group Galaxy</td>\n')
                 else:
-                    html.write('<td>--</td>')
+                    html.write('<td>--</td>\n')
 
             html.write('</tr></table>\n')
             html.write('<br /><br />\n')
             html.write('</html></body>\n')
             html.close()
+    
+    #creating a few separate functions in order to independently run the PNG creation scripts - if I run them as part of the homepage class loop I use to generate every galpage.html file, then an application memory problem arises. (Why not remove the methods from the class altogether if I won't use them in the initial loop as intended? I think they are organized more nicely as part of the galpage class; and since the variable names are already entangled, I may as well not tinker any further.)           
+    
+    def create_LS_figures(self):
+        
+        for i in range(len(self.cutcat)):
+            if self.params_w3_nopsf['xc'][i]>0:   #I add this every time, since I use this condition to create the galhtml pages
 
+                #test=True to avoid running the automatic execution of the function that creates galhtml pages
+                single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, 
+                                         page_name=self.cutcat['VFID'][i]+'.html', catalog=self.cutcat, 
+                                         dummycat=self.dummycat, local_path=self.local_path, 
+                                         path_to_galhtml=self.path_to_galhtml, LS_cutout_folder=self.LS_cutouts, 
+                                         LS_mosaic_folder=self.LS_mosaics, fits_folder=self.fits_folder, test=True)
+                
+                print('Creating LS cutout for '+single_galaxy.VFID)
+                single_galaxy.compile_LS_cutouts()
+                print('Creating LS mosaic for '+single_galaxy.VFID)
+                single_galaxy.create_LS_mosaics()
+    
+    def create_galfit_mosaics(self):
+        
+        for i in range(len(self.cutcat)):
+            if self.params_w3_nopsf['xc'][i]>0:
+
+                single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
+                                        catalog=self.cutcat, dummycat=self.dummycat, local_path=self.local_path, 
+                                        path_to_galhtml=self.path_to_galhtml, fits_folder=self.fits_folder, 
+                                        gal_mosaic_folder=self.gal_mosaic_folder, w3params_nopsf=self.w3params_nopsf, 
+                                        w3params_psf=self.w3params_psf, rparams_nopsf=self.rparams_nopsf, 
+                                        rparams_psf=self.rparams_psf, test=True)                
+    
+    
+                print('Defining mosaic parameters for '+single_galaxy.VFID)
+                single_galaxy.create_model_mosaics_names()
+                print('Creating GALFIT mosaics for '+single_galaxy.VFID)
+                single_galaxy.create_model_mosaics()
+                
+    def create_mask_mosaics():
+        return
+        
 class GalPage():
     def __init__(self,galaxy_index=None, psf_indices = [0,1,2,3], page_name=None, catalog=None, dummycat=None, 
                  local_path=None, path_to_galhtml=None, LS_cutout_folder=None, LS_mosaic_folder=None, mask_folder=None, 
@@ -181,12 +221,9 @@ class GalPage():
         
         self.wcs_w3 = WCS(self.wise_header)
         
+        #if not testing the various functions on one galaxy or only generating PNG files, then run only those that are required for (1) variables and (2) the actual galaxy html pages.
         if (test=='False')|(test==False):
             self.create_model_mosaics_names()
-            #self.compile_LS_cutouts()
-            #self.create_LS_mosaics()
-            #self.create_model_mosaics()
-            #self.create_mask_mosaics()
             self.tabulate_parameters()
             self.WRITETHEGALPAGE()
         
@@ -420,26 +457,26 @@ class GalPage():
                     html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+LS_path+'" height="60%" width="70%" /><br /> \n')
                     #html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mask_path+'" height="60%" width="50%" /><br /> \n')
                 
-            html.write('<a href=main.html>Return to Homepage</a></br /> \n')
+            html.write(f'<a href={self.homepage_name}>Return to Homepage</a></br /> \n')
            
             if i != len(self.cutcat)-1:
                 html.write('<a href='+str(self.cutcat['VFID'][i+1])+'.html>Next Galaxy</a></br /> \n') 
-
+            
             if i != 0:
                 html.write('<a href='+str(self.cutcat['VFID'][i-1])+'.html>Previous Galaxy</a></br /> \n')
 
             html.write('<br /><br />\n')    
             html.write('</html></body>\n')     
 
-            html.close()   
-
+            html.close()    
+            
 if __name__ == '__main__':    
     
     print("""USAGE:
     ---Running this program automatically initiates the HomePage class (hp)
     ---hp.html_setup() --> create .html homepages for all galaxies in the VF subsample; also initiates GalPage 
             class(single_galpage) for every galaxy in a loop, creating all relevant folders and files.
-    ---If the -test arg is True, then the user is wanting to test the GalPage class (this is a stategic idea, 
+    ---If the -html arg is True, then the user is wanting to test the GalPage class (this is a stategic idea, 
             since this class contains the bulk of the functions required for the script to run successfully). 
             In this case, the script automatically defines a single galpage class (single_galpage; 
             uses index 0 for a random test galaxy), with which the user can test the following methods:
@@ -455,7 +492,7 @@ if __name__ == '__main__':
     print()
     
     if '-h' in sys.argv or '--help' in sys.argv:
-        print("Usage: %s [-param_file (name of parameter file, no single or double quotation marks)] [-test (True or False; indicates whether user is wanting to either test the GalPage class)]")
+        print("Usage: %s [-param_file (name of parameter file, no single or double quotation marks)] [-html (True or False; indicates whether user is wanting to either test the GalPage class (True) or just generate galhtml files (False)]")
         sys.exit(1)
     
     if '-param_file' in sys.argv:
@@ -522,7 +559,6 @@ if __name__ == '__main__':
                       path_to_galhtml=path_to_galhtml, path_to_params=path_to_params, LS_cutout_folder=LS_cutout_folder, 
                       LS_mosaic_folder=LS_mosaic_folder, mask_folder=mask_folder, fits_folder=fits_folder, 
                       gal_mosaic_folder=gal_mosaic_folder, indices=psf_indices)
-        hp.html_setup()
         
         
     if test=='True':
