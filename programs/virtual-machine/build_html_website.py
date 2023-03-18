@@ -403,7 +403,7 @@ class GalPage():
             i = int(self.galaxy_index)
             
             html.write('<html><body> \n')
-            html.write(f'<title>+{self.VFID}-{self.objname}</title> \n')
+            html.write(f'<title>{self.VFID}-{self.objname}</title> \n')
             html.write('<style type="text/css"> \n')
             html.write('.img-container{text-align: left;} \n')
             html.write('table, td, th {padding: 5px; text-align: center; border: 1px solid black;} \n')
@@ -429,8 +429,8 @@ class GalPage():
 
                 html.write('<tr><td>'+self.VFID+'</td> \n')
                 html.write('<td>Host</td> \n')
-                for i in range(1,15):   #for every parameter value in a row
-                    html.write(f'<td>{params[0][i]}</td> \n')   #0th row, which does not change as there is only one row here
+                for p in range(1,15):   #for every parameter value in a row
+                    html.write(f'<td>{params[0][p]}</td> \n')   #0th row, which does not change as there is only one row here
                 html.write(f'<td>{params[0][17]}</td></tr> \n')   #error flag
 
                 #add the external galaxy parameters, if any.
@@ -441,8 +441,8 @@ class GalPage():
                             single_param_ext = param_ext[num]  #isolate the self.ext_list[num] external galaxy parameters
                             html.write('<tr><td>'+self.ext_list[num]+'</td> \n')  #VFID of external galaxy
                             html.write('<td>External</td> \n')
-                            for i in range(1,15):
-                                html.write(f'<td>{single_param_ext[i]}</td> \n')
+                            for p in range(1,15):
+                                html.write(f'<td>{single_param_ext[p]}</td> \n')
                             if num==self.ncomp-1:
                                 html.write(r'<td>{params[17]}</td></tr> \n')
                     except:
@@ -461,7 +461,6 @@ class GalPage():
            
             if i != len(self.cutcat)-1:
                 html.write('<a href='+str(self.cutcat['VFID'][i+1])+'.html>Next Galaxy</a></br /> \n') 
-            
             if i != 0:
                 html.write('<a href='+str(self.cutcat['VFID'][i-1])+'.html>Previous Galaxy</a></br /> \n')
 
