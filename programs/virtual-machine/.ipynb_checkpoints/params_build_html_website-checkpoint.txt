@@ -1,0 +1,20 @@
+#--------------------------------------------------- File Names ----------------------------------------------------
+
+catalog                           v2_snrcoadd.fits                # name of main vf catalog; assumes file is in homedir
+dummycat                          dummycat.fits                   # name of main dummycat.fits; assumes file is in homedir
+local_path                        /Users/k215c316/vf_html/        # path which will contain relevant folders/files
+homepage_name                     home_local.html                 # name of main html file
+mask_folder                       mask_mosaics_png                # name of folder containing .png mask mosaics
+LS_mosaic_folder                  LS_mosaics_png                  # name of folder containing .png LS mosaics
+fits_folder                       all_input_fits                  # name of folder containing ALL .fits files --> masks, cutouts, output fits mosaics
+gal_mosaic_folder                 galfit_mosaics_png              # name of folder containing .png galfit mosaics
+LS_cutout_folder                  LS_cutouts_png                  # name of folder that WILL contain LS cutouts
+path_to_params                    all_input_fits                  # name of folder containing galfit output parameter tables
+path_to_galhtml                   galhtml_files                   # name of folder containing each galpage html file
+
+#--------------------------------------------------- Parameters ----------------------------------------------------
+
+psf_indices                       [0,1,2,3]                       # 0 for w3_nopsf, 1 for w3_psf, 2 for r_nopsf, 3 for r_psf
+
+
+#NOTE: all folders above will appear in local_path once code runs successfully.
