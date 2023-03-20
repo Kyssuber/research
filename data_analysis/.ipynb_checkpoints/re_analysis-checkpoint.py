@@ -343,7 +343,9 @@ class catalogs:
         if self.conv==False:
             plt.title('Re Comparison (noPSF)',fontsize=20)
         plt.show()
-
+        
+        print(self.kimparams_cut['VFID'][~self.outlier_flag])
+        
         if savefig==True:
             plt.savefig('Re_comparison_Kim.png',dpi=300)
 
