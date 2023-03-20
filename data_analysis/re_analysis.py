@@ -18,7 +18,10 @@ homedir = os.getenv("HOME")
 
 class catalogs:
     
-    def __init__(self,conv=False,MeanMedian='mean'):
+    def __init__(self,conv=False,MeanMedian='mean',MADmultiplier=5):
+        
+        self.MADmultiplier = MADmultiplier
+        
         path_to_dir = homedir+'/Desktop/v2-20220820/'
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
         self.v2_main = Table.read(homedir+'/v2_snrcoadd.fits')
@@ -38,7 +41,7 @@ class catalogs:
             self.rdat = Table.read(homedir+'/output_params_r_psf.fits')
             self.w3dat = Table.read(homedir+'/output_params_W3_psf.fits')
             self.kimparams = Table.read(homedir+'/kimparams_psf.fits')   #my psf galfit parameters
-        
+    
         self.roseparams = self.w3dat.copy()        
         self.cut_cats()
             
@@ -129,16 +132,17 @@ class catalogs:
         plt.xlim(-0.5,4.5)
         plt.ylim(0,200)
         plt.grid(color='purple',alpha=0.2)
-        plt.show()
 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/overleaf_figures/envbins.png', dpi=300)
+            plt.savefig(homedir+'/Desktop/envbins.png', dpi=300)
+        
+        plt.show()
 
-    def env_means(self, trimOutliers=False, combine_mid=False, convflag=False, savefig=False):    
+    def env_means(self, trimOutliers=False, combine_mid=False, savefig=False):    
         
         #will generate the self.outlier_flag variable needed to, well, trim the outliers.
         if trimOutliers==True:
-            self.compareKim(MADmultiplier=5, savefig=False)
+            self.compareKim(savefig=False)
             ratios = self.sizerats[self.outlier_flag]
             clusflag = self.clusflag.copy()[self.outlier_flag]
             rgflag = self.rgflag.copy()[self.outlier_flag]
@@ -183,11 +187,11 @@ class catalogs:
         plt.grid(alpha=0.2)
         plt.ylabel(r'Size Ratio (12$\mu m/$optical)',fontsize=20)
         plt.legend(fontsize=15)
-                
-        plt.show()
         
         if savefig==True:
-            plt.savefig('env_ratio.png', dpi=300)
+            plt.savefig(homedir+'/Desktop/env_ratio.png', dpi=300)
+            
+        plt.show()
     
     def mass_hist(self, z0mgs_comp=False, savefig=False):
         
@@ -229,11 +233,11 @@ class catalogs:
                 plt.legend(fontsize=18)
             plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
             plt.title(env_names[i-1],fontsize=22)
-            
-        plt.show()
-        
+                    
         if savefig==True:
-            plt.savefig('mass_hist.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/mass_hist.png',dpi=300)
+        
+        plt.show()
  
     def compareSGA(self,savefig=False):
         
@@ -259,11 +263,11 @@ class catalogs:
                 
         plt.xscale('log')
         plt.yscale('log')
+                
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/SGA_r50_comparison.png',dpi=300)
         
         plt.show()
-        
-        if savefig==True:
-            plt.savefig('SGA_r50_comparison.png',dpi=300)
     
     def comparePSF(self,savefig=False):
         
@@ -311,21 +315,22 @@ class catalogs:
             plt.xscale('log')
             plt.yscale('log')
             plt.legend(fontsize=14)
-        plt.show()
  
         if savefig==True:
-            plt.savefig('PSF_r50_comparison.png',dpi=300)
-    
-    def compareKim(self, MADmultiplier=5, savefig=False):
+            plt.savefig(homedir+'/Desktop/PSF_r50_comparison.png',dpi=300)
         
-        lower_bound = np.median(self.comp_ratios) - MAD(self.comp_ratios)*int(MADmultiplier)
-        upper_bound = np.median(self.comp_ratios) + MAD(self.comp_ratios)*int(MADmultiplier)
+        plt.show()
+    
+    def compareKim(self, savefig=False):
+        
+        lower_bound = np.median(self.comp_ratios) - MAD(self.comp_ratios)*int(self.MADmultiplier)
+        upper_bound = np.median(self.comp_ratios) + MAD(self.comp_ratios)*int(self.MADmultiplier)
         self.outlier_flag = (self.comp_ratios > lower_bound)&(self.comp_ratios < upper_bound)
         
         plt.figure(figsize=(8,6))
         plt.scatter(self.kimparams_cut['re'][self.outlier_flag],
                     self.roseparams_cut['re'][self.outlier_flag],alpha=0.2,color='crimson',
-                    label='Points within +/- MAD*{}'.format(MADmultiplier))
+                    label='Points within +/- MAD*{}'.format(self.MADmultiplier))
         plt.scatter(self.kimparams_cut['re'][~self.outlier_flag],
                     self.roseparams_cut['re'][~self.outlier_flag],alpha=0.2,color='black',s=20,label='All Points')
 
@@ -342,18 +347,20 @@ class catalogs:
             plt.title('Re Comparison (PSF)',fontsize=20)
         if self.conv==False:
             plt.title('Re Comparison (noPSF)',fontsize=20)
-        plt.show()
         
+        print('List of Galaxy Outliers')
         print(self.kimparams_cut['VFID'][~self.outlier_flag])
         
         if savefig==True:
-            plt.savefig('Re_comparison_Kim.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
+        
+        plt.show()
 
 if __name__ == '__main__':
     print("""USAGE:
-    cat = catalogs(conv=False,MeanMedian='mean',savefig=False) --> initiate catalog class
+    cat = catalogs(conv=False,MeanMedian='mean',MADmultiplier=5) --> initiate catalog class
     cat.envbins(savefig=False) --> plots number of subsample galaxies in each environment bin
-    cat.env_means(trimOutliers=False, combine_mid=False, convflag=False, savefig=False) --> plots either mean 
+    cat.env_means(trimOutliers=False, combine_mid=False, savefig=False) --> plots either mean 
         or median size ratio (w3/r) in each environment bin; trimOutliers will output an additional plot which compares
         my no PSF parameters to Rose's parameters, allowing the user to visualize which points are omitted in the 
         trimmed env_means plot; combine_mid is currently in development, but the aim is to merge the three middle
@@ -362,6 +369,6 @@ if __name__ == '__main__':
         will compare MAGPHYS stellar masses with z0mgs values if True
     cat.compareSGA(savefig=False) --> compares Rose's GALFIT r-band Re values with SGA's non-parametric r50
     cat.comparePSF(savefig=False) --> plots noPSF vs. PSF Re values for w3, r-band (one subplot per band)
-    cat.compareKim(MADmultiplier=5,savefig=False) --> compares my noPSF w3-band Re values with Rose's noPSF values""")
+    cat.compareKim(savefig=False) --> compares my noPSF w3-band Re values with Rose's noPSF values""")
     print('-----------------------------------------------------')
     print()
