@@ -16,12 +16,11 @@ from scipy.stats import median_abs_deviation as MAD
 import os
 homedir = os.getenv("HOME")
 
+
 class catalogs:
     
     def __init__(self,conv=False,MeanMedian='mean',MADmultiplier=5):
-        
         self.MADmultiplier = MADmultiplier
-        
         path_to_dir = homedir+'/Desktop/v2-20220820/'
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
         self.v2_main = Table.read(homedir+'/v2_snrcoadd.fits')
@@ -48,7 +47,7 @@ class catalogs:
     def cut_cats(self):
         subsample_flag = self.v2_main['sgacut_flag']
         
-        self.v2_envcut = self.v2_env[subsample_flag]
+        self.v2_env = self.v2_env[subsample_flag]
         self.v2_maincut = self.v2_main[subsample_flag]
         self.magphyscut = self.magphys[subsample_flag]
         self.z0mgscut = self.z0mgs[subsample_flag]
@@ -83,7 +82,7 @@ class catalogs:
         self.BA_w3band_cut = self.BA_w3band[self.cut_flags]
         
         #apply final cut to envcut and maincut catalogs
-        self.v2_envcut = self.v2_envcut[self.cut_flags]
+        self.v2_envcut = self.v2_env[self.cut_flags]
         self.v2_maincut = self.v2_maincut[self.cut_flags]
         self.magphyscut = self.magphyscut[self.cut_flags]
         self.z0mgscut = self.z0mgscut[self.cut_flags]
@@ -218,7 +217,7 @@ class catalogs:
         #n_bins_z0 = [12,12,12,12,12]
         mybins=np.linspace(7.5,11.5,12)
         
-        fig = plt.figure(figsize=(15,10))
+        fig = plt.figure()
         plt.subplots_adjust(hspace=.4,wspace=.2)
         
         for i in range(1,6):
@@ -360,6 +359,43 @@ class catalogs:
         
         plt.show()
 
+    def recreate_LCS_hist(self, remove_errs=True, savefig=False):
+        re_r = self.re_rband_cut.copy()
+        re_w3 = self.re_w3band_cut.copy()
+        clusflag = self.clusflag.copy()
+        if remove_errs:
+            re_r = self.re_rband[self.re_w3band>0]
+            re_w3 = self.re_w3band[self.re_w3band>0]
+            clusflag = self.v2_env['cluster_member'][self.re_w3band>0]
+        
+        data_clus = re_w3[clusflag]/re_r[clusflag]
+        data_ext = re_w3[~clusflag]/re_r[~clusflag]
+        data = [data_clus, data_ext]
+        labels = ['Cluster Galaxies', 'External Galaxies']
+        titles = ['Size Ratio Distribution', '']
+        colors = ['crimson', 'blue']
+        xlabels = ['',r'Size Ratio (12$\mu m/$optical)']
+        
+        mybins=np.linspace(0,1,20)
+        
+        fig = plt.figure(figsize=(8,8))
+        plt.subplots_adjust(hspace=.1)
+        
+        for panel in range(2):
+            ax = fig.add_subplot(2,1,panel+1)
+            plt.hist(data[panel],bins=mybins,color=colors[panel], alpha=0.7, label=labels[panel],cumulative=False)
+            plt.hist([], color='white', label='0 < R12/Rr < 1')
+            plt.title(titles[panel],fontsize=16)
+            ax.set_xlabel(xlabels[panel],fontsize=16)
+            ax.set_ylabel(r'N$_{gal}$',fontsize=20)
+            plt.xlim(-0.1,1)
+            ax.legend(fontsize=15)
+            
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
+
+        plt.show()
+        
 if __name__ == '__main__':
     print("""USAGE:
     cat = catalogs(conv=False,MeanMedian='mean',MADmultiplier=5) --> initiate catalog class
@@ -373,6 +409,7 @@ if __name__ == '__main__':
         will compare MAGPHYS stellar masses with z0mgs values if True
     cat.compareSGA(savefig=False) --> compares Rose's GALFIT r-band Re values with SGA's non-parametric r50
     cat.comparePSF(savefig=False) --> plots noPSF vs. PSF Re values for w3, r-band (one subplot per band)
-    cat.compareKim(savefig=False) --> compares my noPSF w3-band Re values with Rose's noPSF values""")
+    cat.compareKim(savefig=False) --> compares my noPSF w3-band Re values with Rose's noPSF values
+    cat.recreate_LCS_hist(remove_errs=True,savefig=False) --> generates vertically-oriented histogram subplots of R12/Rr distribution, separated into cluster vs. all else (external). remove_errs governs whether the final counts include galaxies with GALFIT error flags.""")
     print('-----------------------------------------------------')
     print()
