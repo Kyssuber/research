@@ -71,6 +71,7 @@ class catalogs:
         n_fails_r = len(self.re_w3band[w3_flag])
         
         self.cut_flags = (~group_flag)&(~err_flag)
+        #self.cut_flags = (~group_flag)
         
         self.re_rband_cut = self.re_rband[self.cut_flags]
         self.re_w3band_cut = self.re_w3band[self.cut_flags]
@@ -186,6 +187,9 @@ class catalogs:
         plt.tick_params(axis='both', which='major', labelsize=15)
         plt.grid(alpha=0.2)
         plt.ylabel(r'Size Ratio (12$\mu m/$optical)',fontsize=20)
+        
+        plt.ylim(0.6,0.96)
+        
         plt.legend(fontsize=15)
         
         if savefig==True:

@@ -220,6 +220,7 @@ class GalPage():
         self.r_im, self.r_header = fits.getdata(path_to_r, header=True)
         
         self.wcs_w3 = WCS(self.wise_header)
+        self.wcs_r = WCS(self.r_header)
         
         #if not testing the various functions on one galaxy or only generating PNG files, then run only those that are required for (1) variables and (2) the actual galaxy html pages.
         if (test=='False')|(test==False):
@@ -257,7 +258,10 @@ class GalPage():
         for i,im in enumerate(images):
             plt.xlabel('RA')
             if (i==0)|(i==1):
-                plt.subplot(1,len(images),i+1,projection = self.wcs_w3)
+                if i==0:
+                    plt.subplot(1,len(images),i+1,projection = self.wcs_w3)
+                if i==1:
+                    plt.subplot(1,len(images),i+1,projection = self.wcs_r)
                 try:
                     norm = simple_norm(images[i],stretch='asinh',max_percent=99.5)
                     plt.imshow(images[i],origin='lower',cmap='viridis',norm=norm)

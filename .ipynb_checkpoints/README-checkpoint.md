@@ -36,10 +36,6 @@ GOAL:
 - gather all GALFIT output parameters, as well as the galnames and 'central' designations, and compile into an Astropy table. 
 - essentially a repurposing of /virtual-machine/output_params.py, but with dir names unique to our purposes. 
 
-
-
-
-
 ## sonification
 - a novice side project which aims to convert visual data into scientifically meaningful audio. I ultimately hope to contribute even modestly to the mainstreaming of sonfication into the larger scientific community as a tool to enhance sensitivity to pattern detection. it is additionally a nifty outreach pursuit, if I ever become proficient enough to manipulate code to generate aesthetically appealing media for the public.
 
