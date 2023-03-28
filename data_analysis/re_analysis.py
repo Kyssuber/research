@@ -49,8 +49,8 @@ class catalogs:
         
         self.v2_env = self.v2_env[subsample_flag]
         self.v2_maincut = self.v2_main[subsample_flag]
-        self.magphyscut = self.magphys[subsample_flag]
-        self.z0mgscut = self.z0mgs[subsample_flag]
+        self.magphys = self.magphys[subsample_flag]
+        self.z0mgs = self.z0mgs[subsample_flag]
         
         self.re_rband = self.rdat['re']
         self.re_w3band = self.w3dat['re']
@@ -84,8 +84,8 @@ class catalogs:
         #apply final cut to envcut and maincut catalogs
         self.v2_envcut = self.v2_env[self.cut_flags]
         self.v2_maincut = self.v2_maincut[self.cut_flags]
-        self.magphyscut = self.magphyscut[self.cut_flags]
-        self.z0mgscut = self.z0mgscut[self.cut_flags]
+        self.magphyscut = self.magphys[self.cut_flags]
+        self.z0mgscut = self.z0mgs[self.cut_flags]
         
         self.kimparams_cut = self.kimparams[self.cut_flags]
         self.roseparams_cut = self.roseparams[self.cut_flags]
@@ -299,8 +299,8 @@ class catalogs:
         re_rband = self.re_rband_cut.copy()[~err_flag_comp]
         re_w3band = self.re_w3band_cut.copy()[~err_flag_comp]
         
-        re_data_init = [re_w3band,re_rband]
-        re_data_comp = [re_w3band_comp,re_rband_comp]
+        re_data_init = [re_w3band*2.75,re_rband*0.262]
+        re_data_comp = [re_w3band_comp*2.75,re_rband_comp*0.262]
                 
         plt.figure(figsize=(14,6))
         for panel in range(2):
@@ -344,8 +344,8 @@ class catalogs:
         plt.yscale('log')
         plt.legend(fontsize=14,loc='upper left')
         
-        plt.xlabel('Kim w3 Parameters (masking)',fontsize=18)
-        plt.ylabel('Rose w3 Parameters (no masking)',fontsize=18)
+        plt.xlabel('Kim w3 (px) (masking)',fontsize=18)
+        plt.ylabel('Rose w3 (px) (no masking)',fontsize=18)
         if self.conv==True:
             plt.title('Re Comparison (PSF)',fontsize=20)
         if self.conv==False:
@@ -359,14 +359,17 @@ class catalogs:
         
         plt.show()
 
-    def recreate_LCS_hist(self, remove_errs=True, savefig=False):
+    def recreate_LCS_hist(self, keep_errs=False, savefig=False):
         re_r = self.re_rband_cut.copy()
         re_w3 = self.re_w3band_cut.copy()
         clusflag = self.clusflag.copy()
-        if remove_errs:
+        if keep_errs:
             re_r = self.re_rband[self.re_w3band>0]
             re_w3 = self.re_w3band[self.re_w3band>0]
             clusflag = self.v2_env['cluster_member'][self.re_w3band>0]
+        
+        re_r = re_r*0.262
+        re_w3 = re_w3*2.75
         
         data_clus = re_w3[clusflag]/re_r[clusflag]
         data_ext = re_w3[~clusflag]/re_r[~clusflag]
@@ -374,31 +377,91 @@ class catalogs:
         labels = ['Cluster Galaxies', 'External Galaxies']
         titles = ['Size Ratio Distribution', '']
         colors = ['crimson', 'blue']
-        xlabels = ['',r'Size Ratio (12$\mu m/$optical)']
+        xlabels = ['',r'R$_{12}$/R$_r$']
         
-        mybins=np.linspace(0,1,20)
+        mybins=np.linspace(0,3,40)
         
         fig = plt.figure(figsize=(8,8))
         plt.subplots_adjust(hspace=.1)
         
         for panel in range(2):
             ax = fig.add_subplot(2,1,panel+1)
-            plt.hist(data[panel],bins=mybins,color=colors[panel], alpha=0.7, label=labels[panel],cumulative=False)
-            plt.hist([], color='white', label='0 < R12/Rr < 1')
+            plt.hist(data[panel],bins=mybins,color=colors[panel], alpha=0.7, label=labels[panel],density=False,cumulative=False)
+            plt.hist([], color='white', label='0 < R12/Rr < 2')
             plt.title(titles[panel],fontsize=16)
-            ax.set_xlabel(xlabels[panel],fontsize=16)
-            ax.set_ylabel(r'N$_{gal}$',fontsize=20)
-            plt.xlim(-0.1,1)
+            ax.set_xlabel(xlabels[panel],fontsize=20)
+            ax.set_ylabel(r'N$_{gal}$/N$_{tot}$',fontsize=20)
+            plt.xlim(-0.1,2)
             ax.legend(fontsize=15)
+            #ks-test statistics
             
         if savefig==True:
             plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
 
         plt.show()
+     
+    def recreate_LCS_mass(self, keep_errs=False, savefig=False):
+        re_r = self.re_rband_cut.copy()
+        re_w3 = self.re_w3band_cut.copy()
+        clusflag = self.clusflag.copy()
+        logmass = self.z0mgscut['logmass'].copy()
+        if keep_errs:
+            re_r = self.re_rband[self.re_w3band>0]
+            re_w3 = self.re_w3band[self.re_w3band>0]
+            clusflag = self.v2_env['cluster_member'].copy()[self.re_w3band>0]
+            logmass = self.z0mgs['logmass'].copy()[self.re_w3band>0]
+            
+        re_r = re_r*0.262
+        re_w3 = re_w3*2.75
+        re_ratio = re_w3/re_r
+
+        #define mass bins --> min<log(Mstar)<max, 6 bins
+        mass_bounds = np.linspace(np.min(logmass),np.max(logmass),7)
+        bin_bounds = []
+        for bound in range(6):
+            bin_bounds.append([mass_bounds[bound],mass_bounds[bound+1]])
         
+        #data_clus = re_ratio[clusflag]
+        #data_ext = re_ratio[~clusflag]
+        
+        #now for the tedious task of creating flags which will separate the ratios into these mass bins :}
+        re_mass_clus=[]
+        re_mass_ext=[]
+        mass_coord=[]
+        for bound in bin_bounds: 
+            bound_flag = (logmass>bound[0])&(logmass<=bound[1])
+            if self.MeanMedian=='mean':
+                avg_re_clus = np.mean(re_ratio[bound_flag & clusflag])
+                avg_re_ext = np.mean(re_ratio[bound_flag & ~clusflag])
+            if self.MeanMedian=='median':
+                avg_re_clus = np.median(re_ratio[bound_flag & clusflag])
+                avg_re_ext = np.median(re_ratio[bound_flag & ~clusflag])
+            mass_coord.append(np.mean(logmass[bound_flag]))
+            re_mass_clus.append(avg_re_clus)
+            re_mass_ext.append(avg_re_ext)
+        
+        plt.figure(figsize=(8,6))
+        
+        plt.scatter(logmass[clusflag],re_ratio[clusflag],color='crimson',s=15,alpha=0.3,label='Core')
+        plt.scatter(logmass[~clusflag],re_ratio[~clusflag],color='blue',s=15,alpha=0.3,label='External')
+        plt.scatter(mass_coord,re_mass_clus,color='crimson',s=250,edgecolors= 'black',label='<Core>')
+        plt.scatter(mass_coord,re_mass_ext,color='blue',s=250,edgecolors= 'black',label='<External>')
+        
+        plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
+        plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
+        plt.title('Median Disk Size Ratios vs. Stellar Masses',fontsize=20)
+        plt.ylim(-0.1,2.5)
+        plt.legend()
+        
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
+
+        plt.show()
+    
 if __name__ == '__main__':
     print("""USAGE:
-    cat = catalogs(conv=False,MeanMedian='mean',MADmultiplier=5) --> initiate catalog class
+    cat = catalogs(conv=False,MeanMedian='mean',MADmultiplier=5) --> initiate catalog class. 
+        MeanMedian will propagate to all plots.
     cat.envbins(savefig=False) --> plots number of subsample galaxies in each environment bin
     cat.env_means(trimOutliers=False, combine_mid=False, savefig=False) --> plots either mean 
         or median size ratio (w3/r) in each environment bin; trimOutliers will output an additional plot which compares
@@ -410,6 +473,12 @@ if __name__ == '__main__':
     cat.compareSGA(savefig=False) --> compares Rose's GALFIT r-band Re values with SGA's non-parametric r50
     cat.comparePSF(savefig=False) --> plots noPSF vs. PSF Re values for w3, r-band (one subplot per band)
     cat.compareKim(savefig=False) --> compares my noPSF w3-band Re values with Rose's noPSF values
-    cat.recreate_LCS_hist(remove_errs=True,savefig=False) --> generates vertically-oriented histogram subplots of R12/Rr distribution, separated into cluster vs. all else (external). remove_errs governs whether the final counts include galaxies with GALFIT error flags.""")
+    cat.recreate_LCS_hist(keep_errs=False,savefig=False) --> generates vertically-oriented histogram subplots of R12/Rr 
+        distribution, separated into cluster vs. all else (external). keep_errs governs whether the final counts include 
+        galaxies with GALFIT error flags (True if yes, False if no).
+    cat.recreate_LCS_mass(keep_errs=False,savefig=False) --> generates scatterplot of size ratio vs. mass bin, the format being 
+        similar to a skeleton version of Figure 13 from Finn+18. I use z0mgs masses here (odd results with MAGPHYS for min/max, 
+        also many galaxies with nan or masked values).
+    """)
     print('-----------------------------------------------------')
     print()
