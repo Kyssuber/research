@@ -12,10 +12,32 @@ from matplotlib import pyplot as plt
 from astropy.table import Table
 from scipy import stats
 from scipy.stats import median_abs_deviation as MAD
+from scipy.stats import kstest
+from astropy.stats import bootstrap
 
 import os
 homedir = os.getenv("HOME")
 
+#bootstrap function courtesy of Rose Finn; 
+def get_bootstrap_confint(d,bootfunc=np.median,nboot=100):
+    # use astropy.stats bootstrap function
+    # it will create nboot resamplings of the data
+    # and calculate the bootfunc of each resample.
+    # it will return the e.g. median for each of the nboot resamples
+    bootsamp = bootstrap(d,bootfunc=bootfunc,bootnum=nboot)
+
+    # sort the bootstrap sampled medians
+    bootsamp.sort()
+
+    # get indices corresponding to 68% confidence interval
+    ilower = int(((nboot - .68*nboot)/2))
+    iupper = nboot-ilower
+
+    # return the e.g. median at the 68% confidence interval
+    # need to subtract from median to get the actual errorbars
+    # like err_lower = actual_median - bootsamp[ilower]
+    # and err_upper = bootsamp[iupper] - actual_median
+    return bootsamp[ilower],bootsamp[iupper]
 
 class catalogs:
     
@@ -393,12 +415,15 @@ class catalogs:
             ax.set_ylabel(r'N$_{gal}$/N$_{tot}$',fontsize=20)
             plt.xlim(-0.1,2)
             ax.legend(fontsize=15)
-            #ks-test statistics
-            
+        
         if savefig==True:
             plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
 
         plt.show()
+        
+        #ks-test statistics
+        print('p-value (> 5e-2, "same distribution"):')
+        print('%.3e'%(kstest(data_clus,data_ext)[1]))
      
     def recreate_LCS_mass(self, keep_errs=False, savefig=False):
         re_r = self.re_rband_cut.copy()
@@ -421,32 +446,54 @@ class catalogs:
         for bound in range(6):
             bin_bounds.append([mass_bounds[bound],mass_bounds[bound+1]])
         
-        #data_clus = re_ratio[clusflag]
-        #data_ext = re_ratio[~clusflag]
-        
         #now for the tedious task of creating flags which will separate the ratios into these mass bins :}
         re_mass_clus=[]
         re_mass_ext=[]
         mass_coord=[]
+        err_clus=[]
+        err_ext=[]
+        
+        #note --> bootstrap errors correspond to 68% confidence interval
         for bound in bin_bounds: 
             bound_flag = (logmass>bound[0])&(logmass<=bound[1])
             if self.MeanMedian=='mean':
                 avg_re_clus = np.mean(re_ratio[bound_flag & clusflag])
                 avg_re_ext = np.mean(re_ratio[bound_flag & ~clusflag])
+                lower_clus, upper_clus = get_bootstrap_confint(re_ratio[bound_flag & clusflag],bootfunc=np.mean,nboot=100)
+                lower_ext, upper_ext = get_bootstrap_confint(re_ratio[bound_flag & ~clusflag],bootfunc=np.mean,nboot=100)
             if self.MeanMedian=='median':
                 avg_re_clus = np.median(re_ratio[bound_flag & clusflag])
                 avg_re_ext = np.median(re_ratio[bound_flag & ~clusflag])
+                lower_clus, upper_clus = get_bootstrap_confint(re_ratio[bound_flag & clusflag],bootfunc=np.median,nboot=100)
+                lower_ext, upper_ext = get_bootstrap_confint(re_ratio[bound_flag & ~clusflag],bootfunc=np.median,nboot=100)
+            
             mass_coord.append(np.mean(logmass[bound_flag]))
             re_mass_clus.append(avg_re_clus)
             re_mass_ext.append(avg_re_ext)
+            
+            #err_clus.append([avg_re_clus-lower_clus, upper_clus-avg_re_clus])
+            #err_ext.append([avg_re_ext-lower_ext, upper_ext-avg_re_ext])
+            err_clus.append([lower_clus, avg_re_clus])
+            err_ext.append([lower_ext, upper_ext])
         
         plt.figure(figsize=(8,6))
         
-        plt.scatter(logmass[clusflag],re_ratio[clusflag],color='crimson',s=15,alpha=0.3,label='Core')
-        plt.scatter(logmass[~clusflag],re_ratio[~clusflag],color='blue',s=15,alpha=0.3,label='External')
-        plt.scatter(mass_coord,re_mass_clus,color='crimson',s=250,edgecolors= 'black',label='<Core>')
-        plt.scatter(mass_coord,re_mass_ext,color='blue',s=250,edgecolors= 'black',label='<External>')
+        plt.scatter(logmass[clusflag],re_ratio[clusflag],color='crimson',s=15,alpha=0.1,label='Core',zorder=1)
+        plt.scatter(logmass[~clusflag],re_ratio[~clusflag],color='blue',s=15,alpha=0.1,label='External',zorder=1)
+        plt.scatter(mass_coord,re_mass_clus,color='crimson',s=250,edgecolors='black',label='<Core>',zorder=3)
+        plt.scatter(mass_coord,re_mass_ext,color='blue',s=250,edgecolors='black',label='<External>',zorder=3)
         
+        for n in range(6):
+            plt.plot([mass_coord[n],mass_coord[n]], [err_clus[n][0],err_clus[n][1]],color='crimson',zorder=2)
+            #create lower, upper caps on errorbars
+            plt.plot([mass_coord[n]-0.08,mass_coord[n]+0.08],[err_clus[n][0],err_clus[n][0]],color='crimson',zorder=2)  
+            plt.plot([mass_coord[n]-0.08,mass_coord[n]+0.08],[err_clus[n][1],err_clus[n][1]],color='crimson',zorder=2)
+            
+            plt.plot([mass_coord[n],mass_coord[n]], [err_ext[n][0],err_ext[n][1]],color='blue',zorder=2)
+            #create lower, upper caps on errorbars
+            plt.plot([mass_coord[n]-0.08,mass_coord[n]+0.08],[err_ext[n][0],err_ext[n][0]],color='blue',zorder=2)
+            plt.plot([mass_coord[n]-0.08,mass_coord[n]+0.08],[err_ext[n][1],err_ext[n][1]],color='blue',zorder=2)
+            
         plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
         plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
         plt.title('Median Disk Size Ratios vs. Stellar Masses',fontsize=20)
@@ -457,6 +504,7 @@ class catalogs:
             plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
 
         plt.show()
+    
     
 if __name__ == '__main__':
     print("""USAGE:
@@ -476,9 +524,9 @@ if __name__ == '__main__':
     cat.recreate_LCS_hist(keep_errs=False,savefig=False) --> generates vertically-oriented histogram subplots of R12/Rr 
         distribution, separated into cluster vs. all else (external). keep_errs governs whether the final counts include 
         galaxies with GALFIT error flags (True if yes, False if no).
-    cat.recreate_LCS_mass(keep_errs=False,savefig=False) --> generates scatterplot of size ratio vs. mass bin, the format being 
-        similar to a skeleton version of Figure 13 from Finn+18. I use z0mgs masses here (odd results with MAGPHYS for min/max, 
-        also many galaxies with nan or masked values).
+    cat.recreate_LCS_mass(keep_errs=False,savefig=False) --> generates scatterplot of size ratio vs. mass bin, 
+        the format being similar to a skeleton version of Figure 13 from Finn+18. I use z0mgs masses here 
+        (odd results with MAGPHYS for min/max, also many galaxies with nan or masked values).
     """)
     print('-----------------------------------------------------')
     print()

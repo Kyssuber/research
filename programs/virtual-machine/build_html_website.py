@@ -4,7 +4,7 @@ GOAL:
 OUTPUT:
 - 
 General instructions for opening .html locally:
-COMMAND+O
+COMMAND+O (that is a capital o, not zero!)
 - 
 '''
 import numpy as np
