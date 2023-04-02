@@ -122,6 +122,22 @@ def get_xy_from_wcs(ra,dec,image):
     xobj,yobj = w.world_to_pixel(c)
     return xobj,yobj
 
+def get_maskname(image):
+    """ return the wise mask for wise images and the r mask for legacy images  """
+    # check for wise extenstion
+    elist = ['W1','W2','W3','W4']
+    
+    for e in elist:
+        if e in image:
+            maskname = image.replace(e+".fits","wise-mask.fits")
+            return maskname
+    # check for legacy
+    llist = ['image-g','image-r','image-z']
+    for l in llist:
+        if l in image:
+            maskname = image.replace(l+".fits","r-mask.fits")
+            return maskname
+        
 def write_galfit_input(galdir, output_dir, objname, ra, dec, bandpass, firstpass=True):
     galname = objname
     #print('inside write_galfit_input: ',galdir,galname)
@@ -164,10 +180,12 @@ def write_galfit_input(galdir, output_dir, objname, ra, dec, bandpass, firstpass
     magzp = mag_zeropoint[bandpass]
     
     # TODO: add mask to galfit input
-
-
-
-    
+    # have updated mask wrapper in halpha gui
+    maskfound = False
+    mask_image = get_maskname(image)
+    if os.path.exists(mask_image):
+        maskfound = True
+        print("found a mask - will implement masking in galfit")
 
     # make of values for xminfit, etc for now
     # get image size
@@ -231,6 +249,8 @@ def write_galfit_input(galdir, output_dir, objname, ra, dec, bandpass, firstpass
     if not firstpass:
         outfile.write('D) '+psf_image+'     # Input PSF image and (optional) diffusion kernel\n')
         outfile.write('E) %i                   # PSF oversampling factor relative to data\n'%(psf_sampling))
+    if maskfound:
+        outfile.write(f'F) {mask_image}     # Input PSF image and (optional) diffusion kernel\n')
     outfile.write('H) '+str(int(round(xminfit)))+' '+str(int(round(xmaxfit)))+' '+str(int(round(yminfit)))+' '+str(int(round(ymaxfit)))+'     # Image region to fit (xmin xmax ymin ymax)\n')
     if not firstpass:
         outfile.write('I) '+str(int(round(convolution_size)))+' '+str(int(round(convolution_size)))+'             # Size of convolution box (x y)\n')
@@ -289,7 +309,7 @@ if __name__ == '__main__':
     
     os.chdir(output_dir)
 
-    # define environment variable to funpack can find the correct variables
+    # define environment variable so funpack can find the correct variables
     os.environ["LD_LIBRARY_PATH"]="/opt/ohpc/pub/compiler/gcc/9.4.0/lib64:/home/siena.edu/rfinn/software/cfitsio-4.2.0/"
 
 
@@ -313,8 +333,6 @@ if __name__ == '__main__':
     ra = float(ra)
     dec = float(dec)
 
-    # TODO - just a test todo
-    
     # reset bandpass to the wavelength that is passed in from the command line
     bandpass = sys.argv[2]
     

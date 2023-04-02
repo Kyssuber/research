@@ -239,7 +239,7 @@ class catalogs:
         #n_bins_z0 = [12,12,12,12,12]
         mybins=np.linspace(7.5,11.5,12)
         
-        fig = plt.figure()
+        fig = plt.figure(figsize=(10,7))
         plt.subplots_adjust(hspace=.4,wspace=.2)
         
         for i in range(1,6):
@@ -254,7 +254,7 @@ class catalogs:
             if z0mgs_comp==True:
                 plt.hist(z0mgs_env_mass[i-1],bins=mybins,alpha=0.2,cumulative=True,density=True,label='z0mgs')
             
-            if i == 1:
+            if (i == 1)&(z0mgs_comp==True):
                 plt.legend(fontsize=18)
             plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
             plt.title(env_names[i-1],fontsize=22)
@@ -417,7 +417,7 @@ class catalogs:
             ax.legend(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/LCS_hists.png',dpi=300)
 
         plt.show()
         
@@ -478,9 +478,9 @@ class catalogs:
         
         plt.figure(figsize=(8,6))
         
-        plt.scatter(logmass[clusflag],re_ratio[clusflag],color='crimson',s=15,alpha=0.1,label='Core',zorder=1)
+        plt.scatter(logmass[clusflag],re_ratio[clusflag],color='crimson',s=15,alpha=0.1,label='Cluster',zorder=1)
         plt.scatter(logmass[~clusflag],re_ratio[~clusflag],color='blue',s=15,alpha=0.1,label='External',zorder=1)
-        plt.scatter(mass_coord,re_mass_clus,color='crimson',s=250,edgecolors='black',label='<Core>',zorder=3)
+        plt.scatter(mass_coord,re_mass_clus,color='crimson',s=250,edgecolors='black',label='<Cluster>',zorder=3)
         plt.scatter(mass_coord,re_mass_ext,color='blue',s=250,edgecolors='black',label='<External>',zorder=3)
         
         for n in range(6):
@@ -501,7 +501,7 @@ class catalogs:
         plt.legend()
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/LCS_mass.png',dpi=300)
 
         plt.show()
     
