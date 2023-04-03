@@ -40,10 +40,10 @@ def grab_input_cutouts(catalog, sgaparams, input_cutouts_path, target_folder):
     #have to retrieve these images from the RA directories.
     for i in range(len(catalog)):
         
-        print(VFIDs[i])
+        print(VFIDs[i]+' input time')
         group_name = group_names[sgaparams['VFID']==VFID_V1s[i]]
         group_name = group_name[0]
-        print(group_name)
+        #print(group_name)
 
         ra_int = int(np.floor(RAs[i]))
         ra_folder = input_cutouts_path+str(ra_int)+'/'
@@ -66,16 +66,31 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
     objnames = catalog['objname']
 
     for i in range(len(catalog)):
-        print('Moving '+VFIDs[i])
+        print('Moving '+VFIDs[i]+' output file, if any.')
         galaxy_folder = host_folder_path+VFIDs[i]+'/'
         output_mosaics_nopsf = glob.glob(galaxy_folder+'*out1.fits')
         output_mosaics_psf = glob.glob(galaxy_folder+'*out2.fits')
         output_mosaics = np.concatenate([output_mosaics_nopsf,output_mosaics_psf])
 
-        for im in output_mosaics:
+        for im in output_mosaics:   #if no images in output_mosaics, then none will be cp'd. if only one, then only one will be cp'd. usw.
             print('Moving '+im)
             os.system('cp '+im+' '+target_folder)
 
+def grab_mask_images(catalog, host_folder_path, target_folder):
+    VFIDs = catalog['VFID']
+    objnames = catalog['objname']
+    
+    for i in range(len(catalog)):
+        print('Moving '+VFIDs[i]+' mask(s), if any.')
+        galaxy_folder = host_folder_path+VFIDs[i]+'/'
+        rmask = glob.glob(galaxy_folder+'*r-mask.fits')
+        w3mask = glob.glob(galaxy_folder+'*wise-mask.fits')
+        masks = np.concatenate([rmask,w3mask])
+        
+        for im in masks:   #if no images in masks, then none will be cp'd. if only one, then only one will be cp'd. usw.
+            print('Moving '+im)
+            os.system('cp '+im+' '+target_folder)
+    
 if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
