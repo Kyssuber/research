@@ -105,7 +105,11 @@ if __name__ == '__main__':
   print('Creating target directory '+onefolder_path)
   os.system('mkdir '+onefolder_path)
   
-  'Moving postage stamp cutouts for rband and W3...'
+  print('Moving postage stamp cutouts for rband and W3...')
   grab_input_cutouts(vf, sga_params, input_cutouts_path, onefolder_path)
-  'Moving GALFIT output mosaics for rband and w3...'
+  print('Moving GALFIT output mosaics for rband and w3...')
   grab_output_cutouts(vf, host_folder_path, onefolder_path)
+  print('Moving r-band and W3 mask images...')
+  grab_mask_images(vf, host_folder_path, onefolder_path)
+
+  
