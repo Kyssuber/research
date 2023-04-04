@@ -68,9 +68,9 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
     for i in range(len(catalog)):
         print('Moving '+VFIDs[i]+' output file, if any.')
         galaxy_folder = host_folder_path+VFIDs[i]+'/'
-        output_mosaics_nopsf = glob.glob(galaxy_folder+'*out1.fits')
-        output_mosaics_psf = glob.glob(galaxy_folder+'*out2.fits')
-        output_mosaics = np.concatenate([output_mosaics_nopsf,output_mosaics_psf])
+        output_mosaics_r = glob.glob(galaxy_folder+'*r-out*')
+        output_mosaics_w3 = glob.glob(galaxy_folder+'*W3-out*')
+        output_mosaics = np.concatenate([output_mosaics_r,output_mosaics_w3])
 
         for im in output_mosaics:   #if no images in output_mosaics, then none will be cp'd. if only one, then only one will be cp'd. usw.
             print('Moving '+im)
