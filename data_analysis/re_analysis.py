@@ -366,8 +366,8 @@ class catalogs:
         plt.yscale('log')
         plt.legend(fontsize=14,loc='upper left')
         
-        plt.xlabel('Kim w3 (px) (masking)',fontsize=18)
-        plt.ylabel('Rose w3 (px) (no masking)',fontsize=18)
+        plt.xlabel('Kim w3 (px)',fontsize=18)
+        plt.ylabel('Rose w3 (px) ',fontsize=18)
         if self.conv==True:
             plt.title('Re Comparison (PSF)',fontsize=20)
         if self.conv==False:
@@ -412,7 +412,7 @@ class catalogs:
             plt.hist([], color='white', label='0 < R12/Rr < 2')
             plt.title(titles[panel],fontsize=16)
             ax.set_xlabel(xlabels[panel],fontsize=20)
-            ax.set_ylabel(r'N$_{gal}$/N$_{tot}$',fontsize=20)
+            ax.set_ylabel(r'N$_{gal}$',fontsize=20)
             plt.xlim(-0.1,2)
             ax.legend(fontsize=15)
         
@@ -422,8 +422,16 @@ class catalogs:
         plt.show()
         
         #ks-test statistics
-        print('p-value (> 5e-2, "same distribution"):')
-        print('%.3e'%(kstest(data_clus,data_ext)[1]))
+        print('p-value (> 0.05, "same distribution"):')
+        print('%.3f'%(kstest(data_clus[data_clus<=2],data_ext[data_ext<=2])[1]))
+        print()
+        print('Mean cluster size ratio: %.3f'%(np.mean(data_clus[data_clus<=2])))
+        print('Median cluster size ratio: %.3f'%(np.median(data_clus[data_clus<=2])))
+        print('Mean external size ratio: %.3f'%(np.mean(data_ext[data_ext<=2])))
+        print('Median external size ratio: %.3f'%(np.median(data_ext[data_ext<=2])))
+        print()
+        print('Cluster mean/median uncertainty: %.3f'%(np.std(data_clus[data_clus<=2])/np.sqrt(len(data_clus[data_clus<=2]))))
+        print('External mean/median uncertainty: %.3f'%(np.std(data_ext[data_ext<=2])/np.sqrt(len(data_ext[data_ext<=2]))))
      
     def recreate_LCS_mass(self, keep_errs=False, savefig=False):
         re_r = self.re_rband_cut.copy()
