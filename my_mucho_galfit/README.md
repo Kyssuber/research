@@ -1,10 +1,10 @@
 **INSTRUCTIONS FOR build_html_website_MG.py**
 
-USAGE (iPython/Jupyter; also applies to build_html_website.py):
+**USAGE** (iPython/Jupyter):
 
-    ---Running this program automatically initiates the HomePage class (hp)
+---Running this program automatically initiates the HomePage class (hp)
     
-    ---if the -test arg is False, then replace single_galpage with hp in order to generate all images and such:
+---if the -test arg is False, then replace single_galpage with hp in order to generate all images and such:
            
            --hp.html_setup() --> create .html homepages for all galaxies in the VF subsample; also initiates GalPage 
             class(single_galpage) for every galaxy in a loop, creating all relevant folders and files.
@@ -36,22 +36,22 @@ USAGE (iPython/Jupyter; also applies to build_html_website.py):
             
             **The current functionality is such that testing will have to occur in an iPython or Jupyter/notebook environment. ApoloGEEZ.**
 
-BEWARE OF MEMORY LEAKS WHEN RUNNING hp.create_galfit_mosaics(). I recommend taking care before executing that the user uses one psf_index at a time, then quit() iPython, then repeat. The additional (psf_index) arg is the best failsafe I could manage. I am a humble README.md. 
+**BEWARE OF MEMORY LEAKS** when running hp.create_galfit_mosaics(). I recommend taking care before executing that the user uses one psf_index at a time, then quit() iPython, then repeat. The additional (psf_index) arg is the best failsafe I could manage. I am a humble README.md. 
 
-USAGE (Terminal python):
+**USAGE** (Terminal python):
 
 *use -h or --help for the list of arguments.*
 
 '''python build_html_website_MG.py -h'''
    
-   <-param_file path/to/paramfile (name of parameter file, no single or double quotation marks)>
+   *-param_file path/to/paramfile (name of parameter file, no single or double quotation marks)
    
-   <-test (indicates that user is wanting to test the GalPage class functions)>
+   *-test (indicates that user is wanting to test the GalPage class functions)
    
-   <-mask (instructs script to create mask mosaics)>
+   *-mask (instructs script to create mask mosaics)
    
-   <-LS (creates LS cutouts, mosaics)>
+   *-LS (creates LS cutouts, mosaics)
    
-   <-galfit (creates galfit output mosaics for all psf_indices specified in param_file)>
+   *-galfit (creates galfit output mosaics for all psf_indices specified in param_file)
    
-   <-html (creates .html scripts for galpages and homepage)>
+   *-html (creates .html scripts for galpages and homepage)
