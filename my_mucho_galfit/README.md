@@ -1,4 +1,4 @@
-# INSTRUCTIONS FOR build_html_website_MG.py
+# Instructions for build_html_website_MG.py
 
 ## USAGE (iPython/Jupyter):
 
