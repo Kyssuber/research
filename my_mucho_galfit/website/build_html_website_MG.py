@@ -631,7 +631,7 @@ if __name__ == '__main__':
         
         #additional memory leak precaution measures...
         if '-mask' in sys.argv:
-            hp.create_model_mosaics()
+            hp.create_mask_mosaics()
 
         if '-LS' in sys.argv:
             hp.create_LS_figures()
