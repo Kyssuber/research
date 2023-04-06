@@ -10,19 +10,24 @@
 ## programs
 
 ### virtual-machine
+- currently relatively vacant. all 'virtual-machine' code is found in the Master branch.
+
+##### output_mosaics.py -->
+GOAL: 
+- generate galfit output mosaic .png files for each virgo-filament galaxy 
+
+
+### generating_html_locally
 - note that all can be run outside of ipython environment. 
 - e.g., in terminal, python make_inputcomp.py -h 
 - the aim is to write a series of routines that enable me to run galfit on vigo-filament galaxies using Rose Finn's virtual machine
 
 #### build_html_website.py
-- script that writes an html file in order to generate a locally-hosted website to 'easily' navigate galfit output mosaics and parameters for the Virgo subsample. Instructions are physically taped to a desk monitor which is out of commission. 
+- script that writes an html file in order to generate a locally-hosted website to 'easily' navigate galfit output mosaics and parameters for the Virgo subsample. Instructions are physically taped to a desk monitor that is out of commission. 
 
-#### params_build html_website.txt
+#### params_build_html_website.txt
 - list of script parameters to tailor the build_html_website.py outputs to the user's dreams and desires.
 
-##### output_mosaics.py -->
-GOAL: 
-- generate galfit output mosaic .png files for each virgo-filament galaxy 
 
 ### mucho-galfit
 - comprises .py files to facilitate the running of galfit in parallel on the Siena HPC machine
@@ -47,6 +52,8 @@ GOAL:
 > python sonification_galaxyfits.py -h
 
 > python animiation_galaxyfits.py -h
+
+- For an in-progress GUI I am in the midst of developing in my heaps of recreation time, please have a glimpse at my 'GUI Odyssey' GitHub repository. Thank you, and good night.
 
 
 

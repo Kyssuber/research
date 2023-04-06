@@ -63,11 +63,11 @@ class HomePage():
             self.cutcat = self.cat
          
         #call the remaining parameter files...
-        self.w3params_nopsf = Table.read(self.path_to_params+'/output_params_W3_nopsf.fits') 
+        self.w3params_nopsf = Table.read(self.path_to_params+'output_params_W3_nopsf.fits') 
         self.params_w3_nopsf = self.w3params_nopsf.copy()  #will help to identify groups below...somewhere. This script is becoming unruly.
-        self.w3params_psf = Table.read(self.path_to_params+'/output_params_W3_psf.fits')
-        self.rparams_nopsf = Table.read(self.path_to_params+'/output_params_r_nopsf.fits')
-        self.rparams_psf = Table.read(self.path_to_params+'/output_params_r_psf.fits')
+        self.w3params_psf = Table.read(self.path_to_params+'output_params_W3_psf.fits')
+        self.rparams_nopsf = Table.read(self.path_to_params+'output_params_r_nopsf.fits')
+        self.rparams_psf = Table.read(self.path_to_params+'output_params_r_psf.fits')
     
     def html_setup(self):
         
@@ -617,11 +617,14 @@ if __name__ == '__main__':
     path_to_params = local_path+param_dict['path_to_params']+'/'
     path_to_galhtml = local_path+param_dict['path_to_galhtml']+'/'
     
+    #creates directories if not already present
+    create_folder(local_path)
     create_folder(LS_mosaic_folder)
     create_folder(gal_mosaic_folder)
     create_folder(LS_cutout_folder)
     create_folder(mask_folder)
     create_folder(path_to_galhtml)
+    create_folder(path_to_params)
     
     if test=='False':
         hp = HomePage(homepage_name=homepage_name, website_title=website_title, home_color=home_color, catalog=catalog, 

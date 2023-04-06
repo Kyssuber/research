@@ -10,7 +10,6 @@ image_resolution = {'FUV':6,'NUV':6,'g':1.5,'r':1.5,'z':1.5,'W1':6.1,'W2':6.4,'W
 import numpy as np
 from matplotlib import pyplot as plt
 from astropy.table import Table
-from scipy import stats
 from scipy.stats import median_abs_deviation as MAD
 from scipy.stats import kstest
 from astropy.stats import bootstrap
@@ -207,14 +206,14 @@ class catalogs:
         plt.xticks(index, env_names, rotation=10, fontsize=20)
         plt.tick_params(axis='both', which='major', labelsize=15)
         plt.grid(alpha=0.2)
-        plt.ylabel(r'Size Ratio (12$\mu m/$optical)',fontsize=20)
+        plt.ylabel(r'r$_{12}$/r$_r$',fontsize=20)
         
         plt.ylim(0.6,0.96)
         
         plt.legend(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/env_ratio.png', dpi=300)
+            plt.savefig(homedir+'/Desktop/env_ratio.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
             
         plt.show()
     
@@ -260,7 +259,7 @@ class catalogs:
             plt.title(env_names[i-1],fontsize=22)
                     
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/mass_hist.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=300)
         
         plt.show()
  
@@ -270,27 +269,33 @@ class catalogs:
         r50_gal_r = self.re_rband_cut.copy()*0.262 #arcsec
         
         plt.figure(figsize=(8,6))
-        plt.scatter(r50_sga_r,r50_gal_r,color='orange')
-        plt.axline([0, 0], [1, 1], color='black',label='1-to-1')
+        plt.scatter(r50_sga_r,r50_sga_r/r50_gal_r,color='crimson',edgecolors='black',alpha=0.4)
         
-        plt.xlabel('SGA r50 (r-band)',fontsize=18)
-        plt.ylabel('GALFIT r50 (r-band)',fontsize=18)
+        plt.xlabel(r'r50$_{SGA}$',fontsize=18)
+        plt.ylabel(r'r50$_{SGA}$/r50$_{GALFIT}$',fontsize=18)
         if self.conv==True:
-            plt.title('Re Comparison (PSF)',fontsize=20)
+            plt.title('r-band r50 Comparison (PSF)',fontsize=20)
         if self.conv==False:
-            plt.title('Re Comparison (noPSF)',fontsize=20)
+            plt.title('r-band r50 comparison (noPSF)',fontsize=20)
         
-        slope, intercept, r_value, p_value, std_err = stats.linregress(r50_sga_r,r50_gal_r)
+        m, b = np.polyfit(r50_sga_r,r50_sga_r/r50_gal_r,1)
+#        slope, intercept, r_value, p_value, std_err = stats.linregress(r50_sga_r,r50_gal_r)
         # Create empty plot with blank marker containing the extra label
-        plt.plot([], [], ' ', label=f'Slope (linregress) {round(slope,3)}')
+        
+        plt.axhline(1,color='black',label='1-to-1')
+        
+        plt.plot([np.min(r50_sga_r),np.max(r50_sga_r)], [np.min(m*r50_sga_r+b),np.max(m*r50_sga_r+b)], color='crimson', alpha=0.5,
+                 label=f'Best-fit slope (np.polyfit) {round(m,3)}')
                 
         plt.legend(fontsize=16)
                 
         plt.xscale('log')
         plt.yscale('log')
+        #plt.xlim(0,100)
+        #plt.ylim(0,2)
                 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/SGA_r50_comparison.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/SGA_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
         
         plt.show()
     
@@ -342,7 +347,7 @@ class catalogs:
             plt.legend(fontsize=14)
  
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/PSF_r50_comparison.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/PSF_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
         
         plt.show()
     
@@ -377,7 +382,7 @@ class catalogs:
         print(self.kimparams_cut['VFID'][~self.outlier_flag])
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
         
         plt.show()
 
@@ -417,7 +422,7 @@ class catalogs:
             ax.legend(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/LCS_hists.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/LCS_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
 
         plt.show()
         
@@ -437,13 +442,17 @@ class catalogs:
         re_r = self.re_rband_cut.copy()
         re_w3 = self.re_w3band_cut.copy()
         clusflag = self.clusflag.copy()
+        richflag = self.rgflag.copy()   #for SAMI paper
+        
         logmass = self.z0mgscut['logmass'].copy()
         if keep_errs:
             re_r = self.re_rband[self.re_w3band>0]
             re_w3 = self.re_w3band[self.re_w3band>0]
             clusflag = self.v2_env['cluster_member'].copy()[self.re_w3band>0]
+            richflag = self.v2_envcut['rich_group_memb'].copy()[self.re_w3band>0]   #for SAMI paper
             logmass = self.z0mgs['logmass'].copy()[self.re_w3band>0]
-            
+         
+        bothflag=(clusflag|richflag)
         re_r = re_r*0.262
         re_w3 = re_w3*2.75
         re_ratio = re_w3/re_r
@@ -509,7 +518,7 @@ class catalogs:
         plt.legend()
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/LCS_mass.png',dpi=300)
+            plt.savefig(homedir+'/Desktop/LCS_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
 
         plt.show()
     
