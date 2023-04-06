@@ -63,11 +63,11 @@ class HomePage():
             self.cutcat = self.cat
          
         #call the remaining parameter files...
-        self.w3params_nopsf = Table.read(self.path_to_params+'/output_params_W3_nopsf.fits') 
+        self.w3params_nopsf = Table.read(self.path_to_params+'output_params_W3_nopsf.fits') 
         self.params_w3_nopsf = self.w3params_nopsf.copy()  #will help to identify groups below...somewhere. This script is becoming unruly.
-        self.w3params_psf = Table.read(self.path_to_params+'/output_params_W3_psf.fits')
-        self.rparams_nopsf = Table.read(self.path_to_params+'/output_params_r_nopsf.fits')
-        self.rparams_psf = Table.read(self.path_to_params+'/output_params_r_psf.fits')
+        self.w3params_psf = Table.read(self.path_to_params+'output_params_W3_psf.fits')
+        self.rparams_nopsf = Table.read(self.path_to_params+'output_params_r_nopsf.fits')
+        self.rparams_psf = Table.read(self.path_to_params+'output_params_r_psf.fits')
     
     def html_setup(self):
         
@@ -530,7 +530,7 @@ class GalPage():
             
 if __name__ == '__main__':    
     
-    print("""*use -h or --help for the list of arguments*
+    print("""If running in terminal, use -h or --help for the list of arguments. Otherwise...*
     
     USAGE (iPython/Jupyter):
     ---Running this program automatically initiates the HomePage class (hp)
@@ -563,11 +563,6 @@ if __name__ == '__main__':
     if '-param_file' in sys.argv:
         p = sys.argv.index('-param_file')
         param_file = str(sys.argv[p+1])
-        
-    if '-test' in sys.argv:
-        test = True
-    else:
-        test = False
            
     #create dictionary with keywords and values, from parameter .txt file
 
@@ -614,13 +609,21 @@ if __name__ == '__main__':
     path_to_params = local_path+param_dict['path_to_params']+'/'
     path_to_galhtml = local_path+param_dict['path_to_galhtml']+'/'
     
+    #create the MASTER DIRECTORY. MWUHAHAHAHAHA.
+    create_folder(local_path)
+    #moves fits folder (created using another script) into local path, if not already done.
+    if os.path.exists(fits_folder)==False:
+        os.system('mv /mnt/astrophysics/kconger_wisesize/all_input_fits '+local_path)
+    #create rest of directories if not already present
     create_folder(LS_mosaic_folder)
     create_folder(gal_mosaic_folder)
     create_folder(LS_cutout_folder)
     create_folder(mask_folder)
     create_folder(path_to_galhtml)
+    create_folder(path_to_params)
     
-    if test=='False':
+    if '-test' not in sys.argv:
+        print('test is false')
         hp = HomePage(homepage_name=homepage_name, website_title=website_title, home_color=home_color, catalog=catalog, 
                       dummycat=dummycat, local_path=local_path, path_to_galhtml=path_to_galhtml, path_to_params=path_to_params, 
                       LS_cutout_folder=LS_cutout_folder, LS_mosaic_folder=LS_mosaic_folder, mask_folder=mask_folder, 
@@ -640,7 +643,8 @@ if __name__ == '__main__':
         if '-html' in sys.argv:
             hp.html_setup()  
         
-    if test=='True':
+    if '-test' in sys.argv:
+        print('test is true')
         catalog=Table.read(catalog)
         dummycat=Table.read(dummycat)
         
