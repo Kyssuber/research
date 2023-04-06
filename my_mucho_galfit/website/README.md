@@ -1,3 +1,12 @@
+# Instructions for move_fits_one_folder.py
+
+- This script will move fits files from the mucho-galfit output directories into one separate folder, located in /mnt/astrophysics/kconger_wisesize/. These files include the galaxy cutout and mask images for W3 and r-band, as well as the GALFIT output mosaic fits (four each --> W3/nopsf, r/nopsf, W3/psf, r/psf. Please run this bugger before proceeding to the main website-building functions.
+
+## USAGE (wherever code is made and sold):
+
+   > python move_fits_one_folder.py
+
+
 # Instructions for build_html_website_MG.py
 
 ## USAGE (iPython/Jupyter):
