@@ -13,7 +13,7 @@ This should be run from a directory that contains
 - noise image
 
 To run:
-python ~/github/virgowise/run1galfit.py galname
+python ~/github/virgowise/run1galfit.py galname bandpass
 
 - galname should be the VFID and should correspond to the subdirectories in 
 /mnt/astrophysics/rfinn/muchogalfit-output (grawp directory)
@@ -135,7 +135,7 @@ def get_maskname(image):
     llist = ['image-g','image-r','image-z']
     for l in llist:
         if l in image:
-            maskname = image.replace(l+".fits","r-mask.fits")
+            maskname = image.replace(l+".fits","image-r-mask.fits")
             return maskname
         
 def write_galfit_input(galdir, output_dir, objname, ra, dec, bandpass, firstpass=True):
@@ -183,10 +183,20 @@ def write_galfit_input(galdir, output_dir, objname, ra, dec, bandpass, firstpass
     # have updated mask wrapper in halpha gui
     maskfound = False
     mask_image = get_maskname(image)
+    #print()
+    #print(f"mask name = {mask_image}")
+    #print()
+    #print(f"cwd = {os.getcwd()}")
+    #print()
+    #print(f"listdir = {os.listdir()}")
+    #print()
     if os.path.exists(mask_image):
         maskfound = True
-        print("found a mask - will implement masking in galfit")
-
+        print(f"found mask {mask_image}.  Will implement masking in galfit")
+    else:
+        print()
+        print(f"no mask found for {image} {mask_image}- will NOT implement masking in galfit")
+        print()
     # make of values for xminfit, etc for now
     # get image size
 
@@ -350,6 +360,7 @@ if __name__ == '__main__':
     print('running galfit')
     os.system(f"galfit galfit.input1")
 
+
     # TODO: read galfit output, and create new input to run with convolution
     write_galfit_input(data_dir, output_dir, objname, ra, dec, bandpass, firstpass=False)
 
@@ -357,5 +368,5 @@ if __name__ == '__main__':
     # TODO: make sure I am using the correct PSF images
     print('running galfit second time')
     os.system(f"galfit galfit.input2")
-    
+
     os.chdir(topdir)
