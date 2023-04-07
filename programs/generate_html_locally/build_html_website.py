@@ -397,9 +397,9 @@ class GalPage():
         images = [self.wise_im, self.w3_mask, self.r_im, self.r_mask]
         
         #norms for images but not for masks
-        v1 = [scoreatpercentile(images[0],percentile1),None,scoreatpercentile(images[2],percentile1),None]
-        v2 = [scoreatpercentile(images[0],percentile2),None,scoreatpercentile(images[2],percentile2),None]
-        norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),None, 
+        v1 = [scoreatpercentile(images[0],percentile1),0,scoreatpercentile(images[2],percentile1),0]
+        v2 = [scoreatpercentile(images[0],percentile2),1,scoreatpercentile(images[2],percentile2),1]
+        norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),None,
                  simple_norm(images[2],'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),None]
               
         plt.figure(figsize=(14,6))
@@ -407,9 +407,16 @@ class GalPage():
         for i,im in enumerate(images): 
             if i<=1:
                 ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)
+                if i==0:
+                    plt.imshow(im,origin='lower',cmap=cmap,norm=norms[i])
+                if i==1:
+                    plt.imshow(im,origin='lower',cmap=cmap,vmin=v1[i],vmax=v2[i])
             if i>=2:
                 ax = plt.subplot(1,4,i+1,projection=self.wcs_r)
-            plt.imshow(im,origin='lower',cmap=cmap,norm=norms[i])
+                if i==2:
+                    plt.imshow(im,origin='lower',cmap=cmap,norm=norms[i])
+                if i==3:
+                    plt.imshow(im,origin='lower',cmap=cmap,vmin=v1[i],vmax=v2[i])
             ax.set_xlabel('RA')
             if i == 0:
                 ax.set_ylabel('DEC')
