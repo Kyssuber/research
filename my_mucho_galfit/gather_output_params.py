@@ -103,7 +103,7 @@ class output_galaxy:
             image_header = fits.getheader(self.outimage,2)   #grab header information from the model image
             for hkey in header_keywords[n]:
                 s=str(image_header[hkey])
-                if s.find('[') > -1:
+                if s.find('[')+1 > 0:   #if a parameter is held fixed (meaning the parameter is enclosed with brackets and does not contain an uncertainty)
                     s=s.replace('[','')
                     s=s.replace(']','')
                     t=s.split('+/-')
@@ -114,7 +114,7 @@ class output_galaxy:
                         values=(float(t[0]),float(t[1]))   #fit and error
                         temp.append(values[0])
                         temp.append(values[1])
-                    except ValueError:
+                    except ValueError:   #for numerical errors
                         # look for * in the string, which indicates numerical problem
                         if t[0].find('*') > -1:
                             numerical_error_flag=1   #numerical error is now a 1. not hooray.
