@@ -103,31 +103,31 @@ class output_galaxy:
             image_header = fits.getheader(self.outimage,2)   #grab header information from the model image
             for hkey in header_keywords[n]:
                 s=str(image_header[hkey])
+            
                 if s.find('[')+1 > 0:   #if a parameter is held fixed (meaning the parameter is enclosed with brackets and does not contain an uncertainty)
                     s=s.replace('[','')
                     s=s.replace(']','')
-                    t=s.split('+/-')
-                    values=(float(t[0]),0.)   #fit and error
-                else:
-                    t=s.split('+/-')
-                    try:
+                    s=f'{s} +/- {0.}'   #fit and error
+                
+                t=s.split('+/-')
+
+                try:
+                    values=(float(t[0]),float(t[1]))   #fit and error
+                    temp.append(values[0])
+                    temp.append(values[1])
+                except ValueError:   #for numerical errors
+                    # look for * in the string, which indicates numerical problem
+                    if t[0].find('*')+1 > 0:
+                        numerical_error_flag=1   #numerical error is now a 1. not hooray.
+                        t[0]=t[0].replace('*','')
+                        t[1]=t[1].replace('*','')
                         values=(float(t[0]),float(t[1]))   #fit and error
                         temp.append(values[0])
                         temp.append(values[1])
-                    except ValueError:   #for numerical errors
-                        # look for * in the string, which indicates numerical problem
-                        if t[0].find('*') > -1:
-                            numerical_error_flag=1   #numerical error is now a 1. not hooray.
-                            t[0]=t[0].replace('*','')
-                            t[1]=t[1].replace('*','')
-                            values=(float(t[0]),float(t[1]))   #fit and error
-                            temp.append(values[0])
-                            temp.append(values[1])
-                    except IndexError:   #for CHI2NU
+                except IndexError:   #for CHI2NU
                         chi2nu=float(t[0])
                         continue
-                if printflag:
-                    print('{:6s}: {:s}'.format(hkey,s))
+        
             temp.append(numerical_error_flag)
             temp.append(chi2nu)
             if n == 0:   #if galaxy is "primary" or central, then add a '1' flag
@@ -179,8 +179,8 @@ if __name__ == '__main__':
             param_rows = g.parse_galfit()
             for row in param_rows:
                 row_vfid = row[0]  #VFID is the first entry in the row list
-                if len(row)==len(dtypes):   #if no parameters are set fixed, then add row to table (in a few group cases, Rose set parameters to the fixed no-psf values in order to avoid galfit crashing)
-                    full_sample_table[full_sample_table['VFID']==row_vfid] = row   #change zeros row to parameter row
+                #if len(row)==len(dtypes):   #if no parameters are set fixed, then add row to table (in a few group cases, Rose set parameters to the fixed no-psf values in order to avoid galfit crashing)
+                full_sample_table[full_sample_table['VFID']==row_vfid] = row   #change zeros row to parameter row
                             
             index=len(full_sample_table)-1
 
