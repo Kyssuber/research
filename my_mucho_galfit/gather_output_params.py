@@ -30,38 +30,26 @@ header = ['VFID','xc','xc_err','yc','yc_err','mag','mag_err','re','re_err','nser
     
 
 class output_galaxy:
-    def __init__(self,galname=None,vfid=None,objname=None,vfid_v1=None,outimage=None,convflag=None,band='W3',ncomp=1):
+    def __init__(self, vfid=None, objname=None, outimage=None, convflag=None, fovtab=None, band='W3', ncomp=1):
         
-        self.galname=galname
         self.vfid=vfid
         self.objname=objname
-        self.vfid_v1=vfid_v1
-        
-        '''
-        if vfid in dummycat['central galaxy']:
-            self.ncomp = len(np.where(dummycat['central galaxy'] == vfid)[0]) + 1
-        else:
-            self.ncomp=ncomp
-        '''
+        self.fovtab=fovtab
         self.ncomp=ncomp
         
         #if band is an integer, than prepend with w to indicate that the 'band' is a WISE channel
         self.band = band
 
-        #outimage = str(self.galname)+'-'+str(self.band)+'-'+str(self.ncomp)+'Comp-galfit-out.fits'
-        #self.outimage=outimage
-        outimage = str(self.objname)+'-'+str(self.band)+'-out1.fits'
+        outimage = glob.glob(str(self.objname)+'*'+str(self.band)+'-out1.fits')[0]
         if convflag==str(1):
-            outimage = str(self.objname)+'-'+str(self.band)+'-out2.fits'
+            outimage = glob.glob(str(self.objname)+'*'+str(self.band)+'out2.fits')[0]
         self.outimage=outimage
         print(self.outimage)
-        
         
     #takes GALFIT .fits output header and extracts the parameter/error values, outputs list of fit parameters
     def parse_galfit(self,printflag=False):
         
-        numerical_error_flag=0
-        #the following assumes that the maximum number of sersic objects in a given cutout is 3. number may differ for WISESize.
+        #the following assumes that the maximum number of VFID sersic objects in a given cutout is 4.
         if self.ncomp == 1:
             header_keywords1=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','2_SKY','CHI2NU']
             header_keywords=[header_keywords1]
@@ -73,129 +61,118 @@ class output_galaxy:
             header_keywords1=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','4_SKY','CHI2NU']
             header_keywords2=['2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','4_SKY','CHI2NU']
             header_keywords3=['3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_AR','4_SKY','CHI2NU']
-            header_keywords=[header_keywords1,header_keywords2,header_keywords3]
+            
+        if self.ncomp == 3:
+            header_keywords1=['1_XC','1_YC','1_MAG','1_RE','1_N','1_AR','1_PA','4_SKY','CHI2NU']
+            header_keywords2=['2_XC','2_YC','2_MAG','2_RE','2_N','2_AR','2_PA','4_SKY','CHI2NU']
+            header_keywords3=['3_XC','3_YC','3_MAG','3_RE','3_N','3_AR','3_PA','4_SKY','CHI2NU']
+            header_keywords4=['4_XC','4_YC','4_MAG','4_RE','4_N','4_AR','4_PA','5_SKY','CHI2NU']
+            header_keywords=[header_keywords1,header_keywords2,header_keywords3,header_keywords4]
 
         fit_parameters=[]
         
+        #if galaxy is the 'primary' of a group, isolate all VFIDs in the group
+        if self.fovtab is None:
+            group_vfids = self.fovtab['col1']
         
+        #parse parameters for each galaxy in the cutout/model/etc.
         for n in range(self.ncomp):
-            temp=[]
-            if n == 0:
-                temp.append(self.galname)   #if no external galaxies, only include central galaxy; if external galaxies, then first index will represent the central galaxy...then proceed to next index.
-            else:
-                indices = np.where(dummycat['central galaxy'] == self.vfid)[0]  #find where external(s) have self.vfid as 'host'
-                index = indices[n-1]   #only want one index; if n=1, then we want the first external galaxy, meaning the 0th element in the indices list
-                temp.append(dummycat['ID'][index])   #append the name (ID) of the external galaxy
             
-            image_header = fits.getheader(self.outimage,2)
+            numerical_error_flag=0   #default assumption is that galfit ran successfully on the galaxy. hooray.
+            
+            temp=[]   #create temporary list that will hold the parameters for galaxy n
+        
+            if self.ncomp>1:
+                temp.append(group_vfids[n])   #if ncomp>1, use the list of VFIDs to create first list item
+            else:
+                temp.append(self.VFID)  #if ncomp=1, simply use the central galaxy's VFID
+            
+            image_header = fits.getheader(self.outimage,2)   #grab header information from the model image
             for hkey in header_keywords[n]:
                 s=str(image_header[hkey])
                 if s.find('[') > -1:
                     s=s.replace('[','')
                     s=s.replace(']','')
                     t=s.split('+/-')
-                    values=(float(t[0]),0.)# fit and error
+                    values=(float(t[0]),0.)   #fit and error
                 else:
                     t=s.split('+/-')
                     try:
-                        values=(float(t[0]),float(t[1]))# fit and error
+                        values=(float(t[0]),float(t[1]))   #fit and error
                         temp.append(values[0])
                         temp.append(values[1])
                     except ValueError:
                         # look for * in the string, which indicates numerical problem
                         if t[0].find('*') > -1:
-                            numerical_error_flag=1
+                            numerical_error_flag=1   #numerical error is now a 1. not hooray.
                             t[0]=t[0].replace('*','')
                             t[1]=t[1].replace('*','')
-                            values=(float(t[0]),float(t[1]))# fit and error
+                            values=(float(t[0]),float(t[1]))   #fit and error
                             temp.append(values[0])
                             temp.append(values[1])
-                    except IndexError: # for CHI2NU
+                    except IndexError:   #for CHI2NU
                         chi2nu=float(t[0])
                         continue
                 if printflag:
                     print('{:6s}: {:s}'.format(hkey,s))
             temp.append(numerical_error_flag)
             temp.append(chi2nu)
-            if n == 0:   #if galaxy is "central", then add a '1' flag
+            if n == 0:   #if galaxy is "primary" or central, then add a '1' flag
                 temp.append(1)
             else:
                 temp.append(0)
-            print(temp)
-            fit_parameters.append(temp)
-        #print(len(fit_parameters))
-        return fit_parameters
 
+            fit_parameters.append(temp)
+        return fit_parameters
 
 if __name__ == '__main__':
     
-    dtype=[str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float]
-    full_sample_table = Table(names=header,dtype=dtype)
+    #create empty table
+    dtypes=[str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float]
+    full_sample_table = Table(names=header,dtype=dtypes)
     
+    #for every galaxy in the vf subsample, add an empty row to the table
+    for i in range(len(cat)):
+        full_sample_table.add_row()
+    
+    #populate the VFID column with all subsample VFIDs
+    full_sample_table['VFID'] = cat['VFID']
+    
+    #try automating? naw.
     convflag = input('conv? enter 0 (n) or 1 (y): ')
     band = input('band? enter W1-4, r for r-band: ')
 
-    #for every galaxy in the VF subsample catalog...
+    #for every galaxy in the VF subsample catalog
     for i in range(len(cat)):        
         
-        #add row of zeros for ith central galaxy (and each "off-centered" sersic object, if applicable)
-        g = output_galaxy(galname=cat['prefix'][i],objname=cat['objname'][i], vfid=cat['VFID'][i], vfid_v1=cat['VFID_V1'][i], convflag=convflag, band=band) 
-        num_rows = int(g.ncomp)
-        
-        for num in range(num_rows):
-            zero_row = np.zeros(len(dtype))
-            zero_row = np.ndarray.tolist(zero_row) #convert to list, as the np array is all floats and won't allow the zeroth index element to be replaced with a string.
-            zero_row[0] = '        ' #number of spaces corresponding to number of characters for VFID####. this formatting is necessary, for whatever reason. If I only inserted one space, then the resulting cell would read 'V'. Unhelpful.
-            full_sample_table.add_row(zero_row)
-        
-        #if path exists (os.path.exists() returns True), then galaxy directory exists...
-        #helpful for testing purposes
+        #define output_galaxy class; sets up the vf subsample catalog, the objname, the VFID, and the conflag/band.
+        g = output_galaxy(objname=cat['objname'][i], vfid=cat['VFID'][i], fovtab=None, convflag=convflag, band=band) 
+
+        #define the 'parent' galfit path as well as the directory for the current galaxy 
         galfit_dir = '/mnt/astrophysics/muchogalfit-output/'
         galfit_dir_one = galfit_dir+g.vfid
+        
+        #check whether the galaxy is a member of a group; if so, then the directory will contain galsFOV.txt file
+        if os.path.exists(galfit_dir_one+'/'+'galsFOV.txt'):
+            g.fovtab=ascii.read(galfit_dir_one+'/'+'galsFOV.txt')   #define as class variable; will need for g.parse_galfit()
+            g.ncomp=len(g.fovtab)   #the length of this textfile (i.e., number of entries)
+        
+        #next, check whether this galaxy is 'primary' or part of a group (if the latter, then there will be no galfit output in the directory). if not, then the the main loop will proceed onward to the next VFID
         if os.path.isfile(galfit_dir_one+'/'+g.outimage):
             os.chdir(galfit_dir_one)
-        
-            one_gal_table = Table(names=header,dtype=[str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float])
-
+            
+            #create a list of param lists (if ncomp=1, then one param list [[]]; if ncomp=2, then two param lists [[],[]])
             param_rows = g.parse_galfit()
 
-            for n in range(0,len(param_rows)):
-                
-                '''FUNCTIONALITY EXAMPLE: if ncomp=2, then there should be 2 additional zero rows for ith galaxy, appended at the bottom of the table. 
-                Beginning with n=1 (central galaxy), its corresponding zeroth row will be at index tab_length - (n) - 1. the -1 is to accommodate the length being some number N but the final index of the table being N-1.
-                We replace that row of zeros with the output parameters, if the galaxy output directory exists, then proceed to the n=2 galaxy. repeat.'''
-                
-                current_table_length = len(full_sample_table)
-                zeroth_row_index = current_table_length-n-1
-                zeroth_row_index = int(zeroth_row_index)
-                #repopulate row at this index with n
-                full_sample_table[zeroth_row_index] = param_rows[n]
-                #no need for such trickery with the central galaxy table...simply add the row
-                one_gal_table.add_row(param_rows[n])
-                
-
-            #print(one_gal_table)    
-                    
-            #write table of central (+external, if any) galaxy parameters in directory
-            if int(convflag) == 1:
-                one_gal_table.write(galfit_dir+g.vfid+'/output_params_'+g.band+'_psf.fits',format='fits',overwrite=True)
-            if int(convflag) == 0:
-                one_gal_table.write(galfit_dir+g.vfid+'/output_params_'+g.band+'_nopsf.fits',format='fits',overwrite=True)
-            
-            
+            for row in range(len(param_rows)):
+                row_vfid = row[0]  #VFID is the first entry in the row list
+                full_sample_table[full_sample_table['VFID']==row_vfid] = row   #change zeros row to parameter row
+                            
             index=len(full_sample_table)-1
-            
-            
-    band=g.band  
-        
+
     print(full_sample_table)
-    #remove 'external' galaxies without VFIDs, assuming I am using my dummy catalog
-    for i in full_sample_table['VFID']:
-        if 'index' in i:
-            print('external ID not in vf catalog, removed')
-            full_sample_table.remove_row(np.where(full_sample_table['VFID']==i)[0])
             
     if int(convflag) == 1:
-        full_sample_table.write(galfit_dir+'output_params_'+band+'_psf.fits', format='fits', overwrite=True)
+        full_sample_table.write(galfit_dir+'output_params_'+g.band+'_psf.fits', format='fits', overwrite=True)
     if int(convflag) == 0:
-        full_sample_table.write(galfit_dir+'output_params_'+band+'_nopsf.fits', format='fits', overwrite=True)
+        full_sample_table.write(galfit_dir+'output_params_'+g.band+'_nopsf.fits', format='fits', overwrite=True)
