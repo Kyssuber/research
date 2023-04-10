@@ -8,7 +8,7 @@ import numpy as np
 from astropy.table import Table
 from astropy.io import fits
 
-#convert cutouts from .fz to .fits, then save .fits to target_folder
+#convert cutouts from .fz to .fits, then save .fits to target_folder. not currently needed (all input files are already in the VFID output directories).
 def fz_to_fits(path_to_im, galaxy_name, target_folder, group_name=None, group_flag=False):
     galaxy_w3 = galaxy_name+'-custom-image-W3.fits.fz'
     galaxy_r = galaxy_name+'-custom-image-r.fits.fz'
@@ -30,34 +30,40 @@ def fz_to_fits(path_to_im, galaxy_name, target_folder, group_name=None, group_fl
             print('Unable to pull galaxy cutout file.')
 
 #should be two per galaxy - rband and w3
-def grab_input_cutouts(catalog, sgaparams, input_cutouts_path, target_folder):
+def grab_input_cutouts(catalog, cutouts_path, target_folder):
     VFIDs = catalog['VFID']
-    VFID_V1s = catalog['VFID_V1']
+    #VFID_V1s = catalog['VFID_V1']
     objnames = catalog['objname']
-    RAs = catalog['RA_1']
-    group_names = sgaparams['GROUP_NAME']
+    #RAs = catalog['RA_1']
+    #group_names = sgaparams['GROUP_NAME']
   
-    #have to retrieve these images from the RA directories.
+    #have to retrieve these images from the RA directories (LOLJK the input files are also in the output directories if galfit ran successfully!)
     for i in range(len(catalog)):
         
         print(VFIDs[i]+' input time')
-        group_name = group_names[sgaparams['VFID']==VFID_V1s[i]]
-        group_name = group_name[0]
+        galaxy_folder = cutouts_path+VFIDs[i]+'/'
+        input_r = glob.glob(galaxy_folder+'*-custom-image-r.fits')
+        input_w3 = glob.glob(galaxy_folder+'*-custom-image_w3.fits')
+        input_im = np.concatenate([input_w3,input_r])
+        
+        for im in input_im:  #if no images in output_mosaics, then none will be cp'd. if only one, then only one will be cp'd. usw.
+            print('Moving '+im)
+            os.system('cp '+im+' '+target_folder)
+                  
+        #PRE-GROUP GALAXY HOOHAW. can ignore.
+        #group_name = group_names[sgaparams['VFID']==VFID_V1s[i]]
+        #group_name = group_name[0]
         #print(group_name)
-
-        ra_int = int(np.floor(RAs[i]))
-        ra_folder = input_cutouts_path+str(ra_int)+'/'
-        
-        galaxy_folder = ra_folder+objnames[i]+'/'
-
-        if os.path.isdir(galaxy_folder):
-            print(galaxy_folder)
-            fz_to_fits(galaxy_folder,objnames[i],target_folder)
-        
-        else:
-            galaxy_folder_group = ra_folder+group_name+'/'
-            print(galaxy_folder_group)
-            fz_to_fits(galaxy_folder_group,group_name,target_folder,group_name,group_flag=True)
+        #ra_int = int(np.floor(RAs[i]))
+        #ra_folder = input_cutouts_path+str(ra_int)+'/'
+        #galaxy_folder = ra_folder+objnames[i]+'/'
+        #if os.path.isdir(galaxy_folder):
+        #    print(galaxy_folder)
+        #    fz_to_fits(galaxy_folder,objnames[i],target_folder)
+        #else:
+        #    galaxy_folder_group = ra_folder+group_name+'/'
+        #    print(galaxy_folder_group)
+        #    fz_to_fits(galaxy_folder_group,group_name,target_folder,group_name,group_flag=True)
 
 #should be four per galaxy - rband (nopsf, psf) and w3 (nopsf, psf)
 #if galfit 'failed', then out* images will not appear in the folder. 
@@ -95,7 +101,6 @@ if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
   vf = Table.read(homedir+'/sgacut_coadd.fits')   #contains objnames, RAs, and VFIDs
-  sga_params = Table.read(homedir+'/sga_params.fits')   #contains list of group names
   
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
   input_cutouts_path = '/mnt/virgofilaments-data/'
@@ -106,7 +111,7 @@ if __name__ == '__main__':
   os.system('mkdir '+onefolder_path)
   
   print('Moving postage stamp cutouts for rband and W3...')
-  grab_input_cutouts(vf, sga_params, input_cutouts_path, onefolder_path)
+  grab_input_cutouts(vf, host_folder_path, onefolder_path)
   print('Moving GALFIT output mosaics for rband and w3...')
   grab_output_cutouts(vf, host_folder_path, onefolder_path)
   print('Moving r-band and W3 mask images...')
