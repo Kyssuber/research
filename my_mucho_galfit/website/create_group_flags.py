@@ -24,6 +24,7 @@ column_names = ['group_flag','primaryGroup_flag','ncomp']
 for n in range(len(vf)):
     if vf['sgacut_flag'][n]:  #if the galaxy is part of the subsample, then proceed
         if os.path.exists(path_to_galfit+VFID+'/galsFOV.txt'):
+            VFID = vf['VFID'][n]
             fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt')
             group_vfids = self.fovtab['col1']    #the length of this textfile (i.e., number of entries)
             
@@ -35,9 +36,9 @@ for n in range(len(vf)):
                     mask[n] = False
                 else:
                     ncomp[vf['VFID']==group_vfids[num]] = len(fovtab)
-                    primaryGroup[vf['VFID']==group_vfids[num]] = False
-                    groupGalaxy[vf['VFID']==group_vfids[num]] = True
-                    mask[vf['VFID']==group_vfids[num]] = False
+                    primaryGroup[VFID==group_vfids[num]] = False
+                    groupGalaxy[VFID==group_vfids[num]] = True
+                    mask[vf[VFID==group_vfids[num]] = False
 
         else:
             mask[n] = False   #galaxy is part of subsample. will not be masked out.
