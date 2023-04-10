@@ -43,9 +43,9 @@ def grab_input_cutouts(catalog, cutouts_path, target_folder):
         print(VFIDs[i]+' input time')
         galaxy_folder = cutouts_path+VFIDs[i]+'/'
         input_r = glob.glob(galaxy_folder+'*-custom-image-r.fits')
-        input_w3 = glob.glob(galaxy_folder+'*-custom-image-w3.fits')
+        input_w3 = glob.glob(galaxy_folder+'*-custom-image-W3.fits')
         input_im = np.concatenate([input_w3,input_r])
-        
+        print(input_im)
         for im in input_im:  #if no images in output_mosaics, then none will be cp'd. if only one, then only one will be cp'd. usw.
             print('Moving '+im)
             os.system('cp '+im+' '+target_folder)
