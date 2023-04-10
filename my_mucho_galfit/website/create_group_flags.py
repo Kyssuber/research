@@ -48,7 +48,7 @@ for n in range(len(vf)):
             
     else:
         groupGalaxy[n] = False   #placeholder value; will be masked out
-        primaryGalaxy[n] = False   #placeholder value; will be masked out
+        primaryGroup[n] = False   #placeholder value; will be masked out
         ncomp[n] = 1   #placeholder value; will be masked out
         mask[n] = True  #don't include a value at this index, since the galaxy is not part of the subsample
 
