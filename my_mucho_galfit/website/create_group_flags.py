@@ -43,7 +43,7 @@ for n in range(len(vf)):
             mask[n] = False   #galaxy is part of subsample. will not be masked out.
             #if the VFID is already part of a group, do NOT overwrite the flag with "False." This line is a fail-safe in case the primary galaxy containing this group galaxy runs first (in which case the groupGalaxy flag will be True here). If not, then the flag will be False by default (and will ultimately be overwritten with True above if the galaxy is, in fact, part of a group).
             groupGalaxy[n] = False if groupGalaxy[n] != True else True  
-            primaryGalaxy[n] = False   #galaxy will not be a primary galaxy, as evidenced by the lack of a .txt file in the directory
+            primaryGroup[n] = False   #galaxy will not be a primary galaxy, as evidenced by the lack of a .txt file in the directory
             ncomp[n] = 1 if ncomp[n]==0 else ncomp[n]  #similar problem-o here. if ncomp[n] is already populated by a nonzero integer, lEaVe It AlOnE.
             
     else:
