@@ -433,26 +433,32 @@ class GalPage():
     
     def tabulate_parameters(self):
         
+        #list of each table of parameters
         params_list = [self.w3params_nopsf,self.w3params_psf,self.rparams_nopsf,self.rparams_psf]
+        #self.ncomp = 1   #initiate ncomp for galaxy
         
         self.page_params = []
-        if self.ncomp>1:
-            self.page_extparams = []
+        self.page_extparams = []   #initiate extparams list
+        
+        if self.cutcat['primaryGroup_flag'][self.galaxy_index]:
+            groupname = self.cutcat['group_name'][self.galaxy_index]
         
         #create list of every parameter row for the given indices
         for index in self.psf_indices:
-            params=params_list[index]   #selects the correct params table
-            param_row=params[params['VFID']==self.VFID]
+            params=params_list[index]   #selects the correct parameter table from params_list above
+            param_row=params[params['VFID']==self.VFID]   #find the correct parameter row corresponding to the galaxy VFID
             self.page_params.append(param_row)
-            if self.ncomp>1:
-                try:
-                    single_ncomp_params=[]  #create empty list for a single external galaxy
-                    for num in range(self.ncomp):  #say n=2. then num = 0, 1 (indices of external galaxies in self.ext_list)
-                        param_row=params[params['VFID']==self.ext_list[num]]  #find where VFID = external galaxy ID
-                        single_ncomp_params.append(param_row)  #append row values to single ncomp list 
-                    self.page_extparams.append(single_ncomp_params)  #will comprise list of external galaxy lists. LISTCEPTION.
-                except:
-                    print('ncomp>1 galaxies not yet implemented.')
+            
+            single_extparams=[]   #create empty list for external galaxies for single psf_index
+            
+            if self.cutcat['primaryGroup_flag'][self.galaxy_index]:   #if group galaxy, then find its subsample pals (if any)
+                indices = np.where((self.cutcat['group_name']==groupname)&(~self.cutcat['primaryGroup_flag']))[0]
+                
+                for num in indices: #for every external galaxy, add row of parameters
+                    param_row=params[num]  #find correct row
+                    single_extparams.append(param_row)
+            
+            self.page_extparams.append(single_extparams)  #will comprise list of external galaxy lists. LISTCEPTION.
     
     #create VFIDxxxx.html for the galaxy!
     def WRITETHEGALPAGE(self):
@@ -498,25 +504,23 @@ class GalPage():
                 html.write('<table><tr><th>VFID</th><th>Type</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th>err_flag</th></tr> \n')
 
                 html.write('<tr><td>'+self.VFID+'</td> \n')
-                html.write('<td>Host</td> \n')
+                html.write('<td>Primary</td> \n')
                 for p in range(1,15):   #for every parameter value in a row
                     html.write(f'<td>{params[0][p]}</td> \n')   #0th row, which does not change as there is only one row here
                 html.write(f'<td>{params[0][17]}</td></tr> \n')   #error flag
 
                 #add the external galaxy parameters, if any.
-                if self.ncomp>1:
-                    try:
-                        param_ext=self.page_extparams[index]  #isolate band&psf parameters of the external galaxies (if there are multiple galaxies, then there will be multiple lists for one index/central galaxy. 
-                        for num in range(self.ncomp):  #say n=2. then num = 0, 1 (indices of external galaxies in self.ext_list)
-                            single_param_ext = param_ext[num]  #isolate the self.ext_list[num] external galaxy parameters
-                            html.write('<tr><td>'+self.ext_list[num]+'</td> \n')  #VFID of external galaxy
-                            html.write('<td>External</td> \n')
-                            for p in range(1,15):
-                                html.write(f'<td>{single_param_ext[p]}</td> \n')
-                            if num==self.ncomp-1:
-                                html.write(f'<td>{params[17]}</td></tr> \n')
-                    except:
-                        print('ncomp>1 galaxies not yet implemented.')
+                if len(self.page_extparams)>0:
+                    
+                    param_ext=self.page_extparams[index]  #isolate band&psf parameters of the external galaxies (if there are multiple galaxies, then there will be multiple lists for one index/central galaxy). 
+                    for num in range(len(param_ext)): 
+                        single_param_ext = param_ext[num]  #isolate the self.ext_list[num] external galaxy parameters
+                        html.write('<tr><td>'+single_param_ext['VFID']+'</td> \n')  #VFID of external galaxy
+                        html.write('<td>External</td> \n')
+                        for p in range(1,15):
+                            html.write(f'<td>{single_param_ext[p]}</td> \n')
+                        if num==self.ncomp-1:
+                            html.write(f'<td>{params[17]}</td></tr> \n')
                         
                 #I want a table for every nopsf/psf pair, so the table will finish if index is psf w3 or psf r-band (OR neither, in the case that I don't include any psf bands...). I would attempt to account for the case where I am only including nopsf tables, but I do not anticipate this condition being met. Ever.
                 if (index==1)|(index==3)|(index==np.max(self.psf_indices)):
@@ -667,7 +671,7 @@ if __name__ == '__main__':
         rparams_nopsf = Table.read(path_to_params+'/output_params_r_nopsf.fits')
         rparams_psf = Table.read(path_to_params+'/output_params_r_psf.fits')
         
-        single_galpage = GalPage(galaxy_index=0, psf_indices=psf_indices, page_name='VFID0001.html', catalog=cutcat, 
+        single_galpage = GalPage(galaxy_index=59, psf_indices=psf_indices, page_name='VFID0281.html', catalog=cutcat, 
                                  local_path=local_path, LS_cutout_folder=LS_cutout_folder, 
                                  LS_mosaic_folder=LS_mosaic_folder, mask_folder=mask_folder, fits_folder=fits_folder, 
                                  gal_mosaic_folder=gal_mosaic_folder, w3params_nopsf=w3params_nopsf, w3params_psf=w3params_psf, 
