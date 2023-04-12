@@ -28,15 +28,16 @@ columns = [groupGalaxy,primaryGroup,ncomp,group_name]
 column_names = ['group_flag','primaryGroup_flag','ncomp','group_name']
 
 #read list of primary galaxy pathnames
-primary_pathnames = ascii.read(path_to_galfit+'groupDirs.txt')
+primary_pathnames = ascii.read(path_to_galfit+'groupDirs.txt',format='no_header')
 primary_counter = 0   #will monitor the number of primary galaxies the loop below encounters; this number will serve as the index for the primary pathname list (e.g., if the loop find its first primary galaxy, then navigate to index 0 of list and pull the pathname)
 
+#loop through all subsample galaxies
 for n in range(len(vf)):
     VFID = vf['VFID'][n]
     if vf['sgacut_flag'][n]:  #if the galaxy is part of the subsample, then proceed
         if os.path.exists(path_to_galfit+VFID+'/galsFOV.txt'):
-            fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt')
-            group_vfids = fovtab['col1']    #the length of this textfile (i.e., number of entries)
+            fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt',format='no_header')
+            group_vfids = fovtab['col1']    #VFIDs in this group
 
             for num in range(len(fovtab)):
                 if num==0:
@@ -44,9 +45,10 @@ for n in range(len(vf)):
                     primaryGroup[n] = True
                     mask[n] = False
                     primary_pathname = primary_pathnames[primary_counter]
-                    primary_pathname=str(primary_pathname)  #otherwise object is a 'row' and cannot be split
+                    primary_pathname=str(primary_pathname)  #otherwise object is a 'rowtype' and cannot be split
                     name = primary_pathname.split('/')[-1] #divide pathname into strings that were separated by '/', then isolate group name
                     group_name[n] = name
+                    #print(VFID,name)
                     primary_counter+=1   #set up primary counter for the next primary galaxy!
                 else:
                     ncomp[vf['VFID']==group_vfids[num]] = len(fovtab)
@@ -83,3 +85,4 @@ for col in range(len(columns)):
     vf.add_column(c)
 
 vf.write(path_to_table+'v2_snrcoadd.fits',overwrite=True)
+print('table at '+path_to_table+'v2_snrcoadd.fits')
