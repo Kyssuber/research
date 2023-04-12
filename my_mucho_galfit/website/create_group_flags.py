@@ -29,14 +29,17 @@ column_names = ['group_flag','primaryGroup_flag','ncomp','group_name']
 
 #read list of primary galaxy pathnames
 primary_pathnames = ascii.read(path_to_galfit+'groupDirs.txt',format='no_header')
-primary_counter = 0   #will monitor the number of primary galaxies the loop below encounters; this number will serve as the index for the primary pathname list (e.g., if the loop find its first primary galaxy, then navigate to index 0 of list and pull the pathname)
+#primary_counter = 0   #will monitor the number of primary galaxies the loop below encounters; this number will serve as the index for the primary pathname list (e.g., if the loop find its first primary galaxy, then navigate to index 0 of list and pull the pathname)
+
+primary_VFIDs = ascii.read(path_to_galfit+'groupPrimaryVFID.txt',format='no_header')
 
 #loop through all subsample galaxies
 for n in range(len(vf)):
     VFID = vf['VFID'][n]
     if vf['sgacut_flag'][n]:  #if the galaxy is part of the subsample, then proceed
-        if os.path.exists(path_to_galfit+VFID+'/galsFOV.txt'):
-            fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt',format='no_header',delimiter=',')
+        #if os.path.exists(path_to_galfit+VFID+'/galsFOV.txt'):
+        if (VFID in primary_VFIDs['col1']) & (os.path.exists(path_to_galfit+VFID+'/galsFOV.txt')): #check if galaxy is both in the primary list AND has a galsFOV.txt file in its directory (which indicates that galfit ran successfully, I guess)
+            fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt',format='no_header',delimiter=',')   
             group_vfids = fovtab['col1']    #VFIDs in this group
 
             for num in range(len(fovtab)):
@@ -44,12 +47,13 @@ for n in range(len(vf)):
                     ncomp[n] = len(fovtab)
                     primaryGroup[n] = True
                     mask[n] = False
-                    primary_pathname = primary_pathnames[primary_counter]
+                    primary_pathname = primary_pathnames[primary_VFIDs['col1']==VFID]   #both files are row-matched, so indices are the same
+                    print(primary_pathname)
                     primary_pathname=str(primary_pathname)  #otherwise object is a 'rowtype' and cannot be split
                     name = primary_pathname.split('/')[-1] #divide pathname into strings that were separated by '/', then isolate group name
                     group_name[n] = name
                     #print(VFID,name)
-                    primary_counter+=1   #set up primary counter for the next primary galaxy!
+                    #primary_counter+=1   #set up primary counter for the next primary galaxy!
                 else:
                     #print(group_vfids[num])
                     ncomp[vf['VFID']==group_vfids[num]] = len(fovtab)
