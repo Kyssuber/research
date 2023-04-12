@@ -61,9 +61,7 @@ for n in range(len(vf)):
             mask[n] = False   #galaxy is part of subsample. will not be masked out.
             primaryGroup[n] = False   #galaxy will not be a primary galaxy, as evidenced by the lack of a .txt file in the directory
             ncomp[n] = 1 if ncomp[n]==0 else ncomp[n]  #if ncomp[n] is already populated by a nonzero integer, lEaVe It AlOnE.
-            #print('before',group_name[n])
             group_name[n] = vf['objname'][n] if group_name[n]==0 else group_name[n]  #if group galaxy, then entry will either not be empty or will be replaced with group name later on. Similar idea as above --> if already populated, LEAVE IT ALONE.
-            #print('after',group_name[n])
         #if ncomp>1, then galaxy is part of a group. full stop.
         groupGalaxy[n] = True if ncomp[n]>1 else False
 
