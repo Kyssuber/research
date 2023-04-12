@@ -36,7 +36,7 @@ for n in range(len(vf)):
     VFID = vf['VFID'][n]
     if vf['sgacut_flag'][n]:  #if the galaxy is part of the subsample, then proceed
         if os.path.exists(path_to_galfit+VFID+'/galsFOV.txt'):
-            fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt',format='no_header')
+            fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt',format='no_header',delimiter=',')
             group_vfids = fovtab['col1']    #VFIDs in this group
 
             for num in range(len(fovtab)):
@@ -51,6 +51,7 @@ for n in range(len(vf)):
                     #print(VFID,name)
                     primary_counter+=1   #set up primary counter for the next primary galaxy!
                 else:
+                    #print(group_vfids[num])
                     ncomp[vf['VFID']==group_vfids[num]] = len(fovtab)
                     primaryGroup[vf['VFID']==group_vfids[num]] = False
                     mask[vf['VFID']==group_vfids[num]] = False
