@@ -1,7 +1,6 @@
 #--------------------------------------------------- File Names ----------------------------------------------------
 
 catalog                           v2_snrcoadd.fits                # name of main vf catalog; assumes file is in homedir
-dummycat                          dummycat.fits                   # name of main dummycat.fits; assumes file is in homedir
 local_path                        /Users/k215c316/vf_html_mask/   # path which will contain relevant folders/files
 homepage_name                     home_local.html                 # name of main html file
 mask_folder                       mask_mosaics_png                # name of folder containing .png mask mosaics

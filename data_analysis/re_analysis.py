@@ -428,7 +428,7 @@ class catalogs:
         
         #ks-test statistics
         print('p-value (> 0.05, "same distribution"):')
-        print('%.3f'%(kstest(data_clus[data_clus<=2],data_ext[data_ext<=2])[1]))
+        print('%.5f'%(kstest(data_clus[data_clus<=2],data_ext[data_ext<=2])[1]))
         print()
         print('Mean cluster size ratio: %.3f'%(np.mean(data_clus[data_clus<=2])))
         print('Median cluster size ratio: %.3f'%(np.median(data_clus[data_clus<=2])))
