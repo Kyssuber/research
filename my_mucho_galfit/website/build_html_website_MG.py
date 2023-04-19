@@ -66,7 +66,7 @@ class HomePage():
         #define group columns
         self.group_flag = self.cutcat['group_flag']
         self.primaryGroup_flag = self.cutcat['primaryGroup_flag']
-        self.group_names = self.cutcat['group_names']
+        self.group_names = self.cutcat['group_name']
             
         #call the remaining parameter files...
         self.w3params_nopsf = Table.read(self.path_to_params+'output_params_W3_nopsf.fits') 
@@ -118,17 +118,19 @@ class HomePage():
                         print('Creating htmlpage for '+self.cutcat['VFID'][i])
                         single_galpage.WRITETHEGALPAGE()
                         pagename = self.VFID[i]+'.html'   #name of galaxy html page
-
-                        html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+self.group_names[i])+'</a></td>\n')   #hyperlink to galaxy page VFIDxxxx.html (pagename)
+                            
+                        #hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        html.write(f'<td><a href={self.path_to_galhtml+pagename}>{self.group_names[i]}</a></td>\n')
                     
                     #if neither primary or ncomp=1 galaxy, then determine which galaxy of group *is* the primary galaxy and hyperlink to that htmlpage
                     else:
                         group_rows = self.cutcat[[True if str(x)==str(self.group_names[i]) else False for x in self.group_names]]
                         primary_row = group_rows[group_rows['primaryGroup_flag']]   #all column information for the primary galaxy
-                        pagename = str(primary_row['VFID'])+'.html'   #name of galaxy html page
+                        pagename = primary_row['VFID']+'.html'   #name of galaxy html page
                         print('Linking htmlpage for '+str(self.cutcat['VFID'][i])+' to '+pagename)
 
-                        html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.cutcat['group_name'][i])+'</a></td>\n')   #hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        #hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        html.write(f'<td><a href={self.path_to_galhtml+pagename}>{str(self.group_names[i])}</a></td>\n')
                 
                 #if galfit simply *failed* (or the primary galaxy is not a subsample member), disable hyperlink
                 else:
@@ -193,7 +195,7 @@ class HomePage():
                                         rparams_psf=self.rparams_psf, test=True)                
         
                 single_galaxy.create_model_mosaics_names()
-                print('Creating GALFIT mosaics for '+single_galaxy.VFID+f' {index_dict[psf_index]}')
+                print('Creating GALFIT mosaics for '+single_galaxy.VFID+'...')
                 single_galaxy.create_model_mosaics(psf_index = psf_index)
                 
                 clear_output(wait=False)   #clear printed output
@@ -273,7 +275,7 @@ class GalPage():
             self.w3mask_path = glob.glob(self.fits_folder+self.objname+'-custom-image-wise-mask.fits')[0]
             self.rmask_path = glob.glob(self.fits_folder+self.objname+'-custom-image-r-mask.fits')[0]
         except:
-            print(self.objname' has no mask images.')
+            print(self.objname+' has no mask images.')
         
         #if not testing the various functions on one galaxy (test==True), then run only the functions that are required for (1) variables and (2) the actual galaxy html pages. Think of these functions as the 'defaults' that enable the user to then generate the PNG files at their liberty.
         if test==False:
@@ -347,7 +349,7 @@ class GalPage():
         self.file_r_nopsf = self.fits_folder+self.objname+'-r-out1.fits'
         self.file_r_psf = self.fits_folder+self.objname+'-r-out2.fits'
         
-self.mosaic_names = [self.file_w3_nopsf,self.file_w3_psf,self.file_r_nopsf,self.file_r_psf]
+        self.mosaic_names = [self.file_w3_nopsf,self.file_w3_psf,self.file_r_nopsf,self.file_r_psf]
         
         self.psf_dictionary = {0:self.file_w3_nopsf,
                             1:self.file_w3_psf,
@@ -390,29 +392,27 @@ self.mosaic_names = [self.file_w3_nopsf,self.file_w3_psf,self.file_r_nopsf,self.
         
         #for index in self.psf_indices:
         if psf_index<2:   #w3 is index=0 or index=1
-            images = [self.wise_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
+            images = [self.wise_im,self.models[psf_index],self.residuals[psf_index]]
         if psf_index>=2:   #r-band is index=2 or index=3
-            images = [self.r_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
-        titles = ['Image','Model','Residual (img stretch)','Residual (res stretch)']
+            images = [self.r_im,self.models[psf_index],self.residuals[psf_index]]
+        titles = ['Image','Model','Residual (img stretch)']
+        
 
         v1 = [scoreatpercentile(images[0],percentile1),
             scoreatpercentile(images[0],percentile1),
-            scoreatpercentile(images[0],percentile1),
-            scoreatpercentile(images[3],p1residual)]
+            scoreatpercentile(images[0],percentile1)]
         v2 = [scoreatpercentile(images[0],percentile2),
             scoreatpercentile(images[0],percentile2),
-            scoreatpercentile(images[0],percentile2),
-            scoreatpercentile(images[3],p2residual)]
+            scoreatpercentile(images[0],percentile2)]
 
         norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
                simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
-               simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),
-               simple_norm(images[0],'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
+               simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2])]
 
         plt.figure(figsize=(14,6))
         plt.subplots_adjust(wspace=.0)
         for i,im in enumerate(images): 
-            ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)
+            ax = plt.subplot(1,3,i+1,projection=self.wcs_w3)
             if im is None:
                 plt.imshow(np.zeros((len(self.wise_im),len(self.wise_im))),origin='lower',cmap='gray')
             else:
@@ -460,7 +460,7 @@ self.mosaic_names = [self.file_w3_nopsf,self.file_w3_psf,self.file_r_nopsf,self.
         plt.savefig(self.mask_mosaics+self.VFID+'-mask_mosaic.png',bbox_inches='tight', pad_inches=0.2)   #dpi=200
         plt.close()
     
-def tabulate_parameters(self):
+    def tabulate_parameters(self):
         
         #list of each table of parameters
         params_list = [self.w3params_nopsf,self.w3params_psf,self.rparams_nopsf,self.rparams_psf]
