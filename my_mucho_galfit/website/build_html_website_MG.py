@@ -184,23 +184,25 @@ class HomePage():
         
         for i in range(len(self.cutcat)):
             #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
-                
-                #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
-                single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
+            if (self.params_w3_nopsf['xc'][i]>0):
+                if ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
+                    #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
+                    single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
                                         catalog=self.cutcat, local_path=self.local_path, 
                                         path_to_galhtml=self.path_to_galhtml, fits_folder=self.fits_folder, 
                                         gal_mosaic_folder=self.gal_mosaic_folder, w3params_nopsf=self.w3params_nopsf, 
                                         w3params_psf=self.w3params_psf, rparams_nopsf=self.rparams_nopsf, 
                                         rparams_psf=self.rparams_psf, test=True)                
         
-                single_galaxy.create_model_mosaics_names()
-                print('Creating GALFIT mosaics for '+single_galaxy.VFID+'...')
-                single_galaxy.create_model_mosaics(psf_index = psf_index)
+                    single_galaxy.create_model_mosaics_names()
+                    print('Creating GALFIT mosaics for '+single_galaxy.VFID+'...')
+                    single_galaxy.create_model_mosaics(psf_index = psf_index)
                 
-                clear_output(wait=False)   #clear printed output
-                del single_galaxy
-                
+                    clear_output(wait=False)   #clear printed output
+                    del single_galaxy
+            else:
+                print('this galaxy did not pass the flags: '+self.cutcat['VFID'][i])
+    
     def create_mask_mosaics(self):
         
         for i in range(len(self.cutcat)):
@@ -360,6 +362,7 @@ class GalPage():
         self.models = []
         self.residuals = []
         self.psf_indices_galaxy = []
+
         for index in range(4):
             if os.path.exists(self.psf_dictionary[index]):
                 self.models.append(fits.getdata(self.file_w3_nopsf,2))
@@ -370,6 +373,8 @@ class GalPage():
                 self.residuals.append(None)
                 self.psf_indices_galaxy.append(None)
         self.psf_indices_galaxy = np.asarray(self.psf_indices_galaxy)
+
+        print(self.psf_indices_galaxy)
         
         self.pngnames = [self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w3-nopsf.png',
                    self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w3-psf.png',
