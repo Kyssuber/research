@@ -47,6 +47,7 @@ class catalogs:
         self.v2_main = Table.read(homedir+'/v2_snrcoadd.fits')
         self.magphys = Table.read(path_to_dir+'vf_v2_magphys_07-Jul-2022.fits')
         self.z0mgs = Table.read(path_to_dir+'vf_v2_z0mgs.fits')
+        self.HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
         
         self.MeanMedian = MeanMedian  #whether I plot median or mean size ratios for the self.env_means() figure
         
@@ -64,14 +65,15 @@ class catalogs:
     
         self.roseparams = self.w3dat.copy()        
         self.cut_cats()
-            
+    
     def cut_cats(self):
         subsample_flag = self.v2_main['sgacut_flag']
         
         self.v2_env = self.v2_env[subsample_flag]
         self.v2_maincut = self.v2_main[subsample_flag]
-        self.magphys = self.magphys[subsample_flag]
+        self.magphyscut = self.magphys[subsample_flag]
         self.z0mgs = self.z0mgs[subsample_flag]
+        self.HI_tab = self.HI_tab[subsample_flag]
         
         self.re_rband = self.rdat['re']
         self.re_w3band = self.w3dat['re']
@@ -105,8 +107,9 @@ class catalogs:
         #apply final cut to envcut and maincut catalogs
         self.v2_envcut = self.v2_env[self.cut_flags]
         self.v2_maincut = self.v2_maincut[self.cut_flags]
-        self.magphyscut = self.magphys[self.cut_flags]
+        self.magphyscut = self.magphyscut[self.cut_flags]
         self.z0mgscut = self.z0mgs[self.cut_flags]
+        self.HI_tab_cut = self.HI_tab[self.cut_flags]
         
         self.kimparams_cut = self.kimparams[self.cut_flags]
         self.roseparams_cut = self.roseparams[self.cut_flags]
@@ -129,6 +132,85 @@ class catalogs:
 
         self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
         self.PArats = self.PA_w3band_cut/self.PA_rband_cut
+    
+    def sfrmstar(self, savefig=False):
+        
+        #prepare MHI_to_Mstar data for colorbar
+        MHI_to_Mstar = self.HI_tab['MHI']/(10**self.z0mgs['logmass'])
+
+        for n in range(len(MHI_to_Mstar)):
+            if self.HI_tab['MHI'].mask[n]:     #if value is masked, set to be -999
+                MHI_to_Mstar[n] = -999
+            else:
+                MHI_to_Mstar[n] = MHI_to_Mstar[n] if ((np.log(self.HI_tab['MHI'][n])>0) & (MHI_to_Mstar[n]<10) & (MHI_to_Mstar[n]!=1)) else -999
+        
+        logsfr = self.magphys['logSFR']
+        logmass = self.magphys['logMstar']
+        
+        #remove entries where there is no magphys data available for that galaxy
+        err_flag = (self.magphys['magphysFlag'])
+        
+        logsfr_cut = logsfr[(self.v2_main['sgacut_flag']) & (err_flag)]
+        logmass_cut = logmass[self.v2_main['sgacut_flag'] & (err_flag)]
+        MHI_to_Mstar_cut = MHI_to_Mstar[(err_flag[self.v2_main['sgacut_flag']])]
+                
+        logsfr = logsfr[err_flag]
+        logmass = logmass[err_flag]
+        len(MHI_to_Mstar_cut[(MHI_to_Mstar_cut>-999)])
+        plt.figure(figsize=(10,6))
+        plt.scatter(logmass,logsfr,color='gray',s=3,alpha=0.05,label='VF sample')
+        plt.scatter(logmass_cut,logsfr_cut,marker='^',color='red',s=30,alpha=0.3,label='VF subsample')
+        plt.scatter(logmass_cut[(MHI_to_Mstar_cut>-999)],logsfr_cut[(MHI_to_Mstar_cut>-999)],
+                    c=MHI_to_Mstar_cut[(MHI_to_Mstar_cut>-999)], cmap='viridis', s=60, alpha=0.9,label='Subsample with HI measurements',edgecolor='black')
+        
+        plt.colorbar().set_label(label='MHI_to_Mstar',size=15)
+        plt.clim(0,1)
+        
+        plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
+        plt.ylabel(r'log(SFR/($M_\odot$/yr))',fontsize=22)
+        
+        plt.xlim(6,)
+        plt.ylim(-6,)
+        plt.legend(fontsize=12)
+
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/sfrmstar.png', dpi=300)
+        
+        plt.show()
+    
+    def ratio_MS(self, savefig=False):
+        
+        #prepare MHI_to_Mstar data for colorbar
+        MHI_to_Mstar = self.HI_tab['MHI'][self.v2_main['sgacut_flag']]/(10**self.z0mgs['logmass'][self.v2_main['sgacut_flag']])
+        
+        #main sequence best-fit line
+        #slope: 0.47 +/- 0.01
+        #y-intercept: -4.88 +/- 0.10
+        Mstar_full = self.z0mgs['logmass']
+        y = Mstar_full*0.47 - 4.88
+        
+        #Now calculate distance of each point to the best-fit line
+        #Distance = (| a*x1 + b*y1 + c |) / (sqrt( a*a + b*b))
+        dist = (0.47*self.z0mgscut['logmass'] - self.z0mgscut['logsfr'] - 4.88) / (np.sqrt(0.47**2 + (-1)**2))
+        
+        plt.scatter(dist,self.sizerats)
+        plt.yscale('log')
+        #read in new v2 table (see Google Drive)
+        plt.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     def envbins(self, savefig=False):
 
@@ -206,9 +288,9 @@ class catalogs:
         plt.xticks(index, env_names, rotation=10, fontsize=20)
         plt.tick_params(axis='both', which='major', labelsize=15)
         plt.grid(alpha=0.2)
-        plt.ylabel(r'r$_{12}$/r$_r$',fontsize=20)
-        
-        plt.ylim(0.6,0.96)
+        plt.ylabel(r'R$_{12}$/R$_r$',fontsize=20)
+    
+        plt.ylim(0.6,1)
         
         plt.legend(fontsize=15)
         
@@ -490,7 +572,7 @@ class catalogs:
             
             #err_clus.append([avg_re_clus-lower_clus, upper_clus-avg_re_clus])
             #err_ext.append([avg_re_ext-lower_ext, upper_ext-avg_re_ext])
-            err_clus.append([lower_clus, avg_re_clus])
+            err_clus.append([lower_clus, upper_clus])
             err_ext.append([lower_ext, upper_ext])
         
         plt.figure(figsize=(8,6))
@@ -514,7 +596,7 @@ class catalogs:
         plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
         plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
         plt.title('Median Disk Size Ratios vs. Stellar Masses',fontsize=20)
-        plt.ylim(-0.1,2.5)
+        plt.ylim(0,1.2)
         plt.legend()
         
         if savefig==True:
@@ -527,6 +609,7 @@ if __name__ == '__main__':
     print("""USAGE:
     cat = catalogs(conv=False,MeanMedian='mean',MADmultiplier=5) --> initiate catalog class. 
         MeanMedian will propagate to all plots.
+    cat.sfrmstar(savefig=False) --> generates SFR v. Mstar plot, color-coded according to available HI gas mass
     cat.envbins(savefig=False) --> plots number of subsample galaxies in each environment bin
     cat.env_means(trimOutliers=False, combine_mid=False, savefig=False) --> plots either mean 
         or median size ratio (w3/r) in each environment bin; trimOutliers will output an additional plot which compares
