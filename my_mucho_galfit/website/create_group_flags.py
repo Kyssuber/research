@@ -40,32 +40,38 @@ for n in range(len(vf)):
         if (VFID in primary_VFIDs['col1']) & (os.path.exists(path_to_galfit+VFID+'/galsFOV.txt')): #check if galaxy is both in the primary list AND has a galsFOV.txt file in its directory (which indicates that galfit ran successfully, I guess)
             fovtab = ascii.read(path_to_galfit+VFID+'/galsFOV.txt',format='no_header',delimiter=',')   
             group_vfids = fovtab['col1']    #VFIDs in this group
+            
+            #need the following for the group name!
+            primary_pathname = primary_pathnames[primary_VFIDs['col1']==VFID]  #both files are row-matched, so the indices are the same
+            primary_pathname = str(primary_pathname)  #otherwise object is a 'rowtype' and cannot be split
+            name = primary_pathname.split('/')[-1]  #divide pathname into strings that were separated by '/', then isolate the group name
 
-            for num in range(len(fovtab)):
-                if (fovtab['col1'][num] in primary_VFIDs['col1']):   #if galaxy is primary
-                    ncomp[n] = len(fovtab)
+            for num in range(len(group_vfids)):
+                if (group_vfids[num] in primary_VFIDs['col1']):   #if galaxy is primary
+                    print(group_vfids[num]+' is a primary galaxy')
+                    ncomp[n] = len(group_vfids)
                     primaryGroup[n] = True
                     mask[n] = False
-                    primary_pathname = primary_pathnames[primary_VFIDs['col1']==VFID]   #both files are row-matched, so indices are the same
-                    primary_pathname=str(primary_pathname)  #otherwise object is a 'rowtype' and cannot be split
-                    name = primary_pathname.split('/')[-1] #divide pathname into strings that were separated by '/', then isolate group name
                     group_name[n] = name
-                    #print(VFID,name,primaryGroup[vf['VFID']==VFID])
+                    print(VFID,name,primaryGroup[vf['VFID']==VFID])
                 else: 
+                    print(group_vfids[num]+' is not a primary galaxy')
                     ncomp[vf['VFID']==group_vfids[num]] = len(fovtab)
                     primaryGroup[vf['VFID']==group_vfids[num]] = False
+                    groupGalaxy[vf['VFID']==group_vfids[num]] = True
                     mask[vf['VFID']==group_vfids[num]] = False
+
                     group_name[vf['VFID']==group_vfids[num]] = name  #will have same group name as primary galaxy
-                    #print(fovtab['col1'][num],name,primaryGroup[vf['VFID']==fovtab['col1'][num]])
+                    print(group_vfids[num],name,primaryGroup[vf['VFID']==group_vfids[num]])
         else:
             mask[n] = False   #galaxy is part of subsample. will not be masked out.
             primaryGroup[n] = False   #galaxy will not be a primary galaxy, as evidenced by the lack of a .txt file in the directory
             ncomp[n] = 1 if ncomp[n]==0 else ncomp[n]  #if ncomp[n] is already populated by a nonzero integer, lEaVe It AlOnE.
             group_name[n] = vf['objname'][n] if group_name[n]==0 else group_name[n]  #if group galaxy, then entry will either not be empty or will be replaced with group name later on. Similar idea as above --> if already populated, LEAVE IT ALONE.
-        #if ncomp>1, then galaxy is part of a group. full stop.
-        groupGalaxy[n] = True if ncomp[n]>1 else False
-    
-    #if galaxy is NOT part of the subsample, then we punish. mask out.
+            #if ncomp>1, then galaxy is part of a group. full stop.
+            groupGalaxy[n] = True if ncomp[n]>1 else False
+
+    #if galaxy is NOT part of the subsample, then we punish. mask out...or, rather, attempt to mask out. the masks are dysfunctional.
     else:
         groupGalaxy[n] = False   #placeholder value; will be masked out
         primaryGroup[n] = False   #placeholder value; will be masked out
