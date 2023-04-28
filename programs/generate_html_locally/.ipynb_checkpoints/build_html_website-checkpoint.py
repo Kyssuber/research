@@ -156,14 +156,11 @@ class HomePage():
     #creating a few separate functions in order to independently run the PNG creation scripts - if I run them as part of the homepage class loop I use to generate every galpage.html file, then an application memory problem arises. (Why not remove the methods from the class altogether if I won't use them in the initial loop as intended? I think they are organized more nicely as part of the galpage class; and since the variable names are already entangled, I may as well not tinker any further.)           
     
     def create_LS_figures(self):
-        
-        counter=0
-        
+
         for i in range(len(self.cutcat)):
-            counter+=1
             
-            #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])):  
+            #if galfit ran successfully...
+            if (self.params_w3_nopsf['xc'][i]>0):
 
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
                 single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, 
@@ -174,13 +171,14 @@ class HomePage():
                 
                 print('Creating LS cutout for '+single_galaxy.VFID)
                 single_galaxy.compile_LS_cutouts()
-                print('Creating LS mosaic for '+single_galaxy.VFID)
-                single_galaxy.create_LS_mosaics()
                 
-                if counter==10:
-                    clear_output(wait=False)   #clear printed output
-                    counter=0   #reset counter
-            del single_galaxy
+                #if this galaxy is either a primary galaxy or not part of a Moustakas group, create the mosaic as well
+                if (self.primaryGroup_flag[i])|(~self.group_flag[i]):
+                    print('Creating LS mosaic for '+single_galaxy.VFID)
+                    single_galaxy.create_LS_mosaics()
+
+                clear_output(wait=False)   #clear printed output
+                del single_galaxy
                 
     def create_galfit_mosaics(self, psf_index):
         
@@ -285,6 +283,14 @@ class GalPage():
         try:
             self.w3mask_path = glob.glob(self.fits_folder+self.objname+'-custom-image-wise-mask.fits')[0]
             self.rmask_path = glob.glob(self.fits_folder+self.objname+'-custom-image-r-mask.fits')[0]
+            self.w3_mask = fits.getdata(self.w3mask_path)
+            self.r_mask = fits.getdata(self.rmask_path)
+            
+            #define boolean masks for image scaling purposes (so those darn bright stars do not dictate the norm vmin, vmax)
+            #when multiplied by image, only the unmasked object (only -- and all of -- the central galaxy, ideally) remains
+            self.w3_mask_bool = ~(self.w3_mask>0)
+            self.r_mask_bool = ~(self.r_mask>0)
+            
         except:
             print(self.objname+' has no mask images.')
         
@@ -319,6 +325,12 @@ class GalPage():
         titles = ['W3 Image', 'r-band Image', 'LS Image']
         images = [self.wise_im, r_scaled, self.filename_LS]
         
+        try:
+            bool_masks = [self.w3_mask_bool, self.r_mask_bool, None]
+        except:
+            bool_masks = [np.zeros((len(self.wise_im),len(self.wise_im)))+1, np.zeros((len(self.r_im),len(self.r_im)))+1, None]
+            print(f'{self.VFID} has no mask images.')
+        
         plt.figure(figsize=(12,6))
         for i,im in enumerate(images):
             plt.xlabel('RA')
@@ -328,10 +340,10 @@ class GalPage():
                 if i==1:
                     plt.subplot(1,len(images),i+1,projection = self.wcs_r)
                 try:
-                    norm = simple_norm(images[i],stretch='asinh',max_percent=99.5)
+                    norm = simple_norm(images[i]*bool_masks[i],stretch='asinh',max_percent=99.9)
                     plt.imshow(images[i],origin='lower',cmap='viridis',norm=norm)
                 except:
-                    norm = simple_norm(self.r_im,stretch='asinh',max_percent=99.5)
+                    norm = simple_norm(self.r_im,stretch='asinh',max_percent=99.9)
                     plt.imshow(self.r_im,origin='lower',cmap='viridis',norm=norm)
                 plt.ylabel('DEC')
                 ax = plt.gca()
@@ -373,8 +385,8 @@ class GalPage():
         self.psf_indices_galaxy = []
         for index in range(4):
             if os.path.exists(self.psf_dictionary[index]):
-                self.models.append(fits.getdata(self.file_w3_nopsf,2))
-                self.residuals.append(fits.getdata(self.file_w3_nopsf,3))
+                self.models.append(fits.getdata(self.psf_dictionary[index],2))
+                self.residuals.append(fits.getdata(self.psf_dictionary[index],3))
                 self.psf_indices_galaxy.append(index)
             else:
                 self.models.append(None)
@@ -401,37 +413,46 @@ class GalPage():
         cmap = colormap, default is viridis
         ''' 
         
+        #create boolean masks for scaling purposes (prevents domination of prominent stars or other artifacts)
+        try:
+            bool_masks = [self.w3_mask_bool, self.r_mask_bool]
+        except:
+            #if no im mask, I just create a simple nxn matrix of 1s, so multiplying by bool_mask does not affect the image
+            bool_masks = [np.zeros((len(self.wise_im),len(self.wise_im)))+1, np.zeros((len(self.r_im),len(self.r_im)))+1]
+        
         #for index in self.psf_indices:
         if psf_index<2:   #w3 is index=0 or index=1
             images = [self.wise_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
+            bool_mask = bool_masks[0]
         if psf_index>=2:   #r-band is index=2 or index=3
             images = [self.r_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
+            bool_mask = bool_masks[1]
         titles = ['Image','Model','Residual (img stretch)','Residual (hard stretch)']
         
         if images[1] is not None:   #if model not None, then galfit ran correctly
-            v1 = [scoreatpercentile(images[0],percentile1),
-                scoreatpercentile(images[0],percentile1),
-                scoreatpercentile(images[0],percentile1),
-                scoreatpercentile(images[0],p1residual)]
-            v2 = [scoreatpercentile(images[0],percentile2),
-                scoreatpercentile(images[0],percentile2),
-                scoreatpercentile(images[0],percentile2),
-                scoreatpercentile(images[0],p2residual)]
+            v1 = [scoreatpercentile(images[0]*bool_mask,percentile1),
+                scoreatpercentile(images[0]*bool_mask,percentile1),
+                scoreatpercentile(images[0]*bool_mask,percentile1),
+                scoreatpercentile(images[2]*bool_mask,p1residual)]
+            v2 = [scoreatpercentile(images[0]*bool_mask,percentile2),
+                scoreatpercentile(images[0]*bool_mask,percentile2),
+                scoreatpercentile(images[0]*bool_mask,percentile2),
+                scoreatpercentile(images[2]*bool_mask,p2residual)]
 
-            norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
-                   simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
-                   simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),
-                   simple_norm(images[0],'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
+            norms = [simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
+                   simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
+                   simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),
+                   simple_norm(images[2]*bool_mask,'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
         
         else:
-            print('GALFIT did not run correctly - no model...')
+            print(f'GALFIT did not run correctly for {self.VFID} - no model...')
             
-            v1 = [scoreatpercentile(images[0],percentile1),
+            v1 = [scoreatpercentile(images[0]*bool_mask,percentile1),
                 None, None, None]
-            v2 = [scoreatpercentile(images[0],percentile2),
+            v2 = [scoreatpercentile(images[0]*bool_mask,percentile2),
                 None, None, None]
 
-            norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
+            norms = [simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
                    None, None, None]
             
         plt.figure(figsize=(14,6))
@@ -454,9 +475,7 @@ class GalPage():
         plt.savefig(self.pngnames[psf_index],bbox_inches='tight', pad_inches=0.2)   #dpi=200
         plt.close()    
 
-    def create_mask_mosaics(self, percentile1=.5, percentile2=99.5, cmap='viridis'):
-        self.w3_mask = fits.getdata(self.w3mask_path)
-        self.r_mask = fits.getdata(self.rmask_path)
+    def create_mask_mosaics(self, percentile1=.5, percentile2=99.8, cmap='viridis'):
 
         titles = ['W3 Image', 'W3 Mask', 'r-band Image', 'r-band Mask']
         images = [self.wise_im, self.w3_mask, self.r_im, self.r_mask]
