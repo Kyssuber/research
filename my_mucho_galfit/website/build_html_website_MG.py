@@ -21,8 +21,6 @@ from scipy.stats import scoreatpercentile
 from astropy.visualization import simple_norm
 from reproject import reproject_interp
 import sys
-from IPython.display import clear_output
-
 
 '''
 #NOTES:
@@ -36,7 +34,7 @@ class HomePage():
                  gal_mosaic_folder=None,indices=None):
         
         #index = 0 for w3_nopsf, 1 for w3_psf, 2 for r_nopsf, 3 for r_psf
-        if indices != None:
+        if indices is None:
             self.indices = [0,1,2,3]
         else:
             self.indices = indices
@@ -76,9 +74,7 @@ class HomePage():
         self.rparams_psf = Table.read(self.path_to_params+'output_params_r_psf.fits')
     
     def html_setup(self):
-        
-        print_counter = 0   #once print counter reaches a certain value, the program will clear print statements from the output
-        
+                
         with open(self.htmlpath, 'w') as html:
             
             #initialize title page
@@ -91,11 +87,10 @@ class HomePage():
             html.write('</style>\n')
             html.write(f'<font size="40">{self.website_title}</font>\n')
             
-            #begin and populate the table. first line is header information; loop creates the data rows.
+            #begin to populate the table. first line is header information; loop creates the data rows.
             html.write('<table><tr><th>VFID</th><th>LS Cutout</th><th>Prefix</th><th>RA</th><th>DEC</th><th>Comments</th>\n')
             
             for i in range(len(self.cutcat)):
-                print_counter += 1   #add +1 to the counter
                 html.write('<tr><td>'+self.cutcat['VFID'][i]+'</td>\n')   #add index number
                 html.write('<td><img src = "' + self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg' + '" height="25%" width = "25%"></img></td>\n')   #cutouts will have the name VFIDxxxx-LS.png, using the v2 IDs
                 
@@ -119,18 +114,16 @@ class HomePage():
                         single_galpage.WRITETHEGALPAGE()
                         pagename = self.VFID[i]+'.html'   #name of galaxy html page
                             
-                        #hyperlink to galaxy page VFIDxxxx.html (pagename)
-                        html.write(f'<td><a href={self.path_to_galhtml+pagename}>{self.group_names[i]}</a></td>\n')
+                        html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+self.group_names[i]+'</a></td>\n')   #text hyperlink to galaxy page VFIDxxxx.html (pagename)
                     
                     #if neither primary or ncomp=1 galaxy, then determine which galaxy of group *is* the primary galaxy and hyperlink to that htmlpage
                     else:
                         group_rows = self.cutcat[[True if str(x)==str(self.group_names[i]) else False for x in self.group_names]]
                         primary_row = group_rows[group_rows['primaryGroup_flag']]   #all column information for the primary galaxy
-                        pagename = primary_row['VFID']+'.html'   #name of galaxy html page
+                        pagename = primary_row['VFID'][0]+'.html'   #name of galaxy html page
                         print('Linking htmlpage for '+str(self.cutcat['VFID'][i])+' to '+pagename)
-
-                        #hyperlink to galaxy page VFIDxxxx.html (pagename)
-                        html.write(f'<td><a href={self.path_to_galhtml+pagename}>{str(self.group_names[i])}</a></td>\n')
+                        html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.group_names[i])+'</a></td>\n')   #hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        print('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.group_names[i])+'</a></td>\n')
                 
                 #if galfit simply *failed* (or the primary galaxy is not a subsample member), disable hyperlink
                 else:
@@ -141,27 +134,24 @@ class HomePage():
                 html.write('<td>'+str(self.cutcat['DEC_1'][i])+'</td>\n')
 
                 #if the VFID (v2) is part of a group galaxy, then write in the Comments column that this particular galaxy is a member of a group
-                if self.group_flag[i]:
+                if (self.group_flag[i]) | ('GROUP' in self.group_names[i]):
                     html.write('<td>Group Galaxy</td>\n')
                 else:
                     html.write('<td>--</td>\n')
-                
-                if print_conuter == 30:
-                    clear_output(wait=False)   #clear printed output
-                    print_counter = 0   #reset print counter
                 
             html.write('</tr></table>\n')
             html.write('<br /><br />\n')
             html.write('</html></body>\n')
             html.close()
     
-    #creating a few separate functions in order to independently run the PNG creation scripts - if I run them as part of the homepage class loop I use to generate every galpage.html file, then an application memory problem arises. (Why not remove the methods from the class altogether if I won't use them in the initial loop as intended? I think they are organized more nicely as part of the galpage class; and since the variable names are already entangled, I may as well not tinker any further.)           
+    #creating a few separate functions in order to independently run the PNG creation scripts - if I run them as part of the homepage class loop I use to generate every galpage.html file, then an application memory problem arises. (Why not remove the functions from the class altogether if I won't use them in the initial loop as intended? I think they are organized more nicely as part of the galpage class; and since the variable names are already entangled, I may as well not tinker any further.)           
     
     def create_LS_figures(self):
         
         for i in range(len(self.cutcat)):
-            #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])):  
+            
+            #if galfit ran successfully...
+            if (self.params_w3_nopsf['xc'][i]>0):
 
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
                 single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, 
@@ -172,10 +162,12 @@ class HomePage():
                 
                 print('Creating LS cutout for '+single_galaxy.VFID)
                 single_galaxy.compile_LS_cutouts()
-                print('Creating LS mosaic for '+single_galaxy.VFID)
-                single_galaxy.create_LS_mosaics()
                 
-                clear_output(wait=False)
+                #if this galaxy is either a primary galaxy or not part of a Moustakas group, create the mosaic as well
+                if (self.primaryGroup_flag[i])|(~self.group_flag[i]):
+                    print('Creating LS mosaic for '+single_galaxy.VFID)
+                    single_galaxy.create_LS_mosaics()
+
                 del single_galaxy
                 
     def create_galfit_mosaics(self, psf_index):
@@ -183,29 +175,28 @@ class HomePage():
         index_dict = {0:'W3, no conv', 1:'W3, conv', 2:'r-band, no conv', 3:'r-band, conv'}
         
         for i in range(len(self.cutcat)):
+
             #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.params_w3_nopsf['xc'][i]>0):
-                if ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
-                    #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
-                    single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
+            if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
+                
+                #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
+                single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
                                         catalog=self.cutcat, local_path=self.local_path, 
                                         path_to_galhtml=self.path_to_galhtml, fits_folder=self.fits_folder, 
                                         gal_mosaic_folder=self.gal_mosaic_folder, w3params_nopsf=self.w3params_nopsf, 
                                         w3params_psf=self.w3params_psf, rparams_nopsf=self.rparams_nopsf, 
                                         rparams_psf=self.rparams_psf, test=True)                
         
-                    single_galaxy.create_model_mosaics_names()
-                    print('Creating GALFIT mosaics for '+single_galaxy.VFID+'...')
-                    single_galaxy.create_model_mosaics(psf_index = psf_index)
-                
-                    clear_output(wait=False)   #clear printed output
-                    del single_galaxy
-            else:
-                print('this galaxy did not pass the flags: '+self.cutcat['VFID'][i])
+                single_galaxy.create_model_mosaics_names()
+                print('Creating GALFIT mosaics for '+single_galaxy.VFID+f' {index_dict[psf_index]}')
+                single_galaxy.create_model_mosaics(psf_index = psf_index)
+                               
+                del single_galaxy
     
     def create_mask_mosaics(self):
-        
+
         for i in range(len(self.cutcat)):
+            
             #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
             if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
 
@@ -217,9 +208,8 @@ class HomePage():
                 
                 print('Creating mask mosaic for '+single_galaxy.VFID)
                 single_galaxy.create_mask_mosaics()
-                
-                clear_output(wait==False)
-                del single_galaxy
+
+            del single_galaxy
                 
 class GalPage():
     def __init__(self,galaxy_index=None, psf_indices = [0,1,2,3], page_name=None, catalog=None, 
@@ -262,6 +252,8 @@ class GalPage():
         self.ncomp = len(np.where(self.cutcat['group_name']==self.cutcat['group_name'][self.galaxy_index])[0])
         
         #need w3 header information and w3, r-band image data
+        print('delete print statement once finished testing: glob.glob searching for '+self.fits_folder+self.objname+'-custom-image-W3.fits')
+        print('delete print statement once finished testing: glob.glob searching for 'self.fits_folder+self.objname+'-custom-image-r.fits')
         path_to_w3 = glob.glob(self.fits_folder+self.objname+'-custom-image-W3.fits')[0]
         path_to_r = glob.glob(self.fits_folder+self.objname+'-custom-image-r.fits')[0]
         
@@ -276,6 +268,14 @@ class GalPage():
         try:
             self.w3mask_path = glob.glob(self.fits_folder+self.objname+'-custom-image-wise-mask.fits')[0]
             self.rmask_path = glob.glob(self.fits_folder+self.objname+'-custom-image-r-mask.fits')[0]
+            self.w3_mask = fits.getdata(self.w3mask_path)
+            self.r_mask = fits.getdata(self.rmask_path)
+            
+            #define boolean masks for image scaling purposes (so those darn bright stars do not dictate the norm vmin, vmax)
+            #when multiplied by image, only the unmasked object (only -- and all of -- the central galaxy, ideally) remains
+            self.w3_mask_bool = ~(self.w3_mask>0)
+            self.r_mask_bool = ~(self.r_mask>0)
+       
         except:
             print(self.objname+' has no mask images.')
         
@@ -310,6 +310,12 @@ class GalPage():
         titles = ['W3 Image', 'r-band Image', 'LS Image']
         images = [self.wise_im, r_scaled, self.filename_LS]
         
+        try:
+            bool_masks = [self.w3_mask_bool, self.r_mask_bool, None]
+        except:
+            bool_masks = [np.zeros((len(self.wise_im),len(self.wise_im)))+1, np.zeros((len(self.r_im),len(self.r_im)))+1, None]
+            print(f'{self.VFID} has no mask images.')
+        
         plt.figure(figsize=(12,6))
         for i,im in enumerate(images):
             plt.xlabel('RA')
@@ -319,10 +325,10 @@ class GalPage():
                 if i==1:
                     plt.subplot(1,len(images),i+1,projection = self.wcs_r)
                 try:
-                    norm = simple_norm(images[i],stretch='asinh',max_percent=99.5)
+                    norm = simple_norm(images[i]*bool_masks[i],stretch='asinh',max_percent=99.9)
                     plt.imshow(images[i],origin='lower',cmap='viridis',norm=norm)
                 except:
-                    norm = simple_norm(self.r_im,stretch='asinh',max_percent=99.5)
+                    norm = simple_norm(self.r_im,stretch='asinh',max_percent=99.9)
                     plt.imshow(self.r_im,origin='lower',cmap='viridis',norm=norm)
                 plt.ylabel('DEC')
                 ax = plt.gca()
@@ -365,16 +371,14 @@ class GalPage():
 
         for index in range(4):
             if os.path.exists(self.psf_dictionary[index]):
-                self.models.append(fits.getdata(self.file_w3_nopsf,2))
-                self.residuals.append(fits.getdata(self.file_w3_nopsf,3))
+                self.models.append(fits.getdata(self.psf_dictionary[index],2))
+                self.residuals.append(fits.getdata(self.psf_dictionary[index],3))
                 self.psf_indices_galaxy.append(index)
             else:
                 self.models.append(None)
                 self.residuals.append(None)
                 self.psf_indices_galaxy.append(None)
         self.psf_indices_galaxy = np.asarray(self.psf_indices_galaxy)
-
-        print(self.psf_indices_galaxy)
         
         self.pngnames = [self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w3-nopsf.png',
                    self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w3-psf.png',
@@ -383,7 +387,7 @@ class GalPage():
         
         #print('For self.create_model_mosaics(index), index=0 is w3_nopsf, 1 is w3_psf, 2 is r_nopsf, 3 is r_psf.')
         
-    def create_model_mosaics(self, psf_index, percentile1=.5, percentile2=99.5, p1residual=5, p2residual=99, cmap='viridis'):
+    def create_model_mosaics(self, psf_index, percentile1=.5, percentile2=99.9, p1residual=5, p2residual=99, cmap='viridis'):
         
         '''
         ARGS:
@@ -395,30 +399,54 @@ class GalPage():
         cmap = colormap, default is viridis
         ''' 
         
+        #create boolean masks for scaling purposes (prevents domination of prominent stars or other artifacts)
+        try:
+            bool_masks = [self.w3_mask_bool, self.r_mask_bool]
+        except:
+            #if no im mask, I just create a simple nxn matrix of 1s, so multiplying by bool_mask does not affect the image
+            bool_masks = [np.zeros((len(self.wise_im),len(self.wise_im)))+1, np.zeros((len(self.r_im),len(self.r_im)))+1]
+        
         #for index in self.psf_indices:
         if psf_index<2:   #w3 is index=0 or index=1
-            images = [self.wise_im,self.models[psf_index],self.residuals[psf_index]]
+            images = [self.wise_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
+            bool_mask = bool_masks[0]
         if psf_index>=2:   #r-band is index=2 or index=3
-            images = [self.r_im,self.models[psf_index],self.residuals[psf_index]]
-        titles = ['Image','Model','Residual (img stretch)']
+            images = [self.r_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
+            bool_mask = bool_masks[1]
         
+        titles = ['Image','Model','Residual (img stretch)','Residual (hard stretch)']
+        
+        if images[1] is not None:   #if model not None, then galfit ran correctly
+            v1 = [scoreatpercentile(images[0]*bool_mask,percentile1),
+                scoreatpercentile(images[0]*bool_mask,percentile1),
+                scoreatpercentile(images[0]*bool_mask,percentile1),
+                scoreatpercentile(images[2]*bool_mask,p1residual)]
+            v2 = [scoreatpercentile(images[0]*bool_mask,percentile2),
+                scoreatpercentile(images[0]*bool_mask,percentile2),
+                scoreatpercentile(images[0]*bool_mask,percentile2),
+                scoreatpercentile(images[2]*bool_mask,p2residual)]
 
-        v1 = [scoreatpercentile(images[0],percentile1),
-            scoreatpercentile(images[0],percentile1),
-            scoreatpercentile(images[0],percentile1)]
-        v2 = [scoreatpercentile(images[0],percentile2),
-            scoreatpercentile(images[0],percentile2),
-            scoreatpercentile(images[0],percentile2)]
+            norms = [simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
+                   simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
+                   simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),
+                   simple_norm(images[2]*bool_mask,'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
+        
+        else:
+            print(f'GALFIT did not run correctly for {self.VFID} - no model...')
+            
+            v1 = [scoreatpercentile(images[0]*bool_mask,percentile1),
+                None, None, None]
+            v2 = [scoreatpercentile(images[0]*bool_mask,percentile2),
+                None, None, None]
 
-        norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
-               simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
-               simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2])]
+            norms = [simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
+                   None, None, None]
 
         plt.figure(figsize=(14,6))
         plt.subplots_adjust(wspace=.0)
         for i,im in enumerate(images): 
-            ax = plt.subplot(1,3,i+1,projection=self.wcs_w3)
-            if im is None:
+            ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)
+            if v1[i] is None:
                 plt.imshow(np.zeros((len(self.wise_im),len(self.wise_im))),origin='lower',cmap='gray')
             else:
                 plt.imshow(im,origin='lower',cmap=cmap,norm=norms[i])  #vmin=v1[i],vmax=v2[i]
@@ -433,9 +461,7 @@ class GalPage():
         plt.savefig(self.pngnames[psf_index],bbox_inches='tight', pad_inches=0.2)   #dpi=200
         plt.close()    
 
-    def create_mask_mosaics(self, percentile1=.5, percentile2=99.5, cmap='viridis'):
-        self.w3_mask = fits.getdata(self.w3mask_path)
-        self.r_mask = fits.getdata(self.rmask_path)
+    def create_mask_mosaics(self, percentile1=.5, percentile2=99.8, cmap='viridis'):
 
         titles = ['W3 Image', 'W3 Mask', 'r-band Image', 'r-band Mask']
         images = [self.wise_im, self.w3_mask, self.r_im, self.r_mask]
@@ -450,10 +476,13 @@ class GalPage():
         plt.subplots_adjust(wspace=.0)
         for i,im in enumerate(images): 
             if i<=1:
-                ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)
+                ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)                    
             if i>=2:
                 ax = plt.subplot(1,4,i+1,projection=self.wcs_r)
-            plt.imshow(im,origin='lower',cmap=cmap,norm=norms[i])
+            if (i==0)|(i==2):
+                plt.imshow(im, origin='lower', cmap=cmap, norm=norms[i])
+            else:
+                plt.imshow(im, origin='lower', cmap=cmap, vmin=v1[i], vmax=v2[i])
             ax.set_xlabel('RA')
             if i == 0:
                 ax.set_ylabel('DEC')
@@ -463,7 +492,7 @@ class GalPage():
                 ax.set_yticks([])
             plt.title(titles[i],fontsize=16)
         plt.savefig(self.mask_mosaics+self.VFID+'-mask_mosaic.png',bbox_inches='tight', pad_inches=0.2)   #dpi=200
-        plt.close()
+        plt.close() 
     
     def tabulate_parameters(self):
         
