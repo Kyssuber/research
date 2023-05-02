@@ -253,7 +253,7 @@ class GalPage():
         
         #need w3 header information and w3, r-band image data
         print('delete print statement once finished testing: glob.glob searching for '+self.fits_folder+self.objname+'-custom-image-W3.fits')
-        print('delete print statement once finished testing: glob.glob searching for 'self.fits_folder+self.objname+'-custom-image-r.fits')
+        print('delete print statement once finished testing: glob.glob searching for '+self.fits_folder+self.objname+'-custom-image-r.fits')
         path_to_w3 = glob.glob(self.fits_folder+self.objname+'-custom-image-W3.fits')[0]
         path_to_r = glob.glob(self.fits_folder+self.objname+'-custom-image-r.fits')[0]
         
