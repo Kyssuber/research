@@ -105,7 +105,7 @@ if __name__ == '__main__':
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
   input_cutouts_path = '/mnt/virgofilaments-data/'
 
-  onefolder_path = '/mnt/astrophysics/kconger_wisesize/all_input_fits/'
+  onefolder_path = '/mnt/astrophysics/kconger_wisesize/vf_html_mask/all_input_fits/'
   
   print('Creating target directory '+onefolder_path)
   os.system('mkdir '+onefolder_path)

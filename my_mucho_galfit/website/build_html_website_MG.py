@@ -174,13 +174,13 @@ class HomePage():
         
         index_dict = {0:'W3, no conv', 1:'W3, conv', 2:'r-band, no conv', 3:'r-band, conv'}
         
-        for i in range(len(self.cutcat)):
+        for n in range(len(self.cutcat)):
 
             #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
-                
+            if (self.params_w3_nopsf['xc'][n]>0) & ((self.primaryGroup_flag[n])|(~self.group_flag[n])): 
+
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
-                single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
+                single_galaxy = GalPage(galaxy_index=n, psf_indices=self.indices, page_name=self.cutcat['VFID'][n]+'.html', 
                                         catalog=self.cutcat, local_path=self.local_path, 
                                         path_to_galhtml=self.path_to_galhtml, fits_folder=self.fits_folder, 
                                         gal_mosaic_folder=self.gal_mosaic_folder, w3params_nopsf=self.w3params_nopsf, 
@@ -190,7 +190,7 @@ class HomePage():
                 single_galaxy.create_model_mosaics_names()
                 print('Creating GALFIT mosaics for '+single_galaxy.VFID+f' {index_dict[psf_index]}')
                 single_galaxy.create_model_mosaics(psf_index = psf_index)
-                               
+        
                 del single_galaxy
     
     def create_mask_mosaics(self):
@@ -252,8 +252,6 @@ class GalPage():
         self.ncomp = len(np.where(self.cutcat['group_name']==self.cutcat['group_name'][self.galaxy_index])[0])
         
         #need w3 header information and w3, r-band image data
-        print('delete print statement once finished testing: glob.glob searching for '+self.fits_folder+self.objname+'-custom-image-W3.fits')
-        print('delete print statement once finished testing: glob.glob searching for '+self.fits_folder+self.objname+'-custom-image-r.fits')
         path_to_w3 = glob.glob(self.fits_folder+self.objname+'-custom-image-W3.fits')[0]
         path_to_r = glob.glob(self.fits_folder+self.objname+'-custom-image-r.fits')[0]
         
