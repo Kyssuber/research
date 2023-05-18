@@ -35,7 +35,7 @@ class HomePage():
                  gal_mosaic_folder=None,indices=None):
         
         #index = 0 for w3_nopsf, 1 for w3_psf, 2 for r_nopsf, 3 for r_psf
-        if indices != None:
+        if indices is None:
             self.indices = [0,1,2,3]
         else:
             self.indices = indices
@@ -90,7 +90,7 @@ class HomePage():
             html.write('</style>\n')
             html.write(f'<font size="40">{self.website_title}</font>\n')
             
-            #begin and populate the table. first line is header information; loop creates the data rows.
+            #begin to populate the table. first line is header information; loop creates the data rows.
             html.write('<table><tr><th>VFID</th><th>LS Cutout</th><th>Prefix</th><th>RA</th><th>DEC</th><th>Comments</th>\n')
             
             for i in range(len(self.cutcat)):
@@ -120,15 +120,14 @@ class HomePage():
 
                         html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+self.group_names[i]+'</a></td>\n')   #text hyperlink to galaxy page VFIDxxxx.html (pagename)
                 
-                    #if neither primary or ncomp=1 galaxy, then determine which galaxy of group *is* the primary galaxy and hyperlink to that htmlpage
-                    
+                    #if neither primary or ncomp=1 galaxy, then determine which galaxy of group *is* the primary galaxy and hyperlink to that htmlpage 
                     else:
                         group_rows = self.cutcat[[True if str(x)==str(self.group_names[i]) else False for x in self.group_names]]
                         primary_row = group_rows[group_rows['primaryGroup_flag']]   #all column information for the primary galaxy
                         pagename = primary_row['VFID'][0]+'.html'   #name of galaxy html page
                         print('Linking htmlpage for '+str(self.cutcat['VFID'][i])+' to '+pagename)
-                        html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.cutcat['group_name'][i])+'</a></td>\n')   #hyperlink to galaxy page VFIDxxxx.html (pagename)
-                        print('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.cutcat['group_name'][i])+'</a></td>\n')
+                        html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.group_names[i])+'</a></td>\n')   #hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        print('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.group_names[i])+'</a></td>\n')
                         
                 #if galfit simply *failed* (or the primary galaxy is not a subsample member), disable hyperlink
                 else:
@@ -138,13 +137,13 @@ class HomePage():
                 html.write('<td>'+str(self.cutcat['RA_1'][i])+'</td>\n')
                 html.write('<td>'+str(self.cutcat['DEC_1'][i])+'</td>\n')
                                 
-                #if the VFID (v2) is part of a group galaxy, then write in the Comments column that this particular galaxy is a member of a group
-                if self.group_flag[i]:
+                #if the VFID (v2) is part of a group galaxy, then write in the Comments column that this particular galaxy is a member of a group. Else, keep blank (with a --).
+                if (self.group_flag[i]) | ('GROUP' in self.group_names[i]):
                     html.write('<td>Group Galaxy</td>\n')
                 else:
                     html.write('<td>--</td>\n')
                 
-                if print_counter == 30:
+                if print_counter == 20:
                     clear_output(wait=False)   #clear printed output
                     print_counter = 0   #reset print_counter
                 
@@ -153,7 +152,7 @@ class HomePage():
             html.write('</html></body>\n')
             html.close()
     
-    #creating a few separate functions in order to independently run the PNG creation scripts - if I run them as part of the homepage class loop I use to generate every galpage.html file, then an application memory problem arises. (Why not remove the methods from the class altogether if I won't use them in the initial loop as intended? I think they are organized more nicely as part of the galpage class; and since the variable names are already entangled, I may as well not tinker any further.)           
+    #creating a few separate functions in order to independently run the PNG creation scripts - if I run them as part of the homepage class loop I use to generate every galpage.html file, then an application memory problem arises. (Why not remove the functions from the class altogether if I won't use them in the initial loop as intended? I think they are organized more nicely as part of the galpage class; and since the variable names are already entangled, I may as well not tinker any further.)           
     
     def create_LS_figures(self):
 
@@ -383,6 +382,7 @@ class GalPage():
         self.models = []
         self.residuals = []
         self.psf_indices_galaxy = []
+        
         for index in range(4):
             if os.path.exists(self.psf_dictionary[index]):
                 self.models.append(fits.getdata(self.psf_dictionary[index],2))
@@ -458,19 +458,16 @@ class GalPage():
         plt.figure(figsize=(14,6))
         plt.subplots_adjust(wspace=.0)
         for i,im in enumerate(images): 
-            ax = plt.subplot(1,4,i+1,projection=self.wcs_w3)
+            ax = plt.subplot(1,4,i+1)   #,projection=self.wcs_w3) ...or r-band
             #if no model or residual, create blank panel
             if v1[i] is None:
                 plt.imshow(np.zeros((len(self.wise_im),len(self.wise_im))),origin='lower',cmap='gray')
             else:
                 plt.imshow(im,origin='lower',cmap=cmap,norm=norms[i])  #vmin=v1[i],vmax=v2[i]
-            ax.set_xlabel('RA')
-            if i == 0:
-                ax.set_ylabel('DEC')
-            else:
-                plt.ylabel(' ')
-                ax = plt.gca()
-                ax.set_yticks([])
+
+            ax = plt.gca()
+            ax.xaxis.set_ticklabels([])
+            ax.yaxis.set_ticklabels([])
             plt.title(titles[i],fontsize=16)
         plt.savefig(self.pngnames[psf_index],bbox_inches='tight', pad_inches=0.2)   #dpi=200
         plt.close()    
