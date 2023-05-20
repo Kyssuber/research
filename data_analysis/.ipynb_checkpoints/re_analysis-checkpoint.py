@@ -160,7 +160,7 @@ class catalogs:
         self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
         self.PArats = self.PA_w3band_cut/self.PA_rband_cut          
     
-    def sfrmstar(self, show_HI=False, show_sizerat=True, savefig=False):
+    def sfrmstar_magphys(self, show_HI=False, show_D25=False, show_sizerat=True, savefig=False):
         
         #prepare D25 data for colorbar
         d25 = 10**(self.hyp_tab['logd25'])
@@ -202,15 +202,22 @@ class catalogs:
             plt.clim(0,1)
         
         if show_sizerat:
-            plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6,
-                    label='VFS Subsample')
+            plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], 
+                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VFS Subsample')
             cb = plt.colorbar()
             cb.set_label(label=r'R$_{12}$/R$_r$',size=23)
             plt.clim(0.1,1)
             
-            #add main sequence line
-            y = logmass*0.47 - 4.88
-            plt.plot(logmass,y,label=('Main Sequence'),color='black',alpha=0.6)
+        if show_D25:
+            plt.scatter(logmass_cut,logsfr_cut, c=d25_cut, cmap='viridis', s=60, 
+                        alpha=0.6, label='VFS Subsample')
+            cb = plt.colorbar()
+            cb.set_label(label=r'Optical D25',size=23)
+            plt.clim(15,40)
+            
+        #add main sequence line
+        y = logmass*0.47 - 4.88
+        plt.plot(logmass,y,label=('Main Sequence'),color='black',alpha=0.6)
         
         cb.ax.tick_params(labelsize=15)
         
@@ -226,9 +233,82 @@ class catalogs:
         plt.legend(fontsize=12)
 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/sfrmstar.png', dpi=300, bbox_inches='tight', pad_inches=0.2)
+            plt.savefig(homedir+'/Desktop/sfrmstar_magphys.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
         
         plt.show()
+    
+    def sfrmstar_z0mgs(self, show_HI=False, show_D25=False, show_sizerat=True, savefig=False):
+        
+        #prepare D25 data for colorbar
+        d25 = 10**(self.hyp_tab_cut['logd25'])
+        
+        #prepare MHI_to_Mstar data for colorbar
+        MHI_to_Mstar = self.HI_tab['MHI']/(10**self.z0mgs['logmass'])
+        
+        for n in range(len(MHI_to_Mstar)):
+            if self.HI_tab['MHI'].mask[n]:     #if value is masked, set to be -999
+                MHI_to_Mstar[n] = -999
+            else:
+                MHI_to_Mstar[n] = MHI_to_Mstar[n] if ((np.log(self.HI_tab['MHI'][n])>0) & (MHI_to_Mstar[n]<10) & (MHI_to_Mstar[n]!=1)) else -999
+        
+        path_to_dir = homedir+'/Desktop/v2-20220820/'
+        logsfr = Table.read(path_to_dir+'vf_v2_z0mgs.fits')['logsfr']
+        logmass = Table.read(path_to_dir+'vf_v2_z0mgs.fits')['logmass']
+        
+        logsfr_cut = self.z0mgscut['logsfr']
+        logmass_cut = self.z0mgscut['logmass']
+        
+        MHI_to_Mstar_cut = MHI_to_Mstar
+        d25_cut = d25
+
+        plt.figure(figsize=(10,6))
+        plt.scatter(logmass,logsfr,color='gray',s=3,alpha=0.05,label='VF sample')
+        
+        if show_HI:
+            plt.scatter(logmass_cut,logsfr_cut,marker='^',color='red',s=30,alpha=0.3,label='VF subsample')
+            plt.scatter(logmass_cut[(MHI_to_Mstar_cut>-999)],logsfr_cut[(MHI_to_Mstar_cut>-999)],
+                    c=MHI_to_Mstar_cut[(MHI_to_Mstar_cut>-999)], cmap='viridis', s=60, alpha=0.9,
+                    label='Subsample with HI measurements',edgecolor='black')
+            cb = plt.colorbar()
+            cb.set_label(label=r'M$_{HI}$/M$_*$',size=25)
+            plt.clim(0,1)
+        
+        if show_sizerat:
+            plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], 
+                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VFS Subsample')
+            cb = plt.colorbar()
+            cb.set_label(label=r'R$_{12}$/R$_r$',size=23)
+            plt.clim(0.1,1)
+            
+        if show_D25:
+            plt.scatter(logmass_cut, logsfr_cut, c=d25_cut, cmap='viridis', s=60, 
+                        alpha=0.6, label='VFS Subsample')
+            cb = plt.colorbar()
+            cb.set_label(label=r'Optical D25',size=23)
+            plt.clim(15,40)
+            
+        #add main sequence line
+        y = logmass*0.47 - 4.88
+        plt.plot(logmass,y,label=('Main Sequence'),color='black',alpha=0.6)
+        
+        cb.ax.tick_params(labelsize=15)
+        
+        plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
+        plt.ylabel(r'log(SFR/($M_\odot$/yr))',fontsize=22)
+        
+        plt.xlim(8,11.5)
+        plt.ylim(-2,1.5)
+        
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        
+        plt.legend(fontsize=12)
+
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/sfrmstar_z0mgs.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
+        
+        plt.show()
+    
     
     def r12_vs_rstar(self, sfr_mstar='mstar', savefig=False):
         
@@ -309,38 +389,47 @@ class catalogs:
             cb.ax.tick_params(labelsize=20)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/r12_rstar.png', dpi=300, bbox_inches='tight', pad_inches=0.2)
+            plt.savefig(homedir+'/Desktop/r12_rstar.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
         
         plt.show()
         
     def ratio_MS(self, showHI=False, savefig=False):
         
         #prepare MHI_to_Mstar data for colorbar
-        MHI_to_Mstar = self.HI_tab_cut['MHI']/(10**self.z0mgscut['logmass'])
+        MHI_to_Mstar = self.HI_tab_cut['MHI']/(10**self.magphyscut['logMstar'])
+        
+        logsfr = self.magphyscut['logSFR']
+        logmass = self.magphyscut['logMstar']
         
         #main sequence best-fit line
         #slope: 0.47 +/- 0.01
         #y-intercept: -4.88 +/- 0.10
-        Mstar_full = self.z0mgs['logmass']
+        Mstar_full = logmass
         y = Mstar_full*0.47 - 4.88
         
+        #remove entries where there is no magphys data available for that galaxy
+        err_flag_cut = (self.magphyscut['magphysFlag'])
+
         #Now calculate distance of each point to the best-fit line
         #Distance = (| a*x1 + b*y1 + c |) / (sqrt( a*a + b*b))
-        dist = (-0.47*self.z0mgscut['logmass'] + self.z0mgscut['logsfr'] + 4.88) / (np.sqrt((-0.47)**2 + (1)**2))
+        dist = (-0.47*logmass[err_flag_cut] + logsfr[err_flag_cut] + 4.88) / (np.sqrt((-0.47)**2 + (1)**2))
+        
+        MHI_to_Mstar_cut = MHI_to_Mstar[err_flag_cut]
         
         plt.figure(figsize=(10,6))
         plt.axhline(1,linestyle='--',color='r',alpha=0.4)
         
         if showHI:
-            plt.scatter(dist,self.sizerats,color='gray',s=10,alpha=0.3)   #all points
-            plt.scatter(dist,self.sizerats,c=MHI_to_Mstar)   #will only plot points with MHI data
+            plt.scatter(dist,self.sizerats[err_flag_cut],color='gray',s=10,alpha=0.3)   #all points
+            plt.scatter(dist,self.sizerats[err_flag_cut],c=MHI_to_Mstar_cut)   #will only plot points with MHI data
             plt.colorbar().set_label(label='MHI_to_Mstar',size=15)
             plt.clim(0,1)
         if not showHI:
-            plt.scatter(dist,self.sizerats,color='blue',s=40,alpha=0.7)   #all points
+            plt.scatter(dist,self.sizerats[err_flag_cut],color='blue',s=40,alpha=0.7)   #all points
         
         #plt.yscale('log')
-        plt.ylim(0, 2)   #artificially trim outliers with size ratios>5 (there is indeed one with ratio~100)
+        plt.ylim(0, 1.75)   #artificially trim outliers with size ratios>5 (there is indeed one with ratio~100)
+        plt.xlim(-3.1,2)
         
         plt.xlabel(r'Distance from Main Sequence Line',fontsize=17)
         plt.ylabel(r'Size Ratio ($R_{12}/R_{r}$)',fontsize=17)
@@ -349,7 +438,7 @@ class catalogs:
         plt.yticks(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/HI_sizerats.png', dpi=300, bbox_inches='tight', pad_inches=0.2)
+            plt.savefig(homedir+'/Desktop/MS_dist.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
         
         plt.show()
 
@@ -378,7 +467,7 @@ class catalogs:
         plt.grid(color='purple',alpha=0.2)
 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/envbins.png', dpi=300)
+            plt.savefig(homedir+'/Desktop/envbins.png', dpi=200)
         
         plt.show()
 
@@ -455,7 +544,7 @@ class catalogs:
         #plt.legend(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/env_ratio.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/env_ratio.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
             
         plt.show()
     
@@ -474,9 +563,9 @@ class catalogs:
                             magphys_mass[self.pgflag&err_flag], 
                             magphys_mass[self.filflag&err_flag], magphys_mass[self.fieldflag&err_flag]]
 
-        env_names = ['cluster','rich group','poor group','filament','field']
+        env_names = ['Cluster','Rich Group','Poor Group','Filament','Field']
 
-        mybins=np.linspace(7.5,11.5,12)
+        mybins=np.linspace(7.5,11.5,1000)
         
         fig = plt.figure(figsize=(11,8))
         plt.subplots_adjust(hspace=.4,wspace=.3)
@@ -488,21 +577,24 @@ class catalogs:
             if i == 5:
                 ax.set_position([0.55,0.125,0.228,0.3])
             
-            plt.hist(magphys_env_mass[i-1],bins=mybins,alpha=0.2,cumulative=True,density=True,label='Magphys')
+            plt.hist(magphys_env_mass[i-1],bins=mybins,alpha=0.8,cumulative=True,density=True,
+                     histtype='step',label='Magphys')
             
             if z0mgs_comp==True:
-                plt.hist(z0mgs_env_mass[i-1],bins=mybins,alpha=0.2,cumulative=True,density=True,label='z0mgs')
+                plt.hist(z0mgs_env_mass[i-1],bins=mybins,alpha=0.8,cumulative=True,density=True,
+                         histtype='step',label='z0mgs')
             
             if (i == 1)&(z0mgs_comp==True):
-                plt.legend(fontsize=18)
+                plt.legend(fontsize=13,loc='upper left')
             plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
+            plt.xlim(7.5,11.5)
             plt.title(env_names[i-1],fontsize=22)
             
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
                     
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=200)
         
         plt.show()
  
@@ -541,7 +633,7 @@ class catalogs:
             print('%.5f'%(kstest(pair[0],pair[1])[1]))
                 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=200)
         
         plt.show()
     
@@ -576,7 +668,7 @@ class catalogs:
             ax.legend(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/hist_dist.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/hist_dist.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
 
         plt.show()
         
@@ -655,7 +747,7 @@ class catalogs:
         plt.yticks(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/SGA_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/SGA_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
         
         plt.show()
     
@@ -707,7 +799,7 @@ class catalogs:
             plt.legend(fontsize=14)
  
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/PSF_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/PSF_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
         
         plt.show()
     
@@ -742,7 +834,7 @@ class catalogs:
         print(self.kimparams_cut['VFID'][~self.outlier_flag])
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
         
         plt.show()    
     
@@ -753,14 +845,18 @@ if __name__ == '__main__':
         MeanMedian will propagate to all plots. MADmultip[lier is a proxy for the extent to which a 
         galaxy must be an 'outlier' in order to be removed from calculations.
         cutAGN is precisely that and will remove flagged AGN from the plots below (both WISE and BPT AGN)
-    cat.sfrmstar(show_HI=False,show_sizerat=True,savefig=False) --> generates SFR v. Mstar plot, 
-        color-coded according to either available HI gas mass or GALFIT size ratios
+    cat.sfrmstar_magphys(show_HI=False,show_sizerat=True,show_D25=False,savefig=False) --> generates
+        SFR v. Mstar plot, color-coded according to either available HI gas mass, D25 (Hyperleda), 
+        or GALFIT size ratios. SFR and Mstar values from MAGPHYS.
+    cat.sfrmstar_z0mgs(show_HI=False,show_sizerat=True,savefig=False) --> same as above, but with z0mgs.
     cat.r12_vs_rstar(sfr_mstar='sfr', savefig=False) --> plots R_12 vs. R_r effective radii for the full
         subsample as well as according to each environment bin (six total panels). User can dictate
         the colorbar, namely whether data are colored according to SFR or to Mstar (both from MAGPHYS)
     cat.envbins(savefig=False) --> plots number of subsample galaxies in each environment bin
     cat.ratio_MS(showHI=False,savefig=False) --> plots size ratios as a function of MS distance, 
         colored according to normalized HI mass in the case where showHI=True.
+    cat.hist_dist_rats(savefig=False) --> size ratio distributions for each of the five defined 
+    environment bins (plt.subplots with one column, five rows). Rainbow colors, very aesthestic.
     cat.env_means(trimOutliers=False, errtype='bootstrap', savefig=False) --> plots either mean 
         or median size ratio (w3/r) in each environment bin; trimOutliers will output an additional plot which 
         compares my no PSF parameters to Rose's parameters, allowing the user to visualize which points are omitted 

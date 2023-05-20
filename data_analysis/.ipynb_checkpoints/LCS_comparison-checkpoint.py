@@ -191,7 +191,7 @@ class catalogs:
             ax.legend(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/lcs_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/lcs_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
 
         plt.show()
         
@@ -300,7 +300,7 @@ class catalogs:
         plt.legend(fontsize=14)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/LCS_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/LCS_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
 
         plt.show()    
 
@@ -331,7 +331,7 @@ class catalogs:
             ax.legend(fontsize=15)
 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/wisesize_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/wisesize_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
 
         plt.show()
         
@@ -423,7 +423,7 @@ class catalogs:
         plt.legend(fontsize=14)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/wisesize_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=300)
+            plt.savefig(homedir+'/Desktop/wisesize_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
 
         plt.show()    
     
