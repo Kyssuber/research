@@ -10,7 +10,7 @@ csv_savename     .csv                                            # desired filen
 vid_name_cutout  .mp4                                            # desired filename of cutout animation ('.mp4' if using galname)
 vid_name_midi    midi_notes.mp4                                  # desired filename of midi animation
 wav_savename     .wav                                            # desired filename of wavefile ('.wav' if using galname)
-soundfont        /opt/anaconda3/share/soundfonts/FluidR3_GM.sf2  # location of soundfont for mid-to-wav
+soundfont        /opt/anaconda3/share/soundfonts/SM64SF_V2.sf2  # location of soundfont for mid-to-wav
 
 #--------------------------------------------- Parameters ----------------------------------------------
 

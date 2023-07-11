@@ -9,11 +9,14 @@ image_resolution = {'FUV':6,'NUV':6,'g':1.5,'r':1.5,'z':1.5,'W1':6.1,'W2':6.4,'W
 
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import rcParams
 from astropy.table import Table
 from scipy.stats import median_abs_deviation as MAD
 from astropy.stats import bootstrap
 from itertools import combinations
 from scipy.stats import kstest
+from scipy.stats import binned_statistic
+from scipy.stats import spearmanr
 
 import os
 homedir = os.getenv("HOME")
@@ -119,6 +122,7 @@ class catalogs:
             print(f'# BPT AGN in VF subsample: {len(self.v2_maincut[self.agn_kauffman_flag])}')
 
             self.cut_flags = (~AGN_flags) & (~fail_flag) & (~err_flag)
+            print(f'Number of galaxies flagged with AGN and a GALFIT error: {len(self.v2_env[(AGN_flags) & (err_flag)])}')
         
         self.re_rband_cut = self.re_rband[self.cut_flags]
         self.re_w3band_cut = self.re_w3band[self.cut_flags]
@@ -159,6 +163,196 @@ class catalogs:
 
         self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
         self.PArats = self.PA_w3band_cut/self.PA_rband_cut          
+    
+    def mass_matching(self):
+        
+        #select one cluster galaxy
+        #create pool of field galaxies with logmass within 0.3 dex relative to the one cluster galaxy
+        #from this pool, randomly draw int(len(field)/len(cluster)) galaxies
+            #try without replacement first.
+        #repeat (2) and (3) for rich group, filament, and poor group galaxies
+        #repeat all for every cluster galaxy
+        
+        n_dex = 0.3
+        
+        n_to_draw = [int(round(len(self.v2_envcut[self.fieldflag])/len(self.v2_envcut[self.clusflag]),0)),
+                     int(round(len(self.v2_envcut[self.rgflag])/len(self.v2_envcut[self.clusflag]),0)),
+                     int(round(len(self.v2_envcut[self.pgflag])/len(self.v2_envcut[self.clusflag]),0)),
+                     int(round(len(self.v2_envcut[self.filflag])/len(self.v2_envcut[self.clusflag]),0))]
+        
+        #remove entries where there is no magphys data available for that galaxy    
+        err_flag_cut = self.magphyscut['magphysFlag']
+        
+        #isolate the rows of galaxies in each environment type
+        m_clus = self.magphyscut[(err_flag_cut) & (self.clusflag)]
+        
+        m_rg = self.magphyscut[(err_flag_cut) & (self.rgflag)]
+        m_pg = self.magphyscut[(err_flag_cut) & (self.pgflag)]
+        m_fil = self.magphyscut[(err_flag_cut) & (self.filflag)]
+        m_field = self.magphyscut[(err_flag_cut) & (self.fieldflag)]
+        
+        #create empty lists in which the mass-matched environment galaxies will go
+        comp_galaxies = [[],[],[],[]]
+        
+        for index in range(len(m_clus)):
+            
+            #for every cluster galaxy, randomly choose two galaxies from each environment with masses within 0.3 dex of the cluster galaxy mass
+            field_pool = m_field[(m_field['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_field['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
+            rg_pool = m_rg[(m_rg['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_rg['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
+            pg_pool = m_pg[(m_pg['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_pg['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
+            fil_pool = m_fil[(m_fil['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_fil['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
+            
+            #the 'pools' of galaxies from which the mass-matched samples will be drawn
+            pools = [field_pool, rg_pool, pg_pool, fil_pool]
+            
+            for env in range(4):
+                if n_to_draw[env] <= len(pools[env]):
+                    choices = np.random.choice(pools[env]['VFID'],n_to_draw[env])
+                else:    
+                    try:
+                        choices = np.random.choice(pools[env]['VFID'],n_to_draw[env]-1)
+                    except ValueError:
+                        choices = np.random.choice(pools[env]['VFID'],0)
+                for gal in choices:
+                    comp_galaxies[env].append(gal)
+        
+        print('n_field, n_rg, n_pg, n_filament:',len(comp_galaxies[0]),len(comp_galaxies[1]),len(comp_galaxies[2]),len(comp_galaxies[3]))
+        print('n_clus:',len(m_clus))
+        
+        #once process is confirmed to be correct, I could replace comp_galaxies[env] arrays with T, F as opposed to 
+        #just inserting the galaxy VFID.
+        #define the result as self.comp_galaxies, add flag kwarg to certain functions below, then I can re-generate
+        #certain plots (e.g., cat.env_means()). 
+    
+    def inclination_check(self, savefig=False):
+        
+        #aim: check dependence of size ratio, SFR, Mstar on optical axis ratio
+        #also looks for whether trends exist between size ratio and Sérsic index or T-type
+        print('Spearman rank test: -1<p<1, with 0 indicating no correlation.')
+        
+        #remove entries where there is no magphys data available for that galaxy        
+        err_flag_cut = (self.magphyscut['magphysFlag'])
+        
+        #cut logsfr, logmass
+        logsfr_cut = self.magphyscut['logSFR'][err_flag_cut]
+        logmass_cut = self.magphyscut['logMstar'][err_flag_cut]
+        
+        #cut size ratio, optical axis ratio arrays
+        sizerats = self.sizerats[err_flag_cut]
+        BA = self.BA_rband_cut[err_flag_cut]
+        
+        x = [BA, BA[(logsfr_cut>-6)], BA[(logmass_cut>6)]]
+        y = [sizerats, logsfr_cut[(logsfr_cut>-6)], logmass_cut[(logmass_cut>6)]]
+        colors = ['crimson','green','blue']
+        y_labels = [r'R$_{12}$/R$_r$', 'logSFR', r'log$M_*$']
+        png_titles = ['Sizerat vs BA', 'SFR vs BA', 'Mstar vs BA']
+        
+        fig=plt.figure(figsize=(20,4))
+        plt.subplots_adjust(hspace=.1,wspace=.2)
+        
+        for index in range(len(y)):
+            ax = fig.add_subplot(1, len(y), index+1)
+            plt.scatter(x[index], y[index], color=colors[index], s=20)
+            plt.xlabel('Axis Ratio',fontsize=18)
+            plt.ylabel(y_labels[index],fontsize=18)
+            
+            #spearman-rank test
+            sr = spearmanr(x[index],y[index])
+            rho = sr[0]
+            p = sr[1]
+            plt.plot([],[],color="None",label=f'rho={np.round(rho,4)}')
+            plt.plot([],[],color="None",label=f'p-value={np.round(p,4)}')
+            
+            plt.legend(handlelength=0,fontsize=17)
+            plt.title(png_titles[index],fontsize=15)
+            
+            if index==0:
+                plt.yscale('log')
+            
+        if savefig:
+            plt.savefig(homedir+'/Desktop/inclination_check.png', dpi=150, bbox_inches='tight', pad_inches=0.2)
+
+        plt.show()
+        
+        vfid_list = self.v2_maincut['VFID'][err_flag_cut]
+        print(f'Size ratio outliers: {vfid_list.data[(sizerats>2)]}, \n logSFR outliers: {vfid_list.data[(logsfr_cut<-6)]}, \n logMstar outliers: {vfid_list.data[(logmass_cut<6)]}')
+        
+        #also looks for whether trends exist between size ratio and Sérsic index or T-type
+        #ttype_dict = {'Sa':1,'Sab':2,'Sb':3,'Sbc':4,'Sc':5,'Scd':6,'Sd':7,'Sdm':8,'Sm':9,'Ir':10}
+        
+        y2 = self.sizerats
+        x2 = [self.hyp_tab_cut['t'], self.rdat['nsersic'][self.cut_flags]]
+        x_labels2 = ['Morphological T-Type', 'Sérsic Index (r-band)']
+        colors2 = ['orangered','blueviolet']
+        
+        fig=plt.figure(figsize=(20,4))
+        plt.subplots_adjust(hspace=.1,wspace=.2)
+        
+        for index in range(2):
+            ax = fig.add_subplot(1, 2, index+1)
+            plt.scatter(x2[index][y2<20], y2[y2<20], color=colors2[index], s=20)
+            plt.xlabel(x_labels2[index],fontsize=18)
+            plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
+            
+            #spearman-rank test
+            sr = spearmanr(x2[index],y2)
+            rho = sr[0]
+            p = sr[1]
+            plt.plot([],[],color="None",label=f'rho={np.round(rho,4)}')
+            plt.plot([],[],color="None",label=f'p-value={np.round(p,4)}')
+            
+            plt.yscale('log')
+            plt.legend(handlelength=0,fontsize=17)
+        
+        if savefig:
+            plt.savefig(homedir+'/Desktop/morphology_check.png', dpi=150, bbox_inches='tight', pad_inches=0.2)
+
+        plt.show()
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    def mass_completeness_check(self, savefig=False):
+        
+        #aim: Make histogram of full VFS sample with quality flags. Also make histogram with T-type and 12um SNR cut. Take the ratio of these histograms (WISESize sample/VFS) and plot them vs. mass. Below some mass this ratio will decline. We can use that point as our mass completeness limit.
+        
+        mass_bins = np.arange(6,11.5,0.15)
+        
+        logmass = self.magphys['logMstar']
+        
+        #remove entries where there is no magphys data available for that galaxy
+        err_flag = (self.magphys['magphysFlag'])
+        
+        logmass_cut = logmass[self.v2_main['sgacut_flag'] & (err_flag)]        
+        logmass = logmass[err_flag]
+        
+        counts_full = plt.hist(logmass,bins=mass_bins,range=[6, 11.5],alpha=0.5,label='VFS')
+        counts_cut = plt.hist(logmass_cut,bins=mass_bins,range=[6, 11.5],alpha=0.6,label='WISESize')
+        plt.title('Mass Histograms',fontsize=14)
+        plt.legend(handlelength=0.3,fontsize=14)
+        counts_ratio = counts_cut[0]/counts_full[0]
+        
+        xedges = counts_full[1]
+        xcenters = (xedges[:-1] + xedges[1:]) / 2
+                
+        plt.figure(figsize=(10,6))
+        plt.scatter(xcenters,counts_ratio)    
+        plt.xlabel(r'logM$_*$',fontsize=18)
+        plt.ylabel('WISE / VFS Ratio',fontsize=18)
+        plt.grid(alpha=0.1)
+        
+        if savefig:
+            plt.savefig(homedir+'/Desktop/mass_completeness_hist.png', dpi=150, bbox_inches='tight', 
+                        pad_inches=0.2)
+    
+    
+    
+    
     
     def sfrmstar_magphys(self, show_HI=False, show_D25=False, show_sizerat=True, savefig=False):
         
@@ -203,29 +397,41 @@ class catalogs:
         
         if show_sizerat:
             plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], 
-                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VFS Subsample')
+                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VF Subsample')
             cb = plt.colorbar()
             cb.set_label(label=r'R$_{12}$/R$_r$',size=23)
             plt.clim(0.1,1)
             
         if show_D25:
             plt.scatter(logmass_cut,logsfr_cut, c=d25_cut, cmap='viridis', s=60, 
-                        alpha=0.6, label='VFS Subsample')
+                        alpha=0.6, label='VF Subsample')
             cb = plt.colorbar()
             cb.set_label(label=r'Optical D25',size=23)
             plt.clim(15,40)
             
-        #add main sequence line
-        y = logmass*0.47 - 4.88
-        plt.plot(logmass,y,label=('Main Sequence'),color='black',alpha=0.6)
+        #add z0mgs main sequence line
+        #y = logmass*0.47 - 4.88
+        #plt.plot(logmass,y,label=('Main Sequence'),color='black',alpha=0.6)
+        
+        #fit main-sequence line to data
+        p1 = np.poly1d(np.polyfit(logmass[(logsfr-logmass)>-11.5],logsfr[(logsfr-logmass)>-11.5],1))
+        #p2 = np.poly1d(np.polyfit(logmass[(logmass-logsfr>-12)],logsfr[(logmass-logsfr>-12)],2))
+
+        x_p = np.linspace(np.min(logmass),np.max(logmass),1000)
+
+        plt.plot(x_p,p1(x_p),color='black',label='MS fit',alpha=0.7,linewidth=3)
+        #plt.plot(x_p,p2(x_p),color='blue',label='2d fit')
+        print(f'p1 parameters: m={np.round(p1[1],2)}, b={np.round(p1[0],2)}')
+        
+        #plt.plot(logmass, -11.5+logmass, color='red', linestyle='-', alpha=0.5, label='log(sSFR)>-11 limit')
         
         cb.ax.tick_params(labelsize=15)
         
         plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
         plt.ylabel(r'log(SFR/($M_\odot$/yr))',fontsize=22)
         
-        plt.xlim(6,11.5)
-        plt.ylim(-5,)
+        plt.xlim(6,11.6)
+        plt.ylim(-5,2.3)
         
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
@@ -233,7 +439,7 @@ class catalogs:
         plt.legend(fontsize=12)
 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/sfrmstar_magphys.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
+            plt.savefig(homedir+'/Desktop/sfrmstar_magphys.png', dpi=150, bbox_inches='tight', pad_inches=0.2)
         
         plt.show()
     
@@ -275,14 +481,14 @@ class catalogs:
         
         if show_sizerat:
             plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], 
-                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VFS Subsample')
+                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VF Subsample')
             cb = plt.colorbar()
             cb.set_label(label=r'R$_{12}$/R$_r$',size=23)
             plt.clim(0.1,1)
             
         if show_D25:
             plt.scatter(logmass_cut, logsfr_cut, c=d25_cut, cmap='viridis', s=60, 
-                        alpha=0.6, label='VFS Subsample')
+                        alpha=0.6, label='VF Subsample')
             cb = plt.colorbar()
             cb.set_label(label=r'Optical D25',size=23)
             plt.clim(15,40)
@@ -296,8 +502,8 @@ class catalogs:
         plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
         plt.ylabel(r'log(SFR/($M_\odot$/yr))',fontsize=22)
         
-        plt.xlim(8,11.5)
-        plt.ylim(-2,1.5)
+        plt.xlim(6,11.6)
+        plt.ylim(-5,2.3)
         
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
@@ -305,7 +511,7 @@ class catalogs:
         plt.legend(fontsize=12)
 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/sfrmstar_z0mgs.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
+            plt.savefig(homedir+'/Desktop/sfrmstar_z0mgs.png', dpi=150, bbox_inches='tight', pad_inches=0.2)
         
         plt.show()
     
@@ -361,9 +567,11 @@ class catalogs:
         for n in range(1,7):
             ax = fig.add_subplot(2,3,n)
             if sfr_mstar=='mstar':
-                plt.scatter(rr_dat[n-1],w3_dat[n-1],alpha=0.5,c=logmass_dat[n-1],cmap='viridis')
+                plt.scatter(rr_dat[n-1],w3_dat[n-1],alpha=1,c=logmass_dat[n-1],edgecolors='black',
+                            s=150,cmap='viridis')
             if sfr_mstar=='sfr':
-                plt.scatter(rr_dat[n-1],w3_dat[n-1],alpha=0.5,c=logsfr_dat[n-1],cmap='plasma')
+                plt.scatter(rr_dat[n-1],w3_dat[n-1],alpha=0.9,c=logsfr_dat[n-1],edgecolors='black',
+                            s=150,cmap='plasma')
             plt.axline((0, 0), slope=1, color='indigo')
             plt.text(.05, .95, labels[n-1], ha='left', va='top',transform=ax.transAxes,fontsize=25)
             
@@ -385,7 +593,7 @@ class catalogs:
                 plt.clim(8.5,10)
             if sfr_mstar=='sfr':
                 cb.set_label(label=r'log(SFR/($M_\odot$/yr))',size=25)
-                plt.clim(-1,0.2)
+                plt.clim(-1,0.6)
             cb.ax.tick_params(labelsize=20)
         
         if savefig==True:
@@ -395,24 +603,30 @@ class catalogs:
         
     def ratio_MS(self, showHI=False, savefig=False):
         
+        m = 0.86
+        b = -8.79
+        
         #prepare MHI_to_Mstar data for colorbar
         MHI_to_Mstar = self.HI_tab_cut['MHI']/(10**self.magphyscut['logMstar'])
         
         logsfr = self.magphyscut['logSFR']
         logmass = self.magphyscut['logMstar']
         
+        #fit main-sequence line to data (1D --> p1; parameters taken from sfrmstar_magphys)
+        Mstar_full = logmass
+        
         #main sequence best-fit line
         #slope: 0.47 +/- 0.01
         #y-intercept: -4.88 +/- 0.10
-        Mstar_full = logmass
-        y = Mstar_full*0.47 - 4.88
+        #Mstar_full = logmass
+        #y = Mstar_full*0.47 - 4.88
         
         #remove entries where there is no magphys data available for that galaxy
         err_flag_cut = (self.magphyscut['magphysFlag'])
 
         #Now calculate distance of each point to the best-fit line
         #Distance = (| a*x1 + b*y1 + c |) / (sqrt( a*a + b*b))
-        dist = (-0.47*logmass[err_flag_cut] + logsfr[err_flag_cut] + 4.88) / (np.sqrt((-0.47)**2 + (1)**2))
+        dist = (m*logmass[err_flag_cut] + logsfr[err_flag_cut] + b) / (np.sqrt((m)**2 + (1)**2))
         
         MHI_to_Mstar_cut = MHI_to_Mstar[err_flag_cut]
         
@@ -429,13 +643,15 @@ class catalogs:
         
         #plt.yscale('log')
         plt.ylim(0, 1.75)   #artificially trim outliers with size ratios>5 (there is indeed one with ratio~100)
-        plt.xlim(-3.1,2)
+        plt.xlim(-3.8,1.5)
         
         plt.xlabel(r'Distance from Main Sequence Line',fontsize=17)
         plt.ylabel(r'Size Ratio ($R_{12}/R_{r}$)',fontsize=17)
         
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
+        
+        print(np.polyfit(dist,self.sizerats[err_flag_cut],1))
         
         if savefig==True:
             plt.savefig(homedir+'/Desktop/MS_dist.png', dpi=200, bbox_inches='tight', pad_inches=0.2)
@@ -592,7 +808,12 @@ class catalogs:
             
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
-                    
+        
+        print('K-S p-value (> 0.003 (3sigma), "same distribution"):')
+        for n in range(len(env_names)):
+            print(env_names[n])
+            print('%.5f'%(kstest(z0mgs_env_mass[n],magphys_env_mass[n])[1]))
+        
         if savefig==True:
             plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=200)
         
@@ -654,12 +875,27 @@ class catalogs:
         re_data = [ratios[clusflag],ratios[rgflag],ratios[pgflag],
                    ratios[filflag],ratios[fieldflag]]
         
+        err_upper_bootstrap = []
+        err_lower_bootstrap = []
+        
+        for i in re_data:
+            lower_err, upper_err = get_bootstrap_confint(i,bootfunc=np.median,nboot=1000)
+            
+            err_upper_bootstrap.append(upper_err)
+            err_lower_bootstrap.append(lower_err)
+        
         fig = plt.figure(figsize=(8,18))
-        plt.subplots_adjust(hspace=.2)
+        plt.subplots_adjust(hspace=.2)        
         
         for panel in range(5):
             ax = fig.add_subplot(5,1,panel+1)
             plt.hist(re_data[panel], bins=mybins, color=colors[panel], alpha=0.7, label=labels[panel], density=False, cumulative=False)
+            
+            med_val = np.median(re_data[panel])
+            plt.axvline(med_val,color='black',linestyle='-')
+            plt.axvline(err_upper_bootstrap[panel],color='black',linestyle='--')
+            plt.axvline(err_lower_bootstrap[panel],color='black',linestyle='--')
+
             ax.set_xlabel(xlabels[panel],fontsize=20)
             ax.set_ylabel(r'N$_{gal}$',fontsize=20)
             plt.xticks(fontsize=15)
@@ -681,36 +917,6 @@ class catalogs:
             pair = pairs[n]
             print(names[n])
             print('%.5f'%(kstest(pair[0],pair[1])[1]))
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
     
     def compareSGA(self,savefig=False):
         
@@ -837,6 +1043,92 @@ class catalogs:
             plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
         
         plt.show()    
+
+    def wisesize_mass(self, nbins=5, savefig=False):
+
+        self.data = [self.sizerats[(self.clusflag) | (self.rgflag)], 
+                     self.sizerats[(self.pgflag) | (self.filflag) | (self.fieldflag)]]
+        self.mass_data = [self.z0mgscut['logmass'][(self.clusflag) | (self.rgflag)], 
+                          self.z0mgscut['logmass'][(self.pgflag) | (self.filflag) | (self.fieldflag)]]
+        
+        #lastly...some code does not function (pun intended) if I do not explicltly remove masked rows
+        self.data[0] = self.data[0][self.mass_data[0]>0]
+        self.data[1] = self.data[1][self.mass_data[1]>0]
+        self.mass_data[0] = self.mass_data[0][self.mass_data[0]>0]
+        self.mass_data[1] = self.mass_data[1][self.mass_data[1]>0]
+        
+        mass_data = self.mass_data.copy()   #logmass data
+        data = self.data.copy()   #Re data
+        logmass = self.z0mgscut['logmass'].copy()
+        
+        nbins=nbins
+        
+        bin_med_clus, bin_edges_clus, binnumber_clus = binned_statistic(mass_data[0],data[0],statistic='median', bins=nbins,range=[(8.6, 11)])
+        bin_centers_clus = .5*(bin_edges_clus[:-1]+bin_edges_clus[1:])
+        
+        bin_med_fall, bin_edges_fall, binnumber_fall = binned_statistic(mass_data[1],data[1],statistic='median', bins=nbins,range=[(8.6, 11)])
+        bin_centers_fall = .5*(bin_edges_fall[:-1]+bin_edges_fall[1:])
+        
+        bin_bounds_clus = []
+        bin_bounds_fall = []
+        for bound in range(nbins):
+            bin_bounds_clus.append([bin_edges_clus[bound],bin_edges_clus[bound+1]])
+            bin_bounds_fall.append([bin_edges_fall[bound],bin_edges_fall[bound+1]])
+        
+        err_clus = []
+        err_fall = []
+        for bound in bin_bounds_clus:
+            if self.MeanMedian=='mean':
+                bound_flag_clus = (mass_data[0]>bound[0])&(mass_data[0]<=bound[1])
+                lower_clus, upper_clus = get_bootstrap_confint(data[0][bound_flag_clus],bootfunc=np.mean,nboot=1000)
+                err_clus.append([lower_clus,upper_clus])
+            if self.MeanMedian=='median':
+                bound_flag_clus = (mass_data[0]>bound[0])&(mass_data[0]<=bound[1])
+                lower_clus, upper_clus = get_bootstrap_confint(data[0][bound_flag_clus],bootfunc=np.median,nboot=1000)
+                err_clus.append([lower_clus,upper_clus])
+        for bound in bin_bounds_fall:
+            if self.MeanMedian=='mean':
+                bound_flag_fall = (mass_data[1]>bound[0])&(mass_data[1]<=bound[1])
+                lower_fall, upper_fall = get_bootstrap_confint(data[1][bound_flag_fall],bootfunc=np.mean,nboot=1000)
+                err_fall.append([lower_fall,upper_fall])
+            if self.MeanMedian=='median':
+                bound_flag_fall = (mass_data[1]>bound[0])&(mass_data[1]<=bound[1])
+                lower_fall, upper_fall = get_bootstrap_confint(data[1][bound_flag_fall],bootfunc=np.median,nboot=1000)
+                err_fall.append([lower_fall,upper_fall])
+
+        plt.figure(figsize=(8,6))
+        
+        plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Cluster & RG',zorder=1)
+        plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='PG, Filament, & Field',zorder=1)
+        plt.scatter(bin_centers_clus, bin_med_clus, color='crimson', s=250, edgecolors='black', label='<Cluster & RG>',zorder=3)
+        plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label='<PG, Filament, & Field>',zorder=3)
+
+        for n in range(nbins):
+            plt.plot([bin_centers_clus[n],bin_centers_clus[n]], [err_clus[n][0],err_clus[n][1]],color='crimson',zorder=2)
+            #create lower, upper caps on errorbars
+            plt.plot([bin_centers_clus[n]-0.08,bin_centers_clus[n]+0.08],[err_clus[n][0],err_clus[n][0]],color='crimson',zorder=2)  
+            plt.plot([bin_centers_clus[n]-0.08,bin_centers_clus[n]+0.08],[err_clus[n][1],err_clus[n][1]],color='crimson',zorder=2)
+
+            plt.plot([bin_centers_fall[n],bin_centers_fall[n]], [err_fall[n][0],err_fall[n][1]],color='blue',zorder=2)
+            #create lower, upper caps on errorbars
+            plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
+            plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
+            
+        plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
+        plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
+        
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        
+        plt.title('Median Re Size Ratios vs. Stellar Mass',fontsize=20)
+        plt.ylim(0.5,1)
+        plt.xlim(8.5,11)
+        plt.legend(fontsize=14)
+        
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/wisesize_comp_mass_env.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
+
+        plt.show()    
     
 if __name__ == '__main__':
     '''
@@ -845,6 +1137,8 @@ if __name__ == '__main__':
         MeanMedian will propagate to all plots. MADmultip[lier is a proxy for the extent to which a 
         galaxy must be an 'outlier' in order to be removed from calculations.
         cutAGN is precisely that and will remove flagged AGN from the plots below (both WISE and BPT AGN)
+    cat.inclination_check(savefig=False) --> checks for size ratio, SFR, and Mstar dependencies on
+        optical axis ratio (found using GALFIT 1-Sersic profile fits on r-band images of the galaxies).
     cat.sfrmstar_magphys(show_HI=False,show_sizerat=True,show_D25=False,savefig=False) --> generates
         SFR v. Mstar plot, color-coded according to either available HI gas mass, D25 (Hyperleda), 
         or GALFIT size ratios. SFR and Mstar values from MAGPHYS.
@@ -856,7 +1150,7 @@ if __name__ == '__main__':
     cat.ratio_MS(showHI=False,savefig=False) --> plots size ratios as a function of MS distance, 
         colored according to normalized HI mass in the case where showHI=True.
     cat.hist_dist_rats(savefig=False) --> size ratio distributions for each of the five defined 
-    environment bins (plt.subplots with one column, five rows). Rainbow colors, very aesthestic.
+        environment bins (plt.subplots with one column, five rows). Rainbow colors, very aesthestic.
     cat.env_means(trimOutliers=False, errtype='bootstrap', savefig=False) --> plots either mean 
         or median size ratio (w3/r) in each environment bin; trimOutliers will output an additional plot which 
         compares my no PSF parameters to Rose's parameters, allowing the user to visualize which points are omitted 
@@ -867,6 +1161,8 @@ if __name__ == '__main__':
     cat.compareSGA(savefig=False) --> compares Rose's GALFIT r-band Re values with SGA's non-parametric r50
     cat.comparePSF(savefig=False) --> plots noPSF vs. PSF Re values for w3, r-band (one subplot per band)
     cat.compareKim(savefig=False) --> compares my noPSF w3-band Re values with Rose's noPSF values
+    cat.wisesize_mass(nbins=3,savefig=False) --> creates median/mean size ratios vs. mass bin plot for two
+        environment classifications: low-density (PG, filament, field) and high-density (cluster, RG).
     """)
     print('-----------------------------------------------------')
     print()

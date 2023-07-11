@@ -217,6 +217,8 @@ class catalogs:
         re_sizes = lcs_tab['sizeratio_re']
         logmass = lcs_tab['logMstar']
 
+        nbins=6
+        
         #if disk sizes, restrict B/T ratio; if Re, restrict sersic index
         if ReDisk=='Re':
             infall_flag = (lcs_tab['infall']) & (lcs_tab['sersic_n']<2)
@@ -228,46 +230,72 @@ class catalogs:
             data = [disk_sizes[core_flag],disk_sizes[infall_flag]]
         mass_data = [lcs_tab['logMstar'][core_flag],lcs_tab['logMstar'][infall_flag]]
         
-        nbins=6
+        bin_med_clus, bin_edges_clus, binnumber_clus = binned_statistic(mass_data[0],data[0],statistic='median', bins=nbins,range=[(9, 11)])
+        bin_centers_clus = .5*(bin_edges_clus[:-1]+bin_edges_clus[1:])
         
-        #define mass bins --> min<log(Mstar)<max, nbins
-        mass_bounds = np.linspace(9.1,10.6,nbins+1)
-        bin_bounds = []
+        bin_med_fall, bin_edges_fall, binnumber_fall = binned_statistic(mass_data[1],data[1],statistic='median', bins=nbins,range=[(9, 11)])
+        bin_centers_fall = .5*(bin_edges_fall[:-1]+bin_edges_fall[1:])
+        
+        bin_bounds_clus = []
+        bin_bounds_fall = []
         for bound in range(nbins):
-            bin_bounds.append([mass_bounds[bound],mass_bounds[bound+1]])
+            bin_bounds_clus.append([bin_edges_clus[bound],bin_edges_clus[bound+1]])
+            bin_bounds_fall.append([bin_edges_fall[bound],bin_edges_fall[bound+1]])
         
-        #now for the tedious task of creating flags which will separate the ratios into these mass bins :}
-        re_mass_clus=[]
-        re_mass_ext=[]
-        mass_coord=[]
-        err_clus=[]
-        err_ext=[]
-        
-        #note --> bootstrap errors correspond to 68% confidence interval
-        for bound in bin_bounds: 
-            bound_flag_clus = (mass_data[0]>bound[0])&(mass_data[0]<=bound[1])
-            bound_flag_fall = (mass_data[1]>bound[0])&(mass_data[1]<=bound[1])
-            bound_flag = (logmass>bound[0])&(logmass<=bound[1])
+        err_clus = []
+        err_fall = []
+        for bound in bin_bounds_clus:
             if self.MeanMedian=='mean':
-                avg_re_clus = np.mean(data[0][bound_flag_clus])
-                avg_re_ext = np.mean(data[1][bound_flag_fall])
-                lower_clus, upper_clus = get_bootstrap_confint(data[0][bound_flag_clus],bootfunc=np.mean,nboot=1000)
-                lower_ext, upper_ext = get_bootstrap_confint(data[1][bound_flag_fall],bootfunc=np.mean,nboot=1000)
+                bound_flag_clus = (mass_data[0]>bound[0])&(mass_data[0]<=bound[1])
+                lower_clus, upper_clus = get_bootstrap_confint(data[0][bound_flag_clus], bootfunc=np.mean, nboot=1000)
+                err_clus.append([lower_clus,upper_clus])
             if self.MeanMedian=='median':
-                avg_re_clus = np.median(data[0][bound_flag_clus])
-                avg_re_ext = np.median(data[1][bound_flag_fall])
-                lower_clus, upper_clus = get_bootstrap_confint(data[0][bound_flag_clus],bootfunc=np.median,nboot=1000)
-                lower_ext, upper_ext = get_bootstrap_confint(data[1][bound_flag_fall],bootfunc=np.median,nboot=1000) 
-            
-            mass_coord.append(np.mean(logmass[bound_flag]))
-            re_mass_clus.append(avg_re_clus)
-            re_mass_ext.append(avg_re_ext)
-            
-            #err_clus.append([avg_re_clus-lower_clus, upper_clus-avg_re_clus])
-            #err_ext.append([avg_re_ext-lower_ext, upper_ext-avg_re_ext])
-            err_clus.append([lower_clus, upper_clus])
-            err_ext.append([lower_ext, upper_ext])
+                bound_flag_clus = (mass_data[0]>bound[0])&(mass_data[0]<=bound[1])
+                lower_clus, upper_clus = get_bootstrap_confint(data[0][bound_flag_clus], bootfunc=np.median, nboot=1000)
+                err_clus.append([lower_clus,upper_clus])
+        for bound in bin_bounds_fall:
+            if self.MeanMedian=='mean':
+                bound_flag_fall = (mass_data[1]>bound[0])&(mass_data[1]<=bound[1])
+                lower_fall, upper_fall = get_bootstrap_confint(data[1][bound_flag_fall], bootfunc=np.mean, nboot=1000)
+                err_fall.append([lower_fall,upper_fall])
+            if self.MeanMedian=='median':
+                bound_flag_fall = (mass_data[1]>bound[0])&(mass_data[1]<=bound[1])
+                lower_fall, upper_fall = get_bootstrap_confint(data[1][bound_flag_fall], bootfunc=np.median, nboot=1000)
+                err_fall.append([lower_fall,upper_fall])
         
+        plt.figure(figsize=(8,6))
+        
+        plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Core',zorder=1)
+        plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='Infall',zorder=1)
+        plt.scatter(bin_centers_clus, bin_med_clus, color='crimson', s=250, edgecolors='black', label='<Core>',zorder=3)
+        plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label='<Infall>',zorder=3)
+
+        for n in range(nbins):
+            plt.plot([bin_centers_clus[n],bin_centers_clus[n]], [err_clus[n][0],err_clus[n][1]],color='crimson',zorder=2)
+            #create lower, upper caps on errorbars
+            plt.plot([bin_centers_clus[n]-0.08,bin_centers_clus[n]+0.08],[err_clus[n][0],err_clus[n][0]],color='crimson',zorder=2)  
+            plt.plot([bin_centers_clus[n]-0.08,bin_centers_clus[n]+0.08],[err_clus[n][1],err_clus[n][1]],color='crimson',zorder=2)
+
+            plt.plot([bin_centers_fall[n],bin_centers_fall[n]], [err_fall[n][0],err_fall[n][1]],color='blue',zorder=2)
+            #create lower, upper caps on errorbars
+            plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
+            plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
+            
+        plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
+        plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
+        
+        plt.xticks(fontsize=15)
+        plt.yticks(fontsize=15)
+        
+        plt.title('LCS Median Re Size Ratios (nser<2)',fontsize=20)
+        if ReDisk=='Disk':
+            plt.title('LCS Median Disk Size Ratios (B/T<0.3)',fontsize=20)
+
+        plt.ylim(0,1.2)
+        plt.xlim(8.75,11.25)
+        plt.legend(fontsize=14)
+        
+        '''
         plt.figure(figsize=(8,6))
         
         plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.1,label='Core',zorder=1)
@@ -298,7 +326,7 @@ class catalogs:
         plt.ylim(0,1.6)
         plt.xlim(9,10.6)
         plt.legend(fontsize=14)
-        
+        '''
         if savefig==True:
             plt.savefig(homedir+'/Desktop/LCS_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
 
@@ -360,10 +388,10 @@ class catalogs:
         
         nbins=nbins
         
-        bin_med_clus, bin_edges_clus, binnumber_clus = binned_statistic(mass_data[0],data[0],statistic='median', bins=nbins)
+        bin_med_clus, bin_edges_clus, binnumber_clus = binned_statistic(mass_data[0],data[0],statistic='median', bins=nbins,range=(8,11))
         bin_centers_clus = .5*(bin_edges_clus[:-1]+bin_edges_clus[1:])
         
-        bin_med_fall, bin_edges_fall, binnumber_fall = binned_statistic(mass_data[1],data[1],statistic='median', bins=nbins)
+        bin_med_fall, bin_edges_fall, binnumber_fall = binned_statistic(mass_data[1],data[1],statistic='median', bins=nbins,range=(8,11))
         bin_centers_fall = .5*(bin_edges_fall[:-1]+bin_edges_fall[1:])
         
         bin_bounds_clus = []
@@ -419,7 +447,7 @@ class catalogs:
         
         plt.title('Median Re Size Ratios vs. Stellar Mass (VFS)',fontsize=20)
         #plt.ylim(0.5,0.92)
-        plt.xlim(8,11.5)
+        plt.xlim(8,11.)
         plt.legend(fontsize=14)
         
         if savefig==True:
