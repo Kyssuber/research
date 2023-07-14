@@ -280,8 +280,10 @@ class catalogs:
         #also looks for whether trends exist between size ratio and Sérsic index or T-type
         #ttype_dict = {'Sa':1,'Sab':2,'Sb':3,'Sbc':4,'Sc':5,'Scd':6,'Sd':7,'Sdm':8,'Sm':9,'Ir':10}
         
-        y2 = self.sizerats
-        x2 = [self.hyp_tab_cut['t'], self.rdat['nsersic'][self.cut_flags]]
+        nser = self.rdat['nsersic'][self.cut_flags]
+        
+        y2 = [self.sizerats, self.sizerats[(nser<4)]]
+        x2 = [self.hyp_tab_cut['t'], nser[(nser<4)]]
         x_labels2 = ['Morphological T-Type', 'Sérsic Index (r-band)']
         colors2 = ['orangered','blueviolet']
         
@@ -290,12 +292,12 @@ class catalogs:
         
         for index in range(2):
             ax = fig.add_subplot(1, 2, index+1)
-            plt.scatter(x2[index][y2<20], y2[y2<20], color=colors2[index], s=20)
+            plt.scatter(x2[index][y2[index]<10], y2[index][y2[index]<10], color=colors2[index], s=20)
             plt.xlabel(x_labels2[index],fontsize=18)
             plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
             
             #spearman-rank test
-            sr = spearmanr(x2[index],y2)
+            sr = spearmanr(x2[index],y2[index])
             rho = sr[0]
             p = sr[1]
             plt.plot([],[],color="None",label=f'rho={np.round(rho,4)}')
