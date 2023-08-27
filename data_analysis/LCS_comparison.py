@@ -132,7 +132,7 @@ class catalogs:
         five_vir = 5*virial_radius
         
         dist = np.sqrt((self.RA-self.RA_center)**2 + (self.DEC-self.DEC_center)**2)
-        virial_1flag = (dist<=virial_radius)
+        virial_1flag = (dist<=1.5*virial_radius)
         virial_5flag = (dist>virial_radius)&(dist<=five_vir)
         
         self.data_core = self.sizerats[self.v2_envcut['cluster_member'] & (self.nser<2)]
@@ -191,7 +191,7 @@ class catalogs:
             ax.legend(fontsize=15)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/lcs_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
+            plt.savefig(homedir+'/Desktop/lcs_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
 
         plt.show()
         
@@ -328,7 +328,7 @@ class catalogs:
         plt.legend(fontsize=14)
         '''
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/LCS_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
+            plt.savefig(homedir+'/Desktop/LCS_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
 
         plt.show()    
 
@@ -359,7 +359,7 @@ class catalogs:
             ax.legend(fontsize=15)
 
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/wisesize_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
+            plt.savefig(homedir+'/Desktop/wisesize_comp_hists.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
 
         plt.show()
         
@@ -451,7 +451,7 @@ class catalogs:
         plt.legend(fontsize=14)
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/wisesize_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=200)
+            plt.savefig(homedir+'/Desktop/wisesize_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
 
         plt.show()    
     
