@@ -64,12 +64,17 @@ class catalogs:
         self.cut_cats()
     
     def cut_cats(self):
-        subsample_flag = self.v2_main['sgacut_flag']
+        subsample_flag = (self.v2_main['sgacut_flag'])
+        logmass_flag = (self.magphys['logMstar']>8)
+        logmasscut_flag = (self.magphys[self.v2_main['sgacut_flag']]['logMstar']>8)
         
-        self.v2_env = self.v2_env[subsample_flag]
-        self.v2_maincut = self.v2_main[subsample_flag]
-        self.magphyscut = self.magphys[subsample_flag]
-        self.z0mgscut = self.z0mgs[subsample_flag]
+        self.rdat = self.rdat[logmasscut_flag]
+        self.w3dat = self.w3dat[logmasscut_flag]
+        
+        self.v2_env = self.v2_env[subsample_flag & logmass_flag]
+        self.v2_maincut = self.v2_main[subsample_flag & logmass_flag]
+        self.magphyscut = self.magphys[subsample_flag & logmass_flag]
+        self.z0mgscut = self.z0mgs[subsample_flag & logmass_flag]
         
         self.re_rband = self.rdat['re']
         self.re_w3band = self.w3dat['re']
@@ -117,7 +122,7 @@ class catalogs:
 
         print(f'No GALFIT data for {n_fails_w3} w3 galaxies and {n_fails_r} r galaxies.')
         print(f'Total number of galaxies with GALFIT error flags: {int(np.sum(np.ones(len(err_flag))*err_flag))}')
-        print(f'Total number of galaxies: {n_tot}')
+        print(f'Total number of galaxies (including those with error flags): {n_tot}')
         print()
         self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
         
@@ -135,12 +140,12 @@ class catalogs:
         virial_1flag = (dist<=1.5*virial_radius)
         virial_5flag = (dist>virial_radius)&(dist<=five_vir)
         
-        self.data_core = self.sizerats[self.v2_envcut['cluster_member'] & (self.nser<2)]
-        self.data_fall = self.sizerats[virial_5flag & (self.nser<2) & (~self.v2_envcut['cluster_member'])]
+        self.data_core = self.sizerats[self.v2_envcut['cluster_member']]
+        self.data_fall = self.sizerats[virial_5flag & (~self.v2_envcut['cluster_member'])]
         
         self.data = [self.data_core, self.data_fall]
-        self.mass_data = [self.z0mgscut['logmass'][self.v2_envcut['cluster_member'] & (self.nser<2)], 
-                          self.z0mgscut['logmass'][virial_5flag & (self.nser<2) & (~self.v2_envcut['cluster_member'])]]
+        self.mass_data = [self.magphyscut['logMstar'][self.v2_envcut['cluster_member']], 
+                          self.magphyscut['logMstar'][virial_5flag & (~self.v2_envcut['cluster_member'])]]
         
         #lastly...some code does not function (pun intended) if I do not explicltly remove masked rows
         self.data[0] = self.data[0][self.mass_data[0]>0]
@@ -291,8 +296,8 @@ class catalogs:
         if ReDisk=='Disk':
             plt.title('LCS Median Disk Size Ratios (B/T<0.3)',fontsize=20)
 
-        plt.ylim(0,1.2)
-        plt.xlim(8.75,11.25)
+        plt.ylim(0,1.6)
+        plt.xlim(9.,11)
         plt.legend(fontsize=14)
         
         '''
