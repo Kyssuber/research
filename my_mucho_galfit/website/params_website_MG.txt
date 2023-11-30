@@ -14,7 +14,7 @@ path_to_galhtml                   galhtml_files                   # name of fold
 
 #--------------------------------------------------- Parameters ----------------------------------------------------
 
-psf_indices                       [0,1,2,3]                       # 0 for w3_nopsf, 1 for w3_psf, 2 for r_nopsf, 3 for r_psf
+psf_indices                       [0,1,2,3]                       # 0 for w3_nopsf, 1 for w3_psf, 2 for w1_nopsf, 3 for w1_psf
 website_title                     GALFIT_Data_for_Virgowise_VF_Galaxies   #self-explanatory...add _ in place of space; will correct itself.
 home_color                        hsla(255, 99, 71, 0.5)          # color of homepage background --> sehr wichtig
 
