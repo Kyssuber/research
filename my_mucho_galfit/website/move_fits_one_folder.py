@@ -96,11 +96,28 @@ def grab_mask_images(catalog, host_folder_path, target_folder):
         for im in masks:   #if no images in masks, then none will be cp'd. if only one, then only one will be cp'd. usw.
             print('Moving '+im)
             os.system('cp '+im+' '+target_folder)
+
+def gather_w1_fits.py(catalog, host_folder_path, target_folder):
+
+    cutout_ext = '-custom-image-W1.fits'   #generic image extension for the images
+
+    vf_cut = catalog[catalog['subsample_flag']]  #reduces number of rows to 496, which corresponds with the number of subsample galaxies (pre-GALFIT)
     
+    dirnames = vf_cut['VFID']   #all directory names are simply the VFIDs
+    
+    for n in range(len(dirnames)):
+      os.chdir(host_folder_path+dirnames[n])   #cd to correct directory
+      
+      cutout_fits = glob.glob('*'+cutout_ext)[0]
+      out1_fits = glob.glob('*-W1-out1.fits')[0]   #unconvolved model parameters
+      out2_fits = glob.glob('*-W1-out2.fits')[0]   #convolved model parameters
+    
+      os.system(f'cp {cutout_fits} {out1_fits} {out2_fits} {target_folder}')
+
 if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
-  vf = Table.read(homedir+'/sgacut_coadd.fits')   #contains objnames, RAs, and VFIDs
+  vf = Table.read(homedir+'/sgacut_coadd.fits')   #contains objnames, RAs, and VFIDs; subsample_flag
   
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
   input_cutouts_path = '/mnt/virgofilaments-data/'
@@ -108,13 +125,19 @@ if __name__ == '__main__':
   onefolder_path = '/mnt/astrophysics/kconger_wisesize/vf_html_mask/all_input_fits/'
   
   print('Creating target directory '+onefolder_path)
-  os.system('mkdir '+onefolder_path)
-  
-  print('Moving postage stamp cutouts for rband and W3...')
-  grab_input_cutouts(vf, host_folder_path, onefolder_path)
-  print('Moving GALFIT output mosaics for rband and w3...')
-  grab_output_cutouts(vf, host_folder_path, onefolder_path)
-  print('Moving r-band and W3 mask images...')
-  grab_mask_images(vf, host_folder_path, onefolder_path)
+  try:
+    os.system('mkdir '+onefolder_path)
+  except:
+      print('Error: target directory already exists.')
 
+  print('''
+  print('Move postage stamp cutouts for rband and W3...')
+  grab_input_cutouts(vf, host_folder_path, onefolder_path)
+  print('Move GALFIT output mosaics for rband and w3...')
+  grab_output_cutouts(vf, host_folder_path, onefolder_path)
+  print('Move r-band and W3 mask images...')
+  grab_mask_images(vf, host_folder_path, onefolder_path)
+  print('Move W1 images --> cutouts and out1, out2 parameters...)
+  gather_w1_fits(vf, host_folder_path, onefolder_path)
+  ''')
   
