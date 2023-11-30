@@ -1,0 +1,2967 @@
+If running in terminal, use -h or --help for the list of arguments. Otherwise...*
+    
+    USAGE (iPython/Jupyter):
+    ---Running this program automatically initiates the HomePage class (hp)
+    ---if the -test arg is False, then replace single_galpage with hp in order to generate all images and such:
+            --hp.html_setup() --> create .html homepages for all galaxies in the VF subsample; also initiates GalPage 
+            class(single_galpage) for every galaxy in a loop, creating all relevant folders and files.
+            --hp.create_LS_figures()
+            --hp.create_galfit_mosaics()
+            --hp.create_mask_mosaics(psf_index) --> (w3, nopsf), 1 (w3, psf), 2 (r, nopsf), 3 (r, psf)
+    ---If the -test arg is True, then the user is wanting to test the GalPage class (this is a stategic idea, 
+            since this class contains the bulk of the functions required for the script to run successfully). 
+            In this case, the script automatically defines a single galpage class (single_galpage; 
+            uses index 0 for a random test galaxy), with which the user can test the following methods:
+            --single_galpage.compile_LS_cutouts()
+            --single_galpage.create_LS_mosaics()
+            --single_galpage.create_model_mosaics_names()
+            --single_galpage.create_model_mosaics(psf_index) --> 0 (w3, nopsf), 1 (w3, psf), 2 (r, nopsf), 3 (r, psf)
+            --single_galpage.create_mask_mosaics()
+            --single_galpage.tabulate_parameters()
+            --single_galpage.WRITETHEGALPAGE()            
+            
+    
+-----------------------------------------------------
+
+test is false
+Creating GALFIT mosaics for VFID0001 W3, no conv
+Creating GALFIT mosaics for VFID0002 W3, no conv
+Creating GALFIT mosaics for VFID0005 W3, no conv
+Creating GALFIT mosaics for VFID0008 W3, no conv
+Creating GALFIT mosaics for VFID0011 W3, no conv
+Creating GALFIT mosaics for VFID0013 W3, no conv
+Creating GALFIT mosaics for VFID0019 W3, no conv
+NGC2633_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0020 W3, no conv
+Creating GALFIT mosaics for VFID0026 W3, no conv
+Creating GALFIT mosaics for VFID0027 W3, no conv
+Creating GALFIT mosaics for VFID0029 W3, no conv
+Creating GALFIT mosaics for VFID0030 W3, no conv
+Creating GALFIT mosaics for VFID0036 W3, no conv
+Creating GALFIT mosaics for VFID0045 W3, no conv
+NGC6654A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0046 W3, no conv
+Creating GALFIT mosaics for VFID0047 W3, no conv
+Creating GALFIT mosaics for VFID0051 W3, no conv
+Creating GALFIT mosaics for VFID0052 W3, no conv
+Creating GALFIT mosaics for VFID0053 W3, no conv
+Creating GALFIT mosaics for VFID0055 W3, no conv
+Creating GALFIT mosaics for VFID0058 W3, no conv
+Creating GALFIT mosaics for VFID0060 W3, no conv
+Creating GALFIT mosaics for VFID0066 W3, no conv
+Creating GALFIT mosaics for VFID0070 W3, no conv
+Creating GALFIT mosaics for VFID0076 W3, no conv
+Creating GALFIT mosaics for VFID0077 W3, no conv
+Creating GALFIT mosaics for VFID0082 W3, no conv
+Creating GALFIT mosaics for VFID0089 W3, no conv
+Creating GALFIT mosaics for VFID0092 W3, no conv
+Creating GALFIT mosaics for VFID0097 W3, no conv
+Creating GALFIT mosaics for VFID0098 W3, no conv
+Creating GALFIT mosaics for VFID0099 W3, no conv
+Creating GALFIT mosaics for VFID0100 W3, no conv
+Creating GALFIT mosaics for VFID0106 W3, no conv
+Creating GALFIT mosaics for VFID0107 W3, no conv
+Creating GALFIT mosaics for VFID0109 W3, no conv
+Creating GALFIT mosaics for VFID0122 W3, no conv
+Creating GALFIT mosaics for VFID0124 W3, no conv
+Creating GALFIT mosaics for VFID0127 W3, no conv
+Creating GALFIT mosaics for VFID0141 W3, no conv
+Creating GALFIT mosaics for VFID0145 W3, no conv
+Creating GALFIT mosaics for VFID0149 W3, no conv
+Creating GALFIT mosaics for VFID0165 W3, no conv
+Creating GALFIT mosaics for VFID0166 W3, no conv
+Creating GALFIT mosaics for VFID0168 W3, no conv
+Creating GALFIT mosaics for VFID0172 W3, no conv
+Creating GALFIT mosaics for VFID0176 W3, no conv
+Creating GALFIT mosaics for VFID0187 W3, no conv
+Creating GALFIT mosaics for VFID0208 W3, no conv
+NGC4256_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0212 W3, no conv
+Creating GALFIT mosaics for VFID0214 W3, no conv
+Creating GALFIT mosaics for VFID0233 W3, no conv
+Creating GALFIT mosaics for VFID0241 W3, no conv
+Creating GALFIT mosaics for VFID0244 W3, no conv
+Creating GALFIT mosaics for VFID0251 W3, no conv
+Creating GALFIT mosaics for VFID0263 W3, no conv
+Creating GALFIT mosaics for VFID0267 W3, no conv
+NGC2820_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0281 W3, no conv
+Creating GALFIT mosaics for VFID0304 W3, no conv
+NGC4205_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0314 W3, no conv
+Creating GALFIT mosaics for VFID0321 W3, no conv
+Creating GALFIT mosaics for VFID0323 W3, no conv
+Creating GALFIT mosaics for VFID0334 W3, no conv
+Creating GALFIT mosaics for VFID0349 W3, no conv
+Creating GALFIT mosaics for VFID0358 W3, no conv
+Creating GALFIT mosaics for VFID0377 W3, no conv
+Creating GALFIT mosaics for VFID0378 W3, no conv
+Creating GALFIT mosaics for VFID0382 W3, no conv
+Creating GALFIT mosaics for VFID0393 W3, no conv
+Creating GALFIT mosaics for VFID0394 W3, no conv
+Creating GALFIT mosaics for VFID0402 W3, no conv
+Creating GALFIT mosaics for VFID0411 W3, no conv
+Creating GALFIT mosaics for VFID0413 W3, no conv
+Creating GALFIT mosaics for VFID0419 W3, no conv
+Creating GALFIT mosaics for VFID0432 W3, no conv
+NGC3471_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0438 W3, no conv
+UGC04159_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0442 W3, no conv
+Creating GALFIT mosaics for VFID0450 W3, no conv
+Creating GALFIT mosaics for VFID0477 W3, no conv
+Creating GALFIT mosaics for VFID0479 W3, no conv
+Creating GALFIT mosaics for VFID0497 W3, no conv
+Creating GALFIT mosaics for VFID0509 W3, no conv
+Creating GALFIT mosaics for VFID0519 W3, no conv
+Creating GALFIT mosaics for VFID0528 W3, no conv
+Creating GALFIT mosaics for VFID0538 W3, no conv
+Creating GALFIT mosaics for VFID0541 W3, no conv
+Creating GALFIT mosaics for VFID0545 W3, no conv
+Creating GALFIT mosaics for VFID0552 W3, no conv
+Creating GALFIT mosaics for VFID0553 W3, no conv
+Creating GALFIT mosaics for VFID0567 W3, no conv
+Creating GALFIT mosaics for VFID0568 W3, no conv
+Creating GALFIT mosaics for VFID0569 W3, no conv
+Creating GALFIT mosaics for VFID0573 W3, no conv
+Creating GALFIT mosaics for VFID0584 W3, no conv
+NGC5376_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0585 W3, no conv
+Creating GALFIT mosaics for VFID0588 W3, no conv
+Creating GALFIT mosaics for VFID0610 W3, no conv
+Creating GALFIT mosaics for VFID0611 W3, no conv
+Creating GALFIT mosaics for VFID0613 W3, no conv
+Creating GALFIT mosaics for VFID0619 W3, no conv
+Creating GALFIT mosaics for VFID0630 W3, no conv
+Creating GALFIT mosaics for VFID0637 W3, no conv
+Creating GALFIT mosaics for VFID0642 W3, no conv
+NGC5777_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0650 W3, no conv
+Creating GALFIT mosaics for VFID0674 W3, no conv
+Creating GALFIT mosaics for VFID0682 W3, no conv
+UGC08040_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0686 W3, no conv
+NGC3690_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0711 W3, no conv
+Creating GALFIT mosaics for VFID0720 W3, no conv
+Creating GALFIT mosaics for VFID0722 W3, no conv
+Creating GALFIT mosaics for VFID0740 W3, no conv
+Creating GALFIT mosaics for VFID0746 W3, no conv
+Creating GALFIT mosaics for VFID0764 W3, no conv
+NGC4290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0768 W3, no conv
+Creating GALFIT mosaics for VFID0771 W3, no conv
+Creating GALFIT mosaics for VFID0785 W3, no conv
+Creating GALFIT mosaics for VFID0795 W3, no conv
+NGC3625_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0812 W3, no conv
+Creating GALFIT mosaics for VFID0815 W3, no conv
+Creating GALFIT mosaics for VFID0821 W3, no conv
+Creating GALFIT mosaics for VFID0824 W3, no conv
+Creating GALFIT mosaics for VFID0827 W3, no conv
+Creating GALFIT mosaics for VFID0829 W3, no conv
+Creating GALFIT mosaics for VFID0847 W3, no conv
+Creating GALFIT mosaics for VFID0873 W3, no conv
+Creating GALFIT mosaics for VFID0884 W3, no conv
+Creating GALFIT mosaics for VFID0893 W3, no conv
+NGC3445_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0894 W3, no conv
+Creating GALFIT mosaics for VFID0901 W3, no conv
+Creating GALFIT mosaics for VFID0914 W3, no conv
+Creating GALFIT mosaics for VFID0927 W3, no conv
+Creating GALFIT mosaics for VFID0936 W3, no conv
+Creating GALFIT mosaics for VFID0937 W3, no conv
+Creating GALFIT mosaics for VFID0941 W3, no conv
+NGC3898_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0956 W3, no conv
+Creating GALFIT mosaics for VFID0959 W3, no conv
+Creating GALFIT mosaics for VFID0960 W3, no conv
+Creating GALFIT mosaics for VFID0972 W3, no conv
+Creating GALFIT mosaics for VFID0983 W3, no conv
+Creating GALFIT mosaics for VFID0985 W3, no conv
+Creating GALFIT mosaics for VFID0986 W3, no conv
+Creating GALFIT mosaics for VFID0993 W3, no conv
+Creating GALFIT mosaics for VFID1015 W3, no conv
+Creating GALFIT mosaics for VFID1017 W3, no conv
+Creating GALFIT mosaics for VFID1018 W3, no conv
+Creating GALFIT mosaics for VFID1023 W3, no conv
+Creating GALFIT mosaics for VFID1032 W3, no conv
+Creating GALFIT mosaics for VFID1035 W3, no conv
+Creating GALFIT mosaics for VFID1049 W3, no conv
+Creating GALFIT mosaics for VFID1067 W3, no conv
+Creating GALFIT mosaics for VFID1079 W3, no conv
+Creating GALFIT mosaics for VFID1081 W3, no conv
+Creating GALFIT mosaics for VFID1084 W3, no conv
+Creating GALFIT mosaics for VFID1085 W3, no conv
+Creating GALFIT mosaics for VFID1092 W3, no conv
+Creating GALFIT mosaics for VFID1098 W3, no conv
+Creating GALFIT mosaics for VFID1121 W3, no conv
+Creating GALFIT mosaics for VFID1125 W3, no conv
+Creating GALFIT mosaics for VFID1130 W3, no conv
+Creating GALFIT mosaics for VFID1138 W3, no conv
+Creating GALFIT mosaics for VFID1166 W3, no conv
+Creating GALFIT mosaics for VFID1167 W3, no conv
+Creating GALFIT mosaics for VFID1173 W3, no conv
+Creating GALFIT mosaics for VFID1182 W3, no conv
+Creating GALFIT mosaics for VFID1185 W3, no conv
+Creating GALFIT mosaics for VFID1188 W3, no conv
+Creating GALFIT mosaics for VFID1212 W3, no conv
+Creating GALFIT mosaics for VFID1213 W3, no conv
+Creating GALFIT mosaics for VFID1223 W3, no conv
+Creating GALFIT mosaics for VFID1235 W3, no conv
+Creating GALFIT mosaics for VFID1244 W3, no conv
+Creating GALFIT mosaics for VFID1245 W3, no conv
+Creating GALFIT mosaics for VFID1250 W3, no conv
+Creating GALFIT mosaics for VFID1269 W3, no conv
+Creating GALFIT mosaics for VFID1274 W3, no conv
+Creating GALFIT mosaics for VFID1279 W3, no conv
+Creating GALFIT mosaics for VFID1302 W3, no conv
+Creating GALFIT mosaics for VFID1306 W3, no conv
+Creating GALFIT mosaics for VFID1307 W3, no conv
+Creating GALFIT mosaics for VFID1310 W3, no conv
+Creating GALFIT mosaics for VFID1312 W3, no conv
+PGC051309_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1313 W3, no conv
+Creating GALFIT mosaics for VFID1316 W3, no conv
+Creating GALFIT mosaics for VFID1317 W3, no conv
+Creating GALFIT mosaics for VFID1318 W3, no conv
+Creating GALFIT mosaics for VFID1336 W3, no conv
+Creating GALFIT mosaics for VFID1350 W3, no conv
+Creating GALFIT mosaics for VFID1351 W3, no conv
+Creating GALFIT mosaics for VFID1352 W3, no conv
+Creating GALFIT mosaics for VFID1355 W3, no conv
+Creating GALFIT mosaics for VFID1366 W3, no conv
+Creating GALFIT mosaics for VFID1370 W3, no conv
+Creating GALFIT mosaics for VFID1374 W3, no conv
+Creating GALFIT mosaics for VFID1381 W3, no conv
+Creating GALFIT mosaics for VFID1382 W3, no conv
+Creating GALFIT mosaics for VFID1396 W3, no conv
+Creating GALFIT mosaics for VFID1398 W3, no conv
+NGC2856_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1399 W3, no conv
+Creating GALFIT mosaics for VFID1400 W3, no conv
+Creating GALFIT mosaics for VFID1405 W3, no conv
+Creating GALFIT mosaics for VFID1406 W3, no conv
+UGC09056_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1414 W3, no conv
+NGC3893_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1431 W3, no conv
+Creating GALFIT mosaics for VFID1438 W3, no conv
+Creating GALFIT mosaics for VFID1447 W3, no conv
+Creating GALFIT mosaics for VFID1451 W3, no conv
+Creating GALFIT mosaics for VFID1457 W3, no conv
+Creating GALFIT mosaics for VFID1459 W3, no conv
+Creating GALFIT mosaics for VFID1463 W3, no conv
+Creating GALFIT mosaics for VFID1469 W3, no conv
+Creating GALFIT mosaics for VFID1472 W3, no conv
+NGC3583_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1473 W3, no conv
+Creating GALFIT mosaics for VFID1486 W3, no conv
+NGC3769_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1498 W3, no conv
+Creating GALFIT mosaics for VFID1505 W3, no conv
+Creating GALFIT mosaics for VFID1518 W3, no conv
+Creating GALFIT mosaics for VFID1531 W3, no conv
+Creating GALFIT mosaics for VFID1532 W3, no conv
+Creating GALFIT mosaics for VFID1541 W3, no conv
+Creating GALFIT mosaics for VFID1548 W3, no conv
+Creating GALFIT mosaics for VFID1551 W3, no conv
+Creating GALFIT mosaics for VFID1553 W3, no conv
+Creating GALFIT mosaics for VFID1554 W3, no conv
+Creating GALFIT mosaics for VFID1561 W3, no conv
+Creating GALFIT mosaics for VFID1590 W3, no conv
+Creating GALFIT mosaics for VFID1597 W3, no conv
+Creating GALFIT mosaics for VFID1600 W3, no conv
+Creating GALFIT mosaics for VFID1601 W3, no conv
+Creating GALFIT mosaics for VFID1603 W3, no conv
+Creating GALFIT mosaics for VFID1622 W3, no conv
+Creating GALFIT mosaics for VFID1628 W3, no conv
+Creating GALFIT mosaics for VFID1635 W3, no conv
+Creating GALFIT mosaics for VFID1643 W3, no conv
+Creating GALFIT mosaics for VFID1651 W3, no conv
+Creating GALFIT mosaics for VFID1652 W3, no conv
+Creating GALFIT mosaics for VFID1654 W3, no conv
+Creating GALFIT mosaics for VFID1660 W3, no conv
+Creating GALFIT mosaics for VFID1661 W3, no conv
+Creating GALFIT mosaics for VFID1676 W3, no conv
+Creating GALFIT mosaics for VFID1683 W3, no conv
+Creating GALFIT mosaics for VFID1700 W3, no conv
+Creating GALFIT mosaics for VFID1723 W3, no conv
+Creating GALFIT mosaics for VFID1726 W3, no conv
+Creating GALFIT mosaics for VFID1753 W3, no conv
+UGC09476_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1755 W3, no conv
+Creating GALFIT mosaics for VFID1756 W3, no conv
+Creating GALFIT mosaics for VFID1759 W3, no conv
+Creating GALFIT mosaics for VFID1776 W3, no conv
+Creating GALFIT mosaics for VFID1786 W3, no conv
+NGC5297_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1789 W3, no conv
+Creating GALFIT mosaics for VFID1803 W3, no conv
+Creating GALFIT mosaics for VFID1808 W3, no conv
+Creating GALFIT mosaics for VFID1824 W3, no conv
+Creating GALFIT mosaics for VFID1830 W3, no conv
+NGC5731_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1877 W3, no conv
+IC0750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1884 W3, no conv
+Creating GALFIT mosaics for VFID1898 W3, no conv
+Creating GALFIT mosaics for VFID1913 W3, no conv
+Creating GALFIT mosaics for VFID1926 W3, no conv
+Creating GALFIT mosaics for VFID1928 W3, no conv
+Creating GALFIT mosaics for VFID1930 W3, no conv
+Creating GALFIT mosaics for VFID1932 W3, no conv
+NGC2798_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1933 W3, no conv
+Creating GALFIT mosaics for VFID1950 W3, no conv
+NGC5290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1953 W3, no conv
+NGC4490_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1961 W3, no conv
+Creating GALFIT mosaics for VFID1969 W3, no conv
+Creating GALFIT mosaics for VFID1977 W3, no conv
+Creating GALFIT mosaics for VFID1984 W3, no conv
+Creating GALFIT mosaics for VFID1988 W3, no conv
+Creating GALFIT mosaics for VFID1999 W3, no conv
+Creating GALFIT mosaics for VFID2000 W3, no conv
+Creating GALFIT mosaics for VFID2009 W3, no conv
+Creating GALFIT mosaics for VFID2036 W3, no conv
+Creating GALFIT mosaics for VFID2037 W3, no conv
+UGC09858_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2050 W3, no conv
+Creating GALFIT mosaics for VFID2057 W3, no conv
+Creating GALFIT mosaics for VFID2058 W3, no conv
+Creating GALFIT mosaics for VFID2061 W3, no conv
+Creating GALFIT mosaics for VFID2083 W3, no conv
+Creating GALFIT mosaics for VFID2086 W3, no conv
+Creating GALFIT mosaics for VFID2087 W3, no conv
+Creating GALFIT mosaics for VFID2092 W3, no conv
+Creating GALFIT mosaics for VFID2101 W3, no conv
+Creating GALFIT mosaics for VFID2113 W3, no conv
+Creating GALFIT mosaics for VFID2140 W3, no conv
+Creating GALFIT mosaics for VFID2144 W3, no conv
+Creating GALFIT mosaics for VFID2148 W3, no conv
+Creating GALFIT mosaics for VFID2154 W3, no conv
+Creating GALFIT mosaics for VFID2169 W3, no conv
+Creating GALFIT mosaics for VFID2172 W3, no conv
+Creating GALFIT mosaics for VFID2209 W3, no conv
+Creating GALFIT mosaics for VFID2222 W3, no conv
+Creating GALFIT mosaics for VFID2225 W3, no conv
+Creating GALFIT mosaics for VFID2235 W3, no conv
+NGC5303_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2254 W3, no conv
+NGC5403_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2260 W3, no conv
+Creating GALFIT mosaics for VFID2268 W3, no conv
+Creating GALFIT mosaics for VFID2269 W3, no conv
+NGC3652_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2293 W3, no conv
+Creating GALFIT mosaics for VFID2313 W3, no conv
+Creating GALFIT mosaics for VFID2324 W3, no conv
+Creating GALFIT mosaics for VFID2329 W3, no conv
+Creating GALFIT mosaics for VFID2343 W3, no conv
+Creating GALFIT mosaics for VFID2355 W3, no conv
+NGC3432_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2364 W3, no conv
+Creating GALFIT mosaics for VFID2368 W3, no conv
+Creating GALFIT mosaics for VFID2372 W3, no conv
+NGC3755_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2387 W3, no conv
+Creating GALFIT mosaics for VFID2401 W3, no conv
+NGC2543_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2405 W3, no conv
+NGC5529_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2408 W3, no conv
+Creating GALFIT mosaics for VFID2418 W3, no conv
+Creating GALFIT mosaics for VFID2465 W3, no conv
+Creating GALFIT mosaics for VFID2480 W3, no conv
+Creating GALFIT mosaics for VFID2492 W3, no conv
+Creating GALFIT mosaics for VFID2498 W3, no conv
+Creating GALFIT mosaics for VFID2513 W3, no conv
+Creating GALFIT mosaics for VFID2526 W3, no conv
+Creating GALFIT mosaics for VFID2531 W3, no conv
+Creating GALFIT mosaics for VFID2544 W3, no conv
+Creating GALFIT mosaics for VFID2560 W3, no conv
+Creating GALFIT mosaics for VFID2591 W3, no conv
+Creating GALFIT mosaics for VFID2617 W3, no conv
+Creating GALFIT mosaics for VFID2620 W3, no conv
+Creating GALFIT mosaics for VFID2625 W3, no conv
+Creating GALFIT mosaics for VFID2626 W3, no conv
+Creating GALFIT mosaics for VFID2628 W3, no conv
+UGC06892_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2656 W3, no conv
+NGC2770_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2657 W3, no conv
+NGC3396_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2665 W3, no conv
+Creating GALFIT mosaics for VFID2670 W3, no conv
+Creating GALFIT mosaics for VFID2716 W3, no conv
+Creating GALFIT mosaics for VFID2721 W3, no conv
+NGC3991_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2723 W3, no conv
+Creating GALFIT mosaics for VFID2735 W3, no conv
+Creating GALFIT mosaics for VFID2765 W3, no conv
+Creating GALFIT mosaics for VFID2772 W3, no conv
+Creating GALFIT mosaics for VFID2780 W3, no conv
+Creating GALFIT mosaics for VFID2795 W3, no conv
+Creating GALFIT mosaics for VFID2812 W3, no conv
+Creating GALFIT mosaics for VFID2819 W3, no conv
+Creating GALFIT mosaics for VFID2822 W3, no conv
+Creating GALFIT mosaics for VFID2856 W3, no conv
+Creating GALFIT mosaics for VFID2880 W3, no conv
+Creating GALFIT mosaics for VFID2883 W3, no conv
+Creating GALFIT mosaics for VFID2891 W3, no conv
+Creating GALFIT mosaics for VFID2899 W3, no conv
+Creating GALFIT mosaics for VFID2909 W3, no conv
+UGC07017_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2912 W3, no conv
+Creating GALFIT mosaics for VFID2913 W3, no conv
+NGC2604_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2943 W3, no conv
+NGC3687_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2945 W3, no conv
+Creating GALFIT mosaics for VFID2948 W3, no conv
+Creating GALFIT mosaics for VFID2964 W3, no conv
+NGC5375_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2975 W3, no conv
+Creating GALFIT mosaics for VFID2992 W3, no conv
+NGC4793_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2995 W3, no conv
+Creating GALFIT mosaics for VFID3017 W3, no conv
+NGC4448_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3022 W3, no conv
+Creating GALFIT mosaics for VFID3026 W3, no conv
+Creating GALFIT mosaics for VFID3036 W3, no conv
+Creating GALFIT mosaics for VFID3063 W3, no conv
+Creating GALFIT mosaics for VFID3079 W3, no conv
+Creating GALFIT mosaics for VFID3084 W3, no conv
+Creating GALFIT mosaics for VFID3093 W3, no conv
+Creating GALFIT mosaics for VFID3103 W3, no conv
+NGC4961_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3116 W3, no conv
+Creating GALFIT mosaics for VFID3129 W3, no conv
+Creating GALFIT mosaics for VFID3156 W3, no conv
+Creating GALFIT mosaics for VFID3164 W3, no conv
+Creating GALFIT mosaics for VFID3172 W3, no conv
+Creating GALFIT mosaics for VFID3173 W3, no conv
+Creating GALFIT mosaics for VFID3174 W3, no conv
+Creating GALFIT mosaics for VFID3185 W3, no conv
+Creating GALFIT mosaics for VFID3200 W3, no conv
+NGC2735_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3241 W3, no conv
+Creating GALFIT mosaics for VFID3249 W3, no conv
+Creating GALFIT mosaics for VFID3269 W3, no conv
+Creating GALFIT mosaics for VFID3284 W3, no conv
+Creating GALFIT mosaics for VFID3286 W3, no conv
+NGC2750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3292 W3, no conv
+Creating GALFIT mosaics for VFID3300 W3, no conv
+Creating GALFIT mosaics for VFID3303 W3, no conv
+Creating GALFIT mosaics for VFID3306 W3, no conv
+Creating GALFIT mosaics for VFID3325 W3, no conv
+Creating GALFIT mosaics for VFID3334 W3, no conv
+Creating GALFIT mosaics for VFID3336 W3, no conv
+Creating GALFIT mosaics for VFID3343 W3, no conv
+Creating GALFIT mosaics for VFID3386 W3, no conv
+Creating GALFIT mosaics for VFID3388 W3, no conv
+Creating GALFIT mosaics for VFID3389 W3, no conv
+NGC2480_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3411 W3, no conv
+Creating GALFIT mosaics for VFID3427 W3, no conv
+Creating GALFIT mosaics for VFID3456 W3, no conv
+Creating GALFIT mosaics for VFID3459 W3, no conv
+Creating GALFIT mosaics for VFID3463 W3, no conv
+Creating GALFIT mosaics for VFID3477 W3, no conv
+Creating GALFIT mosaics for VFID3489 W3, no conv
+NGC3190_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3551 W3, no conv
+Creating GALFIT mosaics for VFID3564 W3, no conv
+Creating GALFIT mosaics for VFID3574 W3, no conv
+Creating GALFIT mosaics for VFID3578 W3, no conv
+Creating GALFIT mosaics for VFID3612 W3, no conv
+Creating GALFIT mosaics for VFID3618 W3, no conv
+Creating GALFIT mosaics for VFID3657 W3, no conv
+IC0610_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3672 W3, no conv
+NGC6168_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3675 W3, no conv
+Creating GALFIT mosaics for VFID3678 W3, no conv
+Creating GALFIT mosaics for VFID3687 W3, no conv
+Creating GALFIT mosaics for VFID3698 W3, no conv
+NGC3227_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3708 W3, no conv
+Creating GALFIT mosaics for VFID3723 W3, no conv
+Creating GALFIT mosaics for VFID3725 W3, no conv
+Creating GALFIT mosaics for VFID3750 W3, no conv
+Creating GALFIT mosaics for VFID3779 W3, no conv
+Creating GALFIT mosaics for VFID3780 W3, no conv
+Creating GALFIT mosaics for VFID3820 W3, no conv
+Creating GALFIT mosaics for VFID3861 W3, no conv
+Creating GALFIT mosaics for VFID3863 W3, no conv
+Creating GALFIT mosaics for VFID3876 W3, no conv
+Creating GALFIT mosaics for VFID3884 W3, no conv
+Creating GALFIT mosaics for VFID3891 W3, no conv
+Creating GALFIT mosaics for VFID3897 W3, no conv
+Creating GALFIT mosaics for VFID3930 W3, no conv
+Creating GALFIT mosaics for VFID3945 W3, no conv
+NGC3370_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3958 W3, no conv
+Creating GALFIT mosaics for VFID3961 W3, no conv
+Creating GALFIT mosaics for VFID3966 W3, no conv
+Creating GALFIT mosaics for VFID3979 W3, no conv
+Creating GALFIT mosaics for VFID3980 W3, no conv
+Creating GALFIT mosaics for VFID3985 W3, no conv
+Creating GALFIT mosaics for VFID3993 W3, no conv
+Creating GALFIT mosaics for VFID3994 W3, no conv
+Creating GALFIT mosaics for VFID4017 W3, no conv
+NGC5962_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4026 W3, no conv
+Creating GALFIT mosaics for VFID4029 W3, no conv
+Creating GALFIT mosaics for VFID4056 W3, no conv
+Creating GALFIT mosaics for VFID4057 W3, no conv
+Creating GALFIT mosaics for VFID4087 W3, no conv
+Creating GALFIT mosaics for VFID4092 W3, no conv
+Creating GALFIT mosaics for VFID4094 W3, no conv
+Creating GALFIT mosaics for VFID4099 W3, no conv
+Creating GALFIT mosaics for VFID4115 W3, no conv
+Creating GALFIT mosaics for VFID4119 W3, no conv
+Creating GALFIT mosaics for VFID4126 W3, no conv
+Creating GALFIT mosaics for VFID4135 W3, no conv
+Creating GALFIT mosaics for VFID4143 W3, no conv
+NGC4312_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4144 W3, no conv
+Creating GALFIT mosaics for VFID4164 W3, no conv
+Creating GALFIT mosaics for VFID4165 W3, no conv
+Creating GALFIT mosaics for VFID4168 W3, no conv
+Creating GALFIT mosaics for VFID4170 W3, no conv
+Creating GALFIT mosaics for VFID4188 W3, no conv
+Creating GALFIT mosaics for VFID4191 W3, no conv
+Creating GALFIT mosaics for VFID4194 W3, no conv
+Creating GALFIT mosaics for VFID4201 W3, no conv
+Creating GALFIT mosaics for VFID4203 W3, no conv
+Creating GALFIT mosaics for VFID4211 W3, no conv
+Creating GALFIT mosaics for VFID4212 W3, no conv
+Creating GALFIT mosaics for VFID4220 W3, no conv
+Creating GALFIT mosaics for VFID4226 W3, no conv
+Creating GALFIT mosaics for VFID4239 W3, no conv
+Creating GALFIT mosaics for VFID4250 W3, no conv
+Creating GALFIT mosaics for VFID4254 W3, no conv
+Creating GALFIT mosaics for VFID4269 W3, no conv
+Creating GALFIT mosaics for VFID4283 W3, no conv
+Creating GALFIT mosaics for VFID4299 W3, no conv
+Creating GALFIT mosaics for VFID4303 W3, no conv
+Creating GALFIT mosaics for VFID4306 W3, no conv
+Creating GALFIT mosaics for VFID4321 W3, no conv
+Creating GALFIT mosaics for VFID4330 W3, no conv
+Creating GALFIT mosaics for VFID4334 W3, no conv
+Creating GALFIT mosaics for VFID4336 W3, no conv
+Creating GALFIT mosaics for VFID4353 W3, no conv
+Creating GALFIT mosaics for VFID4382 W3, no conv
+Creating GALFIT mosaics for VFID4383 W3, no conv
+Creating GALFIT mosaics for VFID4385 W3, no conv
+Creating GALFIT mosaics for VFID4387 W3, no conv
+Creating GALFIT mosaics for VFID4393 W3, no conv
+Creating GALFIT mosaics for VFID4397 W3, no conv
+Creating GALFIT mosaics for VFID4414 W3, no conv
+Creating GALFIT mosaics for VFID4445 W3, no conv
+Creating GALFIT mosaics for VFID4450 W3, no conv
+Creating GALFIT mosaics for VFID4479 W3, no conv
+Creating GALFIT mosaics for VFID4496 W3, no conv
+Creating GALFIT mosaics for VFID4504 W3, no conv
+Creating GALFIT mosaics for VFID4507 W3, no conv
+Creating GALFIT mosaics for VFID4513 W3, no conv
+Creating GALFIT mosaics for VFID4519 W3, no conv
+Creating GALFIT mosaics for VFID4520 W3, no conv
+Creating GALFIT mosaics for VFID4548 W3, no conv
+NGC3024_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4613 W3, no conv
+Creating GALFIT mosaics for VFID4637 W3, no conv
+Creating GALFIT mosaics for VFID4644 W3, no conv
+Creating GALFIT mosaics for VFID4662 W3, no conv
+Creating GALFIT mosaics for VFID4663 W3, no conv
+Creating GALFIT mosaics for VFID4751 W3, no conv
+Creating GALFIT mosaics for VFID4758 W3, no conv
+Creating GALFIT mosaics for VFID4778 W3, no conv
+Creating GALFIT mosaics for VFID4782 W3, no conv
+Creating GALFIT mosaics for VFID4810 W3, no conv
+Creating GALFIT mosaics for VFID4816 W3, no conv
+Creating GALFIT mosaics for VFID4820 W3, no conv
+Creating GALFIT mosaics for VFID4826 W3, no conv
+Creating GALFIT mosaics for VFID4827 W3, no conv
+Creating GALFIT mosaics for VFID4860 W3, no conv
+Creating GALFIT mosaics for VFID4861 W3, no conv
+NGC4313_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4865 W3, no conv
+Creating GALFIT mosaics for VFID4878 W3, no conv
+Creating GALFIT mosaics for VFID4880 W3, no conv
+Creating GALFIT mosaics for VFID4886 W3, no conv
+Creating GALFIT mosaics for VFID4906 W3, no conv
+Creating GALFIT mosaics for VFID4916 W3, no conv
+Creating GALFIT mosaics for VFID4917 W3, no conv
+Creating GALFIT mosaics for VFID4923 W3, no conv
+Creating GALFIT mosaics for VFID4924 W3, no conv
+Creating GALFIT mosaics for VFID4944 W3, no conv
+Creating GALFIT mosaics for VFID4949 W3, no conv
+NGC4568_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4962 W3, no conv
+Creating GALFIT mosaics for VFID4970 W3, no conv
+Creating GALFIT mosaics for VFID4983 W3, no conv
+Creating GALFIT mosaics for VFID5012 W3, no conv
+Creating GALFIT mosaics for VFID5013 W3, no conv
+Creating GALFIT mosaics for VFID5018 W3, no conv
+Creating GALFIT mosaics for VFID5030 W3, no conv
+Creating GALFIT mosaics for VFID5057 W3, no conv
+Creating GALFIT mosaics for VFID5082 W3, no conv
+Creating GALFIT mosaics for VFID5124 W3, no conv
+Creating GALFIT mosaics for VFID5125 W3, no conv
+Creating GALFIT mosaics for VFID5154 W3, no conv
+Creating GALFIT mosaics for VFID5176 W3, no conv
+Creating GALFIT mosaics for VFID5194 W3, no conv
+Creating GALFIT mosaics for VFID5200 W3, no conv
+Creating GALFIT mosaics for VFID5210 W3, no conv
+PGC027784_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5212 W3, no conv
+Creating GALFIT mosaics for VFID5219 W3, no conv
+Creating GALFIT mosaics for VFID5222 W3, no conv
+Creating GALFIT mosaics for VFID5223 W3, no conv
+Creating GALFIT mosaics for VFID5236 W3, no conv
+Creating GALFIT mosaics for VFID5241 W3, no conv
+Creating GALFIT mosaics for VFID5244 W3, no conv
+Creating GALFIT mosaics for VFID5257 W3, no conv
+NGC3876_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5263 W3, no conv
+Creating GALFIT mosaics for VFID5276 W3, no conv
+Creating GALFIT mosaics for VFID5292 W3, no conv
+NGC4519_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5324 W3, no conv
+Creating GALFIT mosaics for VFID5339 W3, no conv
+Creating GALFIT mosaics for VFID5344 W3, no conv
+NGC2906_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5352 W3, no conv
+Creating GALFIT mosaics for VFID5367 W3, no conv
+Creating GALFIT mosaics for VFID5379 W3, no conv
+Creating GALFIT mosaics for VFID5419 W3, no conv
+Creating GALFIT mosaics for VFID5424 W3, no conv
+Creating GALFIT mosaics for VFID5429 W3, no conv
+Creating GALFIT mosaics for VFID5434 W3, no conv
+Creating GALFIT mosaics for VFID5494 W3, no conv
+NGC4224_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5503 W3, no conv
+Creating GALFIT mosaics for VFID5511 W3, no conv
+Creating GALFIT mosaics for VFID5524 W3, no conv
+IC3322A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5532 W3, no conv
+Creating GALFIT mosaics for VFID5534 W3, no conv
+Creating GALFIT mosaics for VFID5539 W3, no conv
+Creating GALFIT mosaics for VFID5546 W3, no conv
+Creating GALFIT mosaics for VFID5573 W3, no conv
+Creating GALFIT mosaics for VFID5574 W3, no conv
+Creating GALFIT mosaics for VFID5582 W3, no conv
+Creating GALFIT mosaics for VFID5586 W3, no conv
+Creating GALFIT mosaics for VFID5637 W3, no conv
+Creating GALFIT mosaics for VFID5652 W3, no conv
+Creating GALFIT mosaics for VFID5676 W3, no conv
+Creating GALFIT mosaics for VFID5678 W3, no conv
+Creating GALFIT mosaics for VFID5709 W3, no conv
+Creating GALFIT mosaics for VFID5713 W3, no conv
+Creating GALFIT mosaics for VFID5725 W3, no conv
+Creating GALFIT mosaics for VFID5749 W3, no conv
+Creating GALFIT mosaics for VFID5759 W3, no conv
+Creating GALFIT mosaics for VFID5771 W3, no conv
+NGC2990_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5778 W3, no conv
+Creating GALFIT mosaics for VFID5787 W3, no conv
+Creating GALFIT mosaics for VFID5794 W3, no conv
+Creating GALFIT mosaics for VFID5834 W3, no conv
+Creating GALFIT mosaics for VFID5842 W3, no conv
+Creating GALFIT mosaics for VFID5846 W3, no conv
+Creating GALFIT mosaics for VFID5877 W3, no conv
+Creating GALFIT mosaics for VFID5880 W3, no conv
+Creating GALFIT mosaics for VFID5889 W3, no conv
+Creating GALFIT mosaics for VFID5894 W3, no conv
+Creating GALFIT mosaics for VFID5901 W3, no conv
+Creating GALFIT mosaics for VFID5905 W3, no conv
+NGC3611_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5950 W3, no conv
+Creating GALFIT mosaics for VFID5962 W3, no conv
+Creating GALFIT mosaics for VFID5964 W3, no conv
+Creating GALFIT mosaics for VFID5981 W3, no conv
+Creating GALFIT mosaics for VFID5988 W3, no conv
+Creating GALFIT mosaics for VFID5989 W3, no conv
+Creating GALFIT mosaics for VFID5992 W3, no conv
+Creating GALFIT mosaics for VFID6023 W3, no conv
+Creating GALFIT mosaics for VFID6024 W3, no conv
+Creating GALFIT mosaics for VFID6028 W3, no conv
+Creating GALFIT mosaics for VFID6031 W3, no conv
+NGC4289_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6056 W3, no conv
+Creating GALFIT mosaics for VFID6060 W3, no conv
+Creating GALFIT mosaics for VFID6069 W3, no conv
+Creating GALFIT mosaics for VFID6074 W3, no conv
+NGC5775_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6081 W3, no conv
+Creating GALFIT mosaics for VFID6091 W3, no conv
+Creating GALFIT mosaics for VFID6098 W3, no conv
+Creating GALFIT mosaics for VFID6103 W3, no conv
+Creating GALFIT mosaics for VFID6106 W3, no conv
+Creating GALFIT mosaics for VFID6133 W3, no conv
+Creating GALFIT mosaics for VFID6152 W3, no conv
+Creating GALFIT mosaics for VFID6179 W3, no conv
+Creating GALFIT mosaics for VFID6182 W3, no conv
+Creating GALFIT mosaics for VFID6185 W3, no conv
+NGC4116_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6204 W3, no conv
+Creating GALFIT mosaics for VFID6216 W3, no conv
+Creating GALFIT mosaics for VFID6246 W3, no conv
+Creating GALFIT mosaics for VFID6247 W3, no conv
+Creating GALFIT mosaics for VFID6265 W3, no conv
+Creating GALFIT mosaics for VFID6272 W3, no conv
+Creating GALFIT mosaics for VFID6286 W3, no conv
+Creating GALFIT mosaics for VFID6288 W3, no conv
+Creating GALFIT mosaics for VFID6293 W3, no conv
+Creating GALFIT mosaics for VFID6317 W3, no conv
+Creating GALFIT mosaics for VFID6337 W3, no conv
+Creating GALFIT mosaics for VFID6340 W3, no conv
+Creating GALFIT mosaics for VFID6342 W3, no conv
+Creating GALFIT mosaics for VFID6352 W3, no conv
+Creating GALFIT mosaics for VFID6358 W3, no conv
+Creating GALFIT mosaics for VFID6362 W3, no conv
+Creating GALFIT mosaics for VFID6370 W3, no conv
+Creating GALFIT mosaics for VFID6380 W3, no conv
+Creating GALFIT mosaics for VFID6394 W3, no conv
+Creating GALFIT mosaics for VFID6399 W3, no conv
+Creating GALFIT mosaics for VFID6411 W3, no conv
+Creating GALFIT mosaics for VFID6430 W3, no conv
+Creating GALFIT mosaics for VFID6431 W3, no conv
+Creating GALFIT mosaics for VFID6437 W3, no conv
+Creating GALFIT mosaics for VFID6480 W3, no conv
+Creating GALFIT mosaics for VFID6550 W3, no conv
+NGC3023_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6564 W3, no conv
+Creating GALFIT mosaics for VFID6602 W3, no conv
+Creating GALFIT mosaics for VFID6619 W3, no conv
+Creating GALFIT mosaics for VFID6643 W3, no conv
+Creating GALFIT mosaics for VFID6645 W3, no conv
+Creating GALFIT mosaics for VFID6647 W3, no conv
+Creating GALFIT mosaics for VFID6673 W3, no conv
+Creating GALFIT mosaics for VFID6677 W3, no conv
+Creating GALFIT mosaics for VFID6688 W3, no conv
+Creating GALFIT mosaics for VFID6689 W3, no conv
+Creating GALFIT mosaics for VFID6708 W3, no conv
+Creating GALFIT mosaics for VFID6712 W3, no conv
+Creating GALFIT mosaics for VFID6719 W3, no conv
+NGC4355_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6742 W3, no conv
+Creating GALFIT mosaics for VFID6745 W3, no conv
+Creating GALFIT mosaics for VFID6756 W3, no conv
+Creating GALFIT mosaics for VFID6759 W3, no conv
+Creating GALFIT mosaics for VFID6763 W3, no conv
+UGC07883_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6770 W3, no conv
+Creating GALFIT mosaics for VFID0001 W3, conv
+Creating GALFIT mosaics for VFID0002 W3, conv
+Creating GALFIT mosaics for VFID0005 W3, conv
+Creating GALFIT mosaics for VFID0008 W3, conv
+Creating GALFIT mosaics for VFID0011 W3, conv
+Creating GALFIT mosaics for VFID0013 W3, conv
+Creating GALFIT mosaics for VFID0019 W3, conv
+NGC2633_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0020 W3, conv
+Creating GALFIT mosaics for VFID0026 W3, conv
+Creating GALFIT mosaics for VFID0027 W3, conv
+Creating GALFIT mosaics for VFID0029 W3, conv
+Creating GALFIT mosaics for VFID0030 W3, conv
+Creating GALFIT mosaics for VFID0036 W3, conv
+Creating GALFIT mosaics for VFID0045 W3, conv
+NGC6654A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0046 W3, conv
+Creating GALFIT mosaics for VFID0047 W3, conv
+Creating GALFIT mosaics for VFID0051 W3, conv
+Creating GALFIT mosaics for VFID0052 W3, conv
+Creating GALFIT mosaics for VFID0053 W3, conv
+Creating GALFIT mosaics for VFID0055 W3, conv
+Creating GALFIT mosaics for VFID0058 W3, conv
+Creating GALFIT mosaics for VFID0060 W3, conv
+Creating GALFIT mosaics for VFID0066 W3, conv
+Creating GALFIT mosaics for VFID0070 W3, conv
+Creating GALFIT mosaics for VFID0076 W3, conv
+Creating GALFIT mosaics for VFID0077 W3, conv
+Creating GALFIT mosaics for VFID0082 W3, conv
+Creating GALFIT mosaics for VFID0089 W3, conv
+Creating GALFIT mosaics for VFID0092 W3, conv
+Creating GALFIT mosaics for VFID0097 W3, conv
+Creating GALFIT mosaics for VFID0098 W3, conv
+Creating GALFIT mosaics for VFID0099 W3, conv
+Creating GALFIT mosaics for VFID0100 W3, conv
+Creating GALFIT mosaics for VFID0106 W3, conv
+Creating GALFIT mosaics for VFID0107 W3, conv
+Creating GALFIT mosaics for VFID0109 W3, conv
+Creating GALFIT mosaics for VFID0122 W3, conv
+Creating GALFIT mosaics for VFID0124 W3, conv
+Creating GALFIT mosaics for VFID0127 W3, conv
+Creating GALFIT mosaics for VFID0141 W3, conv
+Creating GALFIT mosaics for VFID0145 W3, conv
+Creating GALFIT mosaics for VFID0149 W3, conv
+Creating GALFIT mosaics for VFID0165 W3, conv
+Creating GALFIT mosaics for VFID0166 W3, conv
+Creating GALFIT mosaics for VFID0168 W3, conv
+Creating GALFIT mosaics for VFID0172 W3, conv
+Creating GALFIT mosaics for VFID0176 W3, conv
+Creating GALFIT mosaics for VFID0187 W3, conv
+Creating GALFIT mosaics for VFID0208 W3, conv
+NGC4256_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0212 W3, conv
+Creating GALFIT mosaics for VFID0214 W3, conv
+Creating GALFIT mosaics for VFID0233 W3, conv
+Creating GALFIT mosaics for VFID0241 W3, conv
+Creating GALFIT mosaics for VFID0244 W3, conv
+Creating GALFIT mosaics for VFID0251 W3, conv
+Creating GALFIT mosaics for VFID0263 W3, conv
+Creating GALFIT mosaics for VFID0267 W3, conv
+NGC2820_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0281 W3, conv
+Creating GALFIT mosaics for VFID0304 W3, conv
+NGC4205_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0314 W3, conv
+Creating GALFIT mosaics for VFID0321 W3, conv
+Creating GALFIT mosaics for VFID0323 W3, conv
+Creating GALFIT mosaics for VFID0334 W3, conv
+Creating GALFIT mosaics for VFID0349 W3, conv
+Creating GALFIT mosaics for VFID0358 W3, conv
+Creating GALFIT mosaics for VFID0377 W3, conv
+Creating GALFIT mosaics for VFID0378 W3, conv
+Creating GALFIT mosaics for VFID0382 W3, conv
+Creating GALFIT mosaics for VFID0393 W3, conv
+Creating GALFIT mosaics for VFID0394 W3, conv
+Creating GALFIT mosaics for VFID0402 W3, conv
+Creating GALFIT mosaics for VFID0411 W3, conv
+Creating GALFIT mosaics for VFID0413 W3, conv
+Creating GALFIT mosaics for VFID0419 W3, conv
+Creating GALFIT mosaics for VFID0432 W3, conv
+NGC3471_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0438 W3, conv
+UGC04159_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0442 W3, conv
+Creating GALFIT mosaics for VFID0450 W3, conv
+Creating GALFIT mosaics for VFID0477 W3, conv
+Creating GALFIT mosaics for VFID0479 W3, conv
+Creating GALFIT mosaics for VFID0497 W3, conv
+Creating GALFIT mosaics for VFID0509 W3, conv
+Creating GALFIT mosaics for VFID0519 W3, conv
+Creating GALFIT mosaics for VFID0528 W3, conv
+Creating GALFIT mosaics for VFID0538 W3, conv
+Creating GALFIT mosaics for VFID0541 W3, conv
+Creating GALFIT mosaics for VFID0545 W3, conv
+Creating GALFIT mosaics for VFID0552 W3, conv
+Creating GALFIT mosaics for VFID0553 W3, conv
+Creating GALFIT mosaics for VFID0567 W3, conv
+Creating GALFIT mosaics for VFID0568 W3, conv
+Creating GALFIT mosaics for VFID0569 W3, conv
+Creating GALFIT mosaics for VFID0573 W3, conv
+Creating GALFIT mosaics for VFID0584 W3, conv
+NGC5376_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0585 W3, conv
+Creating GALFIT mosaics for VFID0588 W3, conv
+Creating GALFIT mosaics for VFID0610 W3, conv
+Creating GALFIT mosaics for VFID0611 W3, conv
+Creating GALFIT mosaics for VFID0613 W3, conv
+Creating GALFIT mosaics for VFID0619 W3, conv
+Creating GALFIT mosaics for VFID0630 W3, conv
+Creating GALFIT mosaics for VFID0637 W3, conv
+Creating GALFIT mosaics for VFID0642 W3, conv
+NGC5777_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0650 W3, conv
+Creating GALFIT mosaics for VFID0674 W3, conv
+Creating GALFIT mosaics for VFID0682 W3, conv
+UGC08040_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0686 W3, conv
+NGC3690_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0711 W3, conv
+GALFIT did not run correctly for VFID0711 - no model...
+Creating GALFIT mosaics for VFID0720 W3, conv
+Creating GALFIT mosaics for VFID0722 W3, conv
+Creating GALFIT mosaics for VFID0740 W3, conv
+Creating GALFIT mosaics for VFID0746 W3, conv
+Creating GALFIT mosaics for VFID0764 W3, conv
+NGC4290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0768 W3, conv
+Creating GALFIT mosaics for VFID0771 W3, conv
+Creating GALFIT mosaics for VFID0785 W3, conv
+Creating GALFIT mosaics for VFID0795 W3, conv
+NGC3625_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0812 W3, conv
+Creating GALFIT mosaics for VFID0815 W3, conv
+Creating GALFIT mosaics for VFID0821 W3, conv
+Creating GALFIT mosaics for VFID0824 W3, conv
+Creating GALFIT mosaics for VFID0827 W3, conv
+Creating GALFIT mosaics for VFID0829 W3, conv
+Creating GALFIT mosaics for VFID0847 W3, conv
+Creating GALFIT mosaics for VFID0873 W3, conv
+Creating GALFIT mosaics for VFID0884 W3, conv
+Creating GALFIT mosaics for VFID0893 W3, conv
+NGC3445_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0894 W3, conv
+Creating GALFIT mosaics for VFID0901 W3, conv
+Creating GALFIT mosaics for VFID0914 W3, conv
+Creating GALFIT mosaics for VFID0927 W3, conv
+Creating GALFIT mosaics for VFID0936 W3, conv
+Creating GALFIT mosaics for VFID0937 W3, conv
+Creating GALFIT mosaics for VFID0941 W3, conv
+NGC3898_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0956 W3, conv
+Creating GALFIT mosaics for VFID0959 W3, conv
+Creating GALFIT mosaics for VFID0960 W3, conv
+Creating GALFIT mosaics for VFID0972 W3, conv
+Creating GALFIT mosaics for VFID0983 W3, conv
+Creating GALFIT mosaics for VFID0985 W3, conv
+Creating GALFIT mosaics for VFID0986 W3, conv
+Creating GALFIT mosaics for VFID0993 W3, conv
+Creating GALFIT mosaics for VFID1015 W3, conv
+Creating GALFIT mosaics for VFID1017 W3, conv
+Creating GALFIT mosaics for VFID1018 W3, conv
+Creating GALFIT mosaics for VFID1023 W3, conv
+Creating GALFIT mosaics for VFID1032 W3, conv
+Creating GALFIT mosaics for VFID1035 W3, conv
+Creating GALFIT mosaics for VFID1049 W3, conv
+Creating GALFIT mosaics for VFID1067 W3, conv
+Creating GALFIT mosaics for VFID1079 W3, conv
+Creating GALFIT mosaics for VFID1081 W3, conv
+Creating GALFIT mosaics for VFID1084 W3, conv
+Creating GALFIT mosaics for VFID1085 W3, conv
+Creating GALFIT mosaics for VFID1092 W3, conv
+Creating GALFIT mosaics for VFID1098 W3, conv
+Creating GALFIT mosaics for VFID1121 W3, conv
+Creating GALFIT mosaics for VFID1125 W3, conv
+Creating GALFIT mosaics for VFID1130 W3, conv
+Creating GALFIT mosaics for VFID1138 W3, conv
+Creating GALFIT mosaics for VFID1166 W3, conv
+Creating GALFIT mosaics for VFID1167 W3, conv
+Creating GALFIT mosaics for VFID1173 W3, conv
+Creating GALFIT mosaics for VFID1182 W3, conv
+Creating GALFIT mosaics for VFID1185 W3, conv
+Creating GALFIT mosaics for VFID1188 W3, conv
+Creating GALFIT mosaics for VFID1212 W3, conv
+Creating GALFIT mosaics for VFID1213 W3, conv
+Creating GALFIT mosaics for VFID1223 W3, conv
+Creating GALFIT mosaics for VFID1235 W3, conv
+Creating GALFIT mosaics for VFID1244 W3, conv
+Creating GALFIT mosaics for VFID1245 W3, conv
+Creating GALFIT mosaics for VFID1250 W3, conv
+Creating GALFIT mosaics for VFID1269 W3, conv
+Creating GALFIT mosaics for VFID1274 W3, conv
+Creating GALFIT mosaics for VFID1279 W3, conv
+Creating GALFIT mosaics for VFID1302 W3, conv
+Creating GALFIT mosaics for VFID1306 W3, conv
+Creating GALFIT mosaics for VFID1307 W3, conv
+Creating GALFIT mosaics for VFID1310 W3, conv
+Creating GALFIT mosaics for VFID1312 W3, conv
+PGC051309_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1313 W3, conv
+Creating GALFIT mosaics for VFID1316 W3, conv
+Creating GALFIT mosaics for VFID1317 W3, conv
+Creating GALFIT mosaics for VFID1318 W3, conv
+Creating GALFIT mosaics for VFID1336 W3, conv
+Creating GALFIT mosaics for VFID1350 W3, conv
+Creating GALFIT mosaics for VFID1351 W3, conv
+Creating GALFIT mosaics for VFID1352 W3, conv
+Creating GALFIT mosaics for VFID1355 W3, conv
+Creating GALFIT mosaics for VFID1366 W3, conv
+Creating GALFIT mosaics for VFID1370 W3, conv
+Creating GALFIT mosaics for VFID1374 W3, conv
+Creating GALFIT mosaics for VFID1381 W3, conv
+Creating GALFIT mosaics for VFID1382 W3, conv
+Creating GALFIT mosaics for VFID1396 W3, conv
+Creating GALFIT mosaics for VFID1398 W3, conv
+NGC2856_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1399 W3, conv
+Creating GALFIT mosaics for VFID1400 W3, conv
+Creating GALFIT mosaics for VFID1405 W3, conv
+Creating GALFIT mosaics for VFID1406 W3, conv
+UGC09056_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1414 W3, conv
+NGC3893_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1431 W3, conv
+Creating GALFIT mosaics for VFID1438 W3, conv
+Creating GALFIT mosaics for VFID1447 W3, conv
+Creating GALFIT mosaics for VFID1451 W3, conv
+Creating GALFIT mosaics for VFID1457 W3, conv
+Creating GALFIT mosaics for VFID1459 W3, conv
+Creating GALFIT mosaics for VFID1463 W3, conv
+Creating GALFIT mosaics for VFID1469 W3, conv
+Creating GALFIT mosaics for VFID1472 W3, conv
+NGC3583_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1473 W3, conv
+Creating GALFIT mosaics for VFID1486 W3, conv
+NGC3769_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1498 W3, conv
+Creating GALFIT mosaics for VFID1505 W3, conv
+Creating GALFIT mosaics for VFID1518 W3, conv
+Creating GALFIT mosaics for VFID1531 W3, conv
+Creating GALFIT mosaics for VFID1532 W3, conv
+Creating GALFIT mosaics for VFID1541 W3, conv
+Creating GALFIT mosaics for VFID1548 W3, conv
+Creating GALFIT mosaics for VFID1551 W3, conv
+Creating GALFIT mosaics for VFID1553 W3, conv
+Creating GALFIT mosaics for VFID1554 W3, conv
+Creating GALFIT mosaics for VFID1561 W3, conv
+Creating GALFIT mosaics for VFID1590 W3, conv
+Creating GALFIT mosaics for VFID1597 W3, conv
+Creating GALFIT mosaics for VFID1600 W3, conv
+Creating GALFIT mosaics for VFID1601 W3, conv
+Creating GALFIT mosaics for VFID1603 W3, conv
+Creating GALFIT mosaics for VFID1622 W3, conv
+Creating GALFIT mosaics for VFID1628 W3, conv
+Creating GALFIT mosaics for VFID1635 W3, conv
+Creating GALFIT mosaics for VFID1643 W3, conv
+Creating GALFIT mosaics for VFID1651 W3, conv
+Creating GALFIT mosaics for VFID1652 W3, conv
+Creating GALFIT mosaics for VFID1654 W3, conv
+Creating GALFIT mosaics for VFID1660 W3, conv
+Creating GALFIT mosaics for VFID1661 W3, conv
+Creating GALFIT mosaics for VFID1676 W3, conv
+Creating GALFIT mosaics for VFID1683 W3, conv
+Creating GALFIT mosaics for VFID1700 W3, conv
+Creating GALFIT mosaics for VFID1723 W3, conv
+Creating GALFIT mosaics for VFID1726 W3, conv
+Creating GALFIT mosaics for VFID1753 W3, conv
+UGC09476_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1755 W3, conv
+Creating GALFIT mosaics for VFID1756 W3, conv
+Creating GALFIT mosaics for VFID1759 W3, conv
+Creating GALFIT mosaics for VFID1776 W3, conv
+Creating GALFIT mosaics for VFID1786 W3, conv
+NGC5297_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1789 W3, conv
+Creating GALFIT mosaics for VFID1803 W3, conv
+Creating GALFIT mosaics for VFID1808 W3, conv
+Creating GALFIT mosaics for VFID1824 W3, conv
+Creating GALFIT mosaics for VFID1830 W3, conv
+NGC5731_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1877 W3, conv
+IC0750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1884 W3, conv
+Creating GALFIT mosaics for VFID1898 W3, conv
+Creating GALFIT mosaics for VFID1913 W3, conv
+Creating GALFIT mosaics for VFID1926 W3, conv
+Creating GALFIT mosaics for VFID1928 W3, conv
+Creating GALFIT mosaics for VFID1930 W3, conv
+Creating GALFIT mosaics for VFID1932 W3, conv
+NGC2798_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1933 W3, conv
+Creating GALFIT mosaics for VFID1950 W3, conv
+NGC5290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1953 W3, conv
+NGC4490_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1961 W3, conv
+Creating GALFIT mosaics for VFID1969 W3, conv
+Creating GALFIT mosaics for VFID1977 W3, conv
+Creating GALFIT mosaics for VFID1984 W3, conv
+Creating GALFIT mosaics for VFID1988 W3, conv
+Creating GALFIT mosaics for VFID1999 W3, conv
+Creating GALFIT mosaics for VFID2000 W3, conv
+Creating GALFIT mosaics for VFID2009 W3, conv
+Creating GALFIT mosaics for VFID2036 W3, conv
+Creating GALFIT mosaics for VFID2037 W3, conv
+UGC09858_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2050 W3, conv
+Creating GALFIT mosaics for VFID2057 W3, conv
+Creating GALFIT mosaics for VFID2058 W3, conv
+Creating GALFIT mosaics for VFID2061 W3, conv
+Creating GALFIT mosaics for VFID2083 W3, conv
+Creating GALFIT mosaics for VFID2086 W3, conv
+Creating GALFIT mosaics for VFID2087 W3, conv
+Creating GALFIT mosaics for VFID2092 W3, conv
+Creating GALFIT mosaics for VFID2101 W3, conv
+Creating GALFIT mosaics for VFID2113 W3, conv
+Creating GALFIT mosaics for VFID2140 W3, conv
+Creating GALFIT mosaics for VFID2144 W3, conv
+Creating GALFIT mosaics for VFID2148 W3, conv
+Creating GALFIT mosaics for VFID2154 W3, conv
+Creating GALFIT mosaics for VFID2169 W3, conv
+Creating GALFIT mosaics for VFID2172 W3, conv
+Creating GALFIT mosaics for VFID2209 W3, conv
+Creating GALFIT mosaics for VFID2222 W3, conv
+Creating GALFIT mosaics for VFID2225 W3, conv
+Creating GALFIT mosaics for VFID2235 W3, conv
+NGC5303_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2254 W3, conv
+GALFIT did not run correctly for VFID2254 - no model...
+NGC5403_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2260 W3, conv
+Creating GALFIT mosaics for VFID2268 W3, conv
+Creating GALFIT mosaics for VFID2269 W3, conv
+NGC3652_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2293 W3, conv
+Creating GALFIT mosaics for VFID2313 W3, conv
+Creating GALFIT mosaics for VFID2324 W3, conv
+Creating GALFIT mosaics for VFID2329 W3, conv
+Creating GALFIT mosaics for VFID2343 W3, conv
+Creating GALFIT mosaics for VFID2355 W3, conv
+NGC3432_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2364 W3, conv
+Creating GALFIT mosaics for VFID2368 W3, conv
+Creating GALFIT mosaics for VFID2372 W3, conv
+NGC3755_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2387 W3, conv
+Creating GALFIT mosaics for VFID2401 W3, conv
+NGC2543_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2405 W3, conv
+NGC5529_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2408 W3, conv
+GALFIT did not run correctly for VFID2408 - no model...
+Creating GALFIT mosaics for VFID2418 W3, conv
+Creating GALFIT mosaics for VFID2465 W3, conv
+Creating GALFIT mosaics for VFID2480 W3, conv
+Creating GALFIT mosaics for VFID2492 W3, conv
+Creating GALFIT mosaics for VFID2498 W3, conv
+Creating GALFIT mosaics for VFID2513 W3, conv
+Creating GALFIT mosaics for VFID2526 W3, conv
+Creating GALFIT mosaics for VFID2531 W3, conv
+Creating GALFIT mosaics for VFID2544 W3, conv
+Creating GALFIT mosaics for VFID2560 W3, conv
+Creating GALFIT mosaics for VFID2591 W3, conv
+Creating GALFIT mosaics for VFID2617 W3, conv
+Creating GALFIT mosaics for VFID2620 W3, conv
+Creating GALFIT mosaics for VFID2625 W3, conv
+Creating GALFIT mosaics for VFID2626 W3, conv
+Creating GALFIT mosaics for VFID2628 W3, conv
+UGC06892_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2656 W3, conv
+NGC2770_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2657 W3, conv
+NGC3396_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2665 W3, conv
+Creating GALFIT mosaics for VFID2670 W3, conv
+Creating GALFIT mosaics for VFID2716 W3, conv
+Creating GALFIT mosaics for VFID2721 W3, conv
+NGC3991_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2723 W3, conv
+Creating GALFIT mosaics for VFID2735 W3, conv
+Creating GALFIT mosaics for VFID2765 W3, conv
+Creating GALFIT mosaics for VFID2772 W3, conv
+Creating GALFIT mosaics for VFID2780 W3, conv
+Creating GALFIT mosaics for VFID2795 W3, conv
+Creating GALFIT mosaics for VFID2812 W3, conv
+Creating GALFIT mosaics for VFID2819 W3, conv
+Creating GALFIT mosaics for VFID2822 W3, conv
+Creating GALFIT mosaics for VFID2856 W3, conv
+Creating GALFIT mosaics for VFID2880 W3, conv
+Creating GALFIT mosaics for VFID2883 W3, conv
+Creating GALFIT mosaics for VFID2891 W3, conv
+Creating GALFIT mosaics for VFID2899 W3, conv
+Creating GALFIT mosaics for VFID2909 W3, conv
+UGC07017_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2912 W3, conv
+Creating GALFIT mosaics for VFID2913 W3, conv
+NGC2604_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2943 W3, conv
+NGC3687_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2945 W3, conv
+Creating GALFIT mosaics for VFID2948 W3, conv
+Creating GALFIT mosaics for VFID2964 W3, conv
+NGC5375_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2975 W3, conv
+Creating GALFIT mosaics for VFID2992 W3, conv
+NGC4793_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2995 W3, conv
+Creating GALFIT mosaics for VFID3017 W3, conv
+NGC4448_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3022 W3, conv
+Creating GALFIT mosaics for VFID3026 W3, conv
+Creating GALFIT mosaics for VFID3036 W3, conv
+Creating GALFIT mosaics for VFID3063 W3, conv
+Creating GALFIT mosaics for VFID3079 W3, conv
+Creating GALFIT mosaics for VFID3084 W3, conv
+Creating GALFIT mosaics for VFID3093 W3, conv
+Creating GALFIT mosaics for VFID3103 W3, conv
+NGC4961_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3116 W3, conv
+Creating GALFIT mosaics for VFID3129 W3, conv
+Creating GALFIT mosaics for VFID3156 W3, conv
+Creating GALFIT mosaics for VFID3164 W3, conv
+Creating GALFIT mosaics for VFID3172 W3, conv
+Creating GALFIT mosaics for VFID3173 W3, conv
+Creating GALFIT mosaics for VFID3174 W3, conv
+Creating GALFIT mosaics for VFID3185 W3, conv
+Creating GALFIT mosaics for VFID3200 W3, conv
+NGC2735_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3241 W3, conv
+Creating GALFIT mosaics for VFID3249 W3, conv
+Creating GALFIT mosaics for VFID3269 W3, conv
+Creating GALFIT mosaics for VFID3284 W3, conv
+Creating GALFIT mosaics for VFID3286 W3, conv
+NGC2750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3292 W3, conv
+Creating GALFIT mosaics for VFID3300 W3, conv
+Creating GALFIT mosaics for VFID3303 W3, conv
+Creating GALFIT mosaics for VFID3306 W3, conv
+Creating GALFIT mosaics for VFID3325 W3, conv
+Creating GALFIT mosaics for VFID3334 W3, conv
+Creating GALFIT mosaics for VFID3336 W3, conv
+Creating GALFIT mosaics for VFID3343 W3, conv
+Creating GALFIT mosaics for VFID3386 W3, conv
+Creating GALFIT mosaics for VFID3388 W3, conv
+Creating GALFIT mosaics for VFID3389 W3, conv
+NGC2480_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3411 W3, conv
+Creating GALFIT mosaics for VFID3427 W3, conv
+Creating GALFIT mosaics for VFID3456 W3, conv
+Creating GALFIT mosaics for VFID3459 W3, conv
+Creating GALFIT mosaics for VFID3463 W3, conv
+Creating GALFIT mosaics for VFID3477 W3, conv
+Creating GALFIT mosaics for VFID3489 W3, conv
+NGC3190_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3551 W3, conv
+Creating GALFIT mosaics for VFID3564 W3, conv
+Creating GALFIT mosaics for VFID3574 W3, conv
+Creating GALFIT mosaics for VFID3578 W3, conv
+Creating GALFIT mosaics for VFID3612 W3, conv
+Creating GALFIT mosaics for VFID3618 W3, conv
+Creating GALFIT mosaics for VFID3657 W3, conv
+IC0610_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3672 W3, conv
+NGC6168_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3675 W3, conv
+Creating GALFIT mosaics for VFID3678 W3, conv
+Creating GALFIT mosaics for VFID3687 W3, conv
+Creating GALFIT mosaics for VFID3698 W3, conv
+NGC3227_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3708 W3, conv
+Creating GALFIT mosaics for VFID3723 W3, conv
+Creating GALFIT mosaics for VFID3725 W3, conv
+Creating GALFIT mosaics for VFID3750 W3, conv
+Creating GALFIT mosaics for VFID3779 W3, conv
+Creating GALFIT mosaics for VFID3780 W3, conv
+Creating GALFIT mosaics for VFID3820 W3, conv
+Creating GALFIT mosaics for VFID3861 W3, conv
+Creating GALFIT mosaics for VFID3863 W3, conv
+Creating GALFIT mosaics for VFID3876 W3, conv
+Creating GALFIT mosaics for VFID3884 W3, conv
+Creating GALFIT mosaics for VFID3891 W3, conv
+Creating GALFIT mosaics for VFID3897 W3, conv
+Creating GALFIT mosaics for VFID3930 W3, conv
+Creating GALFIT mosaics for VFID3945 W3, conv
+NGC3370_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3958 W3, conv
+Creating GALFIT mosaics for VFID3961 W3, conv
+Creating GALFIT mosaics for VFID3966 W3, conv
+Creating GALFIT mosaics for VFID3979 W3, conv
+Creating GALFIT mosaics for VFID3980 W3, conv
+Creating GALFIT mosaics for VFID3985 W3, conv
+Creating GALFIT mosaics for VFID3993 W3, conv
+Creating GALFIT mosaics for VFID3994 W3, conv
+Creating GALFIT mosaics for VFID4017 W3, conv
+NGC5962_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4026 W3, conv
+Creating GALFIT mosaics for VFID4029 W3, conv
+Creating GALFIT mosaics for VFID4056 W3, conv
+Creating GALFIT mosaics for VFID4057 W3, conv
+Creating GALFIT mosaics for VFID4087 W3, conv
+Creating GALFIT mosaics for VFID4092 W3, conv
+Creating GALFIT mosaics for VFID4094 W3, conv
+Creating GALFIT mosaics for VFID4099 W3, conv
+Creating GALFIT mosaics for VFID4115 W3, conv
+Creating GALFIT mosaics for VFID4119 W3, conv
+Creating GALFIT mosaics for VFID4126 W3, conv
+Creating GALFIT mosaics for VFID4135 W3, conv
+Creating GALFIT mosaics for VFID4143 W3, conv
+NGC4312_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4144 W3, conv
+Creating GALFIT mosaics for VFID4164 W3, conv
+Creating GALFIT mosaics for VFID4165 W3, conv
+Creating GALFIT mosaics for VFID4168 W3, conv
+Creating GALFIT mosaics for VFID4170 W3, conv
+Creating GALFIT mosaics for VFID4188 W3, conv
+Creating GALFIT mosaics for VFID4191 W3, conv
+Creating GALFIT mosaics for VFID4194 W3, conv
+Creating GALFIT mosaics for VFID4201 W3, conv
+Creating GALFIT mosaics for VFID4203 W3, conv
+Creating GALFIT mosaics for VFID4211 W3, conv
+Creating GALFIT mosaics for VFID4212 W3, conv
+Creating GALFIT mosaics for VFID4220 W3, conv
+Creating GALFIT mosaics for VFID4226 W3, conv
+Creating GALFIT mosaics for VFID4239 W3, conv
+Creating GALFIT mosaics for VFID4250 W3, conv
+Creating GALFIT mosaics for VFID4254 W3, conv
+Creating GALFIT mosaics for VFID4269 W3, conv
+Creating GALFIT mosaics for VFID4283 W3, conv
+Creating GALFIT mosaics for VFID4299 W3, conv
+Creating GALFIT mosaics for VFID4303 W3, conv
+Creating GALFIT mosaics for VFID4306 W3, conv
+Creating GALFIT mosaics for VFID4321 W3, conv
+Creating GALFIT mosaics for VFID4330 W3, conv
+Creating GALFIT mosaics for VFID4334 W3, conv
+Creating GALFIT mosaics for VFID4336 W3, conv
+Creating GALFIT mosaics for VFID4353 W3, conv
+Creating GALFIT mosaics for VFID4382 W3, conv
+Creating GALFIT mosaics for VFID4383 W3, conv
+Creating GALFIT mosaics for VFID4385 W3, conv
+Creating GALFIT mosaics for VFID4387 W3, conv
+Creating GALFIT mosaics for VFID4393 W3, conv
+Creating GALFIT mosaics for VFID4397 W3, conv
+Creating GALFIT mosaics for VFID4414 W3, conv
+Creating GALFIT mosaics for VFID4445 W3, conv
+Creating GALFIT mosaics for VFID4450 W3, conv
+Creating GALFIT mosaics for VFID4479 W3, conv
+Creating GALFIT mosaics for VFID4496 W3, conv
+Creating GALFIT mosaics for VFID4504 W3, conv
+Creating GALFIT mosaics for VFID4507 W3, conv
+Creating GALFIT mosaics for VFID4513 W3, conv
+Creating GALFIT mosaics for VFID4519 W3, conv
+Creating GALFIT mosaics for VFID4520 W3, conv
+Creating GALFIT mosaics for VFID4548 W3, conv
+NGC3024_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4613 W3, conv
+Creating GALFIT mosaics for VFID4637 W3, conv
+Creating GALFIT mosaics for VFID4644 W3, conv
+Creating GALFIT mosaics for VFID4662 W3, conv
+Creating GALFIT mosaics for VFID4663 W3, conv
+Creating GALFIT mosaics for VFID4751 W3, conv
+Creating GALFIT mosaics for VFID4758 W3, conv
+Creating GALFIT mosaics for VFID4778 W3, conv
+Creating GALFIT mosaics for VFID4782 W3, conv
+Creating GALFIT mosaics for VFID4810 W3, conv
+Creating GALFIT mosaics for VFID4816 W3, conv
+Creating GALFIT mosaics for VFID4820 W3, conv
+Creating GALFIT mosaics for VFID4826 W3, conv
+Creating GALFIT mosaics for VFID4827 W3, conv
+Creating GALFIT mosaics for VFID4860 W3, conv
+Creating GALFIT mosaics for VFID4861 W3, conv
+NGC4313_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4865 W3, conv
+Creating GALFIT mosaics for VFID4878 W3, conv
+Creating GALFIT mosaics for VFID4880 W3, conv
+Creating GALFIT mosaics for VFID4886 W3, conv
+Creating GALFIT mosaics for VFID4906 W3, conv
+Creating GALFIT mosaics for VFID4916 W3, conv
+Creating GALFIT mosaics for VFID4917 W3, conv
+Creating GALFIT mosaics for VFID4923 W3, conv
+Creating GALFIT mosaics for VFID4924 W3, conv
+Creating GALFIT mosaics for VFID4944 W3, conv
+Creating GALFIT mosaics for VFID4949 W3, conv
+NGC4568_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4962 W3, conv
+Creating GALFIT mosaics for VFID4970 W3, conv
+Creating GALFIT mosaics for VFID4983 W3, conv
+Creating GALFIT mosaics for VFID5012 W3, conv
+Creating GALFIT mosaics for VFID5013 W3, conv
+Creating GALFIT mosaics for VFID5018 W3, conv
+Creating GALFIT mosaics for VFID5030 W3, conv
+Creating GALFIT mosaics for VFID5057 W3, conv
+Creating GALFIT mosaics for VFID5082 W3, conv
+Creating GALFIT mosaics for VFID5124 W3, conv
+Creating GALFIT mosaics for VFID5125 W3, conv
+Creating GALFIT mosaics for VFID5154 W3, conv
+Creating GALFIT mosaics for VFID5176 W3, conv
+Creating GALFIT mosaics for VFID5194 W3, conv
+Creating GALFIT mosaics for VFID5200 W3, conv
+Creating GALFIT mosaics for VFID5210 W3, conv
+PGC027784_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5212 W3, conv
+Creating GALFIT mosaics for VFID5219 W3, conv
+Creating GALFIT mosaics for VFID5222 W3, conv
+Creating GALFIT mosaics for VFID5223 W3, conv
+Creating GALFIT mosaics for VFID5236 W3, conv
+Creating GALFIT mosaics for VFID5241 W3, conv
+Creating GALFIT mosaics for VFID5244 W3, conv
+Creating GALFIT mosaics for VFID5257 W3, conv
+NGC3876_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5263 W3, conv
+GALFIT did not run correctly for VFID5263 - no model...
+Creating GALFIT mosaics for VFID5276 W3, conv
+Creating GALFIT mosaics for VFID5292 W3, conv
+NGC4519_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5324 W3, conv
+Creating GALFIT mosaics for VFID5339 W3, conv
+Creating GALFIT mosaics for VFID5344 W3, conv
+NGC2906_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5352 W3, conv
+Creating GALFIT mosaics for VFID5367 W3, conv
+Creating GALFIT mosaics for VFID5379 W3, conv
+Creating GALFIT mosaics for VFID5419 W3, conv
+Creating GALFIT mosaics for VFID5424 W3, conv
+Creating GALFIT mosaics for VFID5429 W3, conv
+Creating GALFIT mosaics for VFID5434 W3, conv
+Creating GALFIT mosaics for VFID5494 W3, conv
+NGC4224_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5503 W3, conv
+Creating GALFIT mosaics for VFID5511 W3, conv
+Creating GALFIT mosaics for VFID5524 W3, conv
+IC3322A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5532 W3, conv
+Creating GALFIT mosaics for VFID5534 W3, conv
+Creating GALFIT mosaics for VFID5539 W3, conv
+Creating GALFIT mosaics for VFID5546 W3, conv
+Creating GALFIT mosaics for VFID5573 W3, conv
+Creating GALFIT mosaics for VFID5574 W3, conv
+Creating GALFIT mosaics for VFID5582 W3, conv
+Creating GALFIT mosaics for VFID5586 W3, conv
+Creating GALFIT mosaics for VFID5637 W3, conv
+Creating GALFIT mosaics for VFID5652 W3, conv
+Creating GALFIT mosaics for VFID5676 W3, conv
+Creating GALFIT mosaics for VFID5678 W3, conv
+Creating GALFIT mosaics for VFID5709 W3, conv
+Creating GALFIT mosaics for VFID5713 W3, conv
+Creating GALFIT mosaics for VFID5725 W3, conv
+Creating GALFIT mosaics for VFID5749 W3, conv
+Creating GALFIT mosaics for VFID5759 W3, conv
+Creating GALFIT mosaics for VFID5771 W3, conv
+NGC2990_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5778 W3, conv
+Creating GALFIT mosaics for VFID5787 W3, conv
+Creating GALFIT mosaics for VFID5794 W3, conv
+Creating GALFIT mosaics for VFID5834 W3, conv
+Creating GALFIT mosaics for VFID5842 W3, conv
+Creating GALFIT mosaics for VFID5846 W3, conv
+Creating GALFIT mosaics for VFID5877 W3, conv
+Creating GALFIT mosaics for VFID5880 W3, conv
+Creating GALFIT mosaics for VFID5889 W3, conv
+Creating GALFIT mosaics for VFID5894 W3, conv
+Creating GALFIT mosaics for VFID5901 W3, conv
+Creating GALFIT mosaics for VFID5905 W3, conv
+NGC3611_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5950 W3, conv
+Creating GALFIT mosaics for VFID5962 W3, conv
+Creating GALFIT mosaics for VFID5964 W3, conv
+Creating GALFIT mosaics for VFID5981 W3, conv
+Creating GALFIT mosaics for VFID5988 W3, conv
+Creating GALFIT mosaics for VFID5989 W3, conv
+Creating GALFIT mosaics for VFID5992 W3, conv
+Creating GALFIT mosaics for VFID6023 W3, conv
+Creating GALFIT mosaics for VFID6024 W3, conv
+Creating GALFIT mosaics for VFID6028 W3, conv
+Creating GALFIT mosaics for VFID6031 W3, conv
+NGC4289_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6056 W3, conv
+Creating GALFIT mosaics for VFID6060 W3, conv
+Creating GALFIT mosaics for VFID6069 W3, conv
+Creating GALFIT mosaics for VFID6074 W3, conv
+NGC5775_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6081 W3, conv
+Creating GALFIT mosaics for VFID6091 W3, conv
+Creating GALFIT mosaics for VFID6098 W3, conv
+Creating GALFIT mosaics for VFID6103 W3, conv
+Creating GALFIT mosaics for VFID6106 W3, conv
+Creating GALFIT mosaics for VFID6133 W3, conv
+Creating GALFIT mosaics for VFID6152 W3, conv
+Creating GALFIT mosaics for VFID6179 W3, conv
+Creating GALFIT mosaics for VFID6182 W3, conv
+Creating GALFIT mosaics for VFID6185 W3, conv
+NGC4116_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6204 W3, conv
+Creating GALFIT mosaics for VFID6216 W3, conv
+Creating GALFIT mosaics for VFID6246 W3, conv
+Creating GALFIT mosaics for VFID6247 W3, conv
+Creating GALFIT mosaics for VFID6265 W3, conv
+Creating GALFIT mosaics for VFID6272 W3, conv
+Creating GALFIT mosaics for VFID6286 W3, conv
+Creating GALFIT mosaics for VFID6288 W3, conv
+Creating GALFIT mosaics for VFID6293 W3, conv
+Creating GALFIT mosaics for VFID6317 W3, conv
+Creating GALFIT mosaics for VFID6337 W3, conv
+Creating GALFIT mosaics for VFID6340 W3, conv
+Creating GALFIT mosaics for VFID6342 W3, conv
+Creating GALFIT mosaics for VFID6352 W3, conv
+Creating GALFIT mosaics for VFID6358 W3, conv
+Creating GALFIT mosaics for VFID6362 W3, conv
+Creating GALFIT mosaics for VFID6370 W3, conv
+Creating GALFIT mosaics for VFID6380 W3, conv
+Creating GALFIT mosaics for VFID6394 W3, conv
+Creating GALFIT mosaics for VFID6399 W3, conv
+Creating GALFIT mosaics for VFID6411 W3, conv
+Creating GALFIT mosaics for VFID6430 W3, conv
+Creating GALFIT mosaics for VFID6431 W3, conv
+Creating GALFIT mosaics for VFID6437 W3, conv
+Creating GALFIT mosaics for VFID6480 W3, conv
+Creating GALFIT mosaics for VFID6550 W3, conv
+NGC3023_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6564 W3, conv
+Creating GALFIT mosaics for VFID6602 W3, conv
+Creating GALFIT mosaics for VFID6619 W3, conv
+Creating GALFIT mosaics for VFID6643 W3, conv
+Creating GALFIT mosaics for VFID6645 W3, conv
+Creating GALFIT mosaics for VFID6647 W3, conv
+Creating GALFIT mosaics for VFID6673 W3, conv
+Creating GALFIT mosaics for VFID6677 W3, conv
+Creating GALFIT mosaics for VFID6688 W3, conv
+Creating GALFIT mosaics for VFID6689 W3, conv
+Creating GALFIT mosaics for VFID6708 W3, conv
+Creating GALFIT mosaics for VFID6712 W3, conv
+Creating GALFIT mosaics for VFID6719 W3, conv
+NGC4355_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6742 W3, conv
+Creating GALFIT mosaics for VFID6745 W3, conv
+Creating GALFIT mosaics for VFID6756 W3, conv
+Creating GALFIT mosaics for VFID6759 W3, conv
+Creating GALFIT mosaics for VFID6763 W3, conv
+UGC07883_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6770 W3, conv
+Creating GALFIT mosaics for VFID0001 r-band, no conv
+Creating GALFIT mosaics for VFID0002 r-band, no conv
+Creating GALFIT mosaics for VFID0005 r-band, no conv
+Creating GALFIT mosaics for VFID0008 r-band, no conv
+Creating GALFIT mosaics for VFID0011 r-band, no conv
+Creating GALFIT mosaics for VFID0013 r-band, no conv
+Creating GALFIT mosaics for VFID0019 r-band, no conv
+NGC2633_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0020 r-band, no conv
+Creating GALFIT mosaics for VFID0026 r-band, no conv
+Creating GALFIT mosaics for VFID0027 r-band, no conv
+Creating GALFIT mosaics for VFID0029 r-band, no conv
+Creating GALFIT mosaics for VFID0030 r-band, no conv
+Creating GALFIT mosaics for VFID0036 r-band, no conv
+Creating GALFIT mosaics for VFID0045 r-band, no conv
+NGC6654A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0046 r-band, no conv
+Creating GALFIT mosaics for VFID0047 r-band, no conv
+Creating GALFIT mosaics for VFID0051 r-band, no conv
+Creating GALFIT mosaics for VFID0052 r-band, no conv
+Creating GALFIT mosaics for VFID0053 r-band, no conv
+Creating GALFIT mosaics for VFID0055 r-band, no conv
+Creating GALFIT mosaics for VFID0058 r-band, no conv
+Creating GALFIT mosaics for VFID0060 r-band, no conv
+Creating GALFIT mosaics for VFID0066 r-band, no conv
+Creating GALFIT mosaics for VFID0070 r-band, no conv
+Creating GALFIT mosaics for VFID0076 r-band, no conv
+Creating GALFIT mosaics for VFID0077 r-band, no conv
+Creating GALFIT mosaics for VFID0082 r-band, no conv
+Creating GALFIT mosaics for VFID0089 r-band, no conv
+Creating GALFIT mosaics for VFID0092 r-band, no conv
+Creating GALFIT mosaics for VFID0097 r-band, no conv
+Creating GALFIT mosaics for VFID0098 r-band, no conv
+Creating GALFIT mosaics for VFID0099 r-band, no conv
+Creating GALFIT mosaics for VFID0100 r-band, no conv
+Creating GALFIT mosaics for VFID0106 r-band, no conv
+Creating GALFIT mosaics for VFID0107 r-band, no conv
+Creating GALFIT mosaics for VFID0109 r-band, no conv
+Creating GALFIT mosaics for VFID0122 r-band, no conv
+Creating GALFIT mosaics for VFID0124 r-band, no conv
+Creating GALFIT mosaics for VFID0127 r-band, no conv
+Creating GALFIT mosaics for VFID0141 r-band, no conv
+Creating GALFIT mosaics for VFID0145 r-band, no conv
+Creating GALFIT mosaics for VFID0149 r-band, no conv
+Creating GALFIT mosaics for VFID0165 r-band, no conv
+Creating GALFIT mosaics for VFID0166 r-band, no conv
+Creating GALFIT mosaics for VFID0168 r-band, no conv
+Creating GALFIT mosaics for VFID0172 r-band, no conv
+Creating GALFIT mosaics for VFID0176 r-band, no conv
+Creating GALFIT mosaics for VFID0187 r-band, no conv
+Creating GALFIT mosaics for VFID0208 r-band, no conv
+NGC4256_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0212 r-band, no conv
+Creating GALFIT mosaics for VFID0214 r-band, no conv
+Creating GALFIT mosaics for VFID0233 r-band, no conv
+Creating GALFIT mosaics for VFID0241 r-band, no conv
+Creating GALFIT mosaics for VFID0244 r-band, no conv
+Creating GALFIT mosaics for VFID0251 r-band, no conv
+Creating GALFIT mosaics for VFID0263 r-band, no conv
+Creating GALFIT mosaics for VFID0267 r-band, no conv
+NGC2820_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0281 r-band, no conv
+Creating GALFIT mosaics for VFID0304 r-band, no conv
+NGC4205_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0314 r-band, no conv
+Creating GALFIT mosaics for VFID0321 r-band, no conv
+Creating GALFIT mosaics for VFID0323 r-band, no conv
+Creating GALFIT mosaics for VFID0334 r-band, no conv
+Creating GALFIT mosaics for VFID0349 r-band, no conv
+Creating GALFIT mosaics for VFID0358 r-band, no conv
+Creating GALFIT mosaics for VFID0377 r-band, no conv
+Creating GALFIT mosaics for VFID0378 r-band, no conv
+Creating GALFIT mosaics for VFID0382 r-band, no conv
+Creating GALFIT mosaics for VFID0393 r-band, no conv
+Creating GALFIT mosaics for VFID0394 r-band, no conv
+Creating GALFIT mosaics for VFID0402 r-band, no conv
+Creating GALFIT mosaics for VFID0411 r-band, no conv
+Creating GALFIT mosaics for VFID0413 r-band, no conv
+Creating GALFIT mosaics for VFID0419 r-band, no conv
+Creating GALFIT mosaics for VFID0432 r-band, no conv
+NGC3471_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0438 r-band, no conv
+UGC04159_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0442 r-band, no conv
+Creating GALFIT mosaics for VFID0450 r-band, no conv
+Creating GALFIT mosaics for VFID0477 r-band, no conv
+Creating GALFIT mosaics for VFID0479 r-band, no conv
+Creating GALFIT mosaics for VFID0497 r-band, no conv
+Creating GALFIT mosaics for VFID0509 r-band, no conv
+Creating GALFIT mosaics for VFID0519 r-band, no conv
+Creating GALFIT mosaics for VFID0528 r-band, no conv
+Creating GALFIT mosaics for VFID0538 r-band, no conv
+Creating GALFIT mosaics for VFID0541 r-band, no conv
+Creating GALFIT mosaics for VFID0545 r-band, no conv
+Creating GALFIT mosaics for VFID0552 r-band, no conv
+Creating GALFIT mosaics for VFID0553 r-band, no conv
+Creating GALFIT mosaics for VFID0567 r-band, no conv
+Creating GALFIT mosaics for VFID0568 r-band, no conv
+Creating GALFIT mosaics for VFID0569 r-band, no conv
+Creating GALFIT mosaics for VFID0573 r-band, no conv
+Creating GALFIT mosaics for VFID0584 r-band, no conv
+NGC5376_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0585 r-band, no conv
+Creating GALFIT mosaics for VFID0588 r-band, no conv
+Creating GALFIT mosaics for VFID0610 r-band, no conv
+Creating GALFIT mosaics for VFID0611 r-band, no conv
+Creating GALFIT mosaics for VFID0613 r-band, no conv
+Creating GALFIT mosaics for VFID0619 r-band, no conv
+Creating GALFIT mosaics for VFID0630 r-band, no conv
+Creating GALFIT mosaics for VFID0637 r-band, no conv
+Creating GALFIT mosaics for VFID0642 r-band, no conv
+NGC5777_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0650 r-band, no conv
+Creating GALFIT mosaics for VFID0674 r-band, no conv
+Creating GALFIT mosaics for VFID0682 r-band, no conv
+UGC08040_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0686 r-band, no conv
+NGC3690_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0711 r-band, no conv
+Creating GALFIT mosaics for VFID0720 r-band, no conv
+Creating GALFIT mosaics for VFID0722 r-band, no conv
+Creating GALFIT mosaics for VFID0740 r-band, no conv
+Creating GALFIT mosaics for VFID0746 r-band, no conv
+Creating GALFIT mosaics for VFID0764 r-band, no conv
+NGC4290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0768 r-band, no conv
+Creating GALFIT mosaics for VFID0771 r-band, no conv
+Creating GALFIT mosaics for VFID0785 r-band, no conv
+Creating GALFIT mosaics for VFID0795 r-band, no conv
+NGC3625_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0812 r-band, no conv
+Creating GALFIT mosaics for VFID0815 r-band, no conv
+Creating GALFIT mosaics for VFID0821 r-band, no conv
+Creating GALFIT mosaics for VFID0824 r-band, no conv
+Creating GALFIT mosaics for VFID0827 r-band, no conv
+Creating GALFIT mosaics for VFID0829 r-band, no conv
+Creating GALFIT mosaics for VFID0847 r-band, no conv
+Creating GALFIT mosaics for VFID0873 r-band, no conv
+Creating GALFIT mosaics for VFID0884 r-band, no conv
+Creating GALFIT mosaics for VFID0893 r-band, no conv
+NGC3445_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0894 r-band, no conv
+Creating GALFIT mosaics for VFID0901 r-band, no conv
+Creating GALFIT mosaics for VFID0914 r-band, no conv
+Creating GALFIT mosaics for VFID0927 r-band, no conv
+Creating GALFIT mosaics for VFID0936 r-band, no conv
+Creating GALFIT mosaics for VFID0937 r-band, no conv
+Creating GALFIT mosaics for VFID0941 r-band, no conv
+NGC3898_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0956 r-band, no conv
+Creating GALFIT mosaics for VFID0959 r-band, no conv
+Creating GALFIT mosaics for VFID0960 r-band, no conv
+Creating GALFIT mosaics for VFID0972 r-band, no conv
+Creating GALFIT mosaics for VFID0983 r-band, no conv
+Creating GALFIT mosaics for VFID0985 r-band, no conv
+Creating GALFIT mosaics for VFID0986 r-band, no conv
+Creating GALFIT mosaics for VFID0993 r-band, no conv
+Creating GALFIT mosaics for VFID1015 r-band, no conv
+Creating GALFIT mosaics for VFID1017 r-band, no conv
+Creating GALFIT mosaics for VFID1018 r-band, no conv
+Creating GALFIT mosaics for VFID1023 r-band, no conv
+Creating GALFIT mosaics for VFID1032 r-band, no conv
+Creating GALFIT mosaics for VFID1035 r-band, no conv
+Creating GALFIT mosaics for VFID1049 r-band, no conv
+Creating GALFIT mosaics for VFID1067 r-band, no conv
+Creating GALFIT mosaics for VFID1079 r-band, no conv
+Creating GALFIT mosaics for VFID1081 r-band, no conv
+Creating GALFIT mosaics for VFID1084 r-band, no conv
+Creating GALFIT mosaics for VFID1085 r-band, no conv
+Creating GALFIT mosaics for VFID1092 r-band, no conv
+Creating GALFIT mosaics for VFID1098 r-band, no conv
+Creating GALFIT mosaics for VFID1121 r-band, no conv
+Creating GALFIT mosaics for VFID1125 r-band, no conv
+Creating GALFIT mosaics for VFID1130 r-band, no conv
+Creating GALFIT mosaics for VFID1138 r-band, no conv
+Creating GALFIT mosaics for VFID1166 r-band, no conv
+Creating GALFIT mosaics for VFID1167 r-band, no conv
+Creating GALFIT mosaics for VFID1173 r-band, no conv
+Creating GALFIT mosaics for VFID1182 r-band, no conv
+Creating GALFIT mosaics for VFID1185 r-band, no conv
+Creating GALFIT mosaics for VFID1188 r-band, no conv
+Creating GALFIT mosaics for VFID1212 r-band, no conv
+Creating GALFIT mosaics for VFID1213 r-band, no conv
+Creating GALFIT mosaics for VFID1223 r-band, no conv
+Creating GALFIT mosaics for VFID1235 r-band, no conv
+Creating GALFIT mosaics for VFID1244 r-band, no conv
+Creating GALFIT mosaics for VFID1245 r-band, no conv
+Creating GALFIT mosaics for VFID1250 r-band, no conv
+Creating GALFIT mosaics for VFID1269 r-band, no conv
+Creating GALFIT mosaics for VFID1274 r-band, no conv
+Creating GALFIT mosaics for VFID1279 r-band, no conv
+Creating GALFIT mosaics for VFID1302 r-band, no conv
+Creating GALFIT mosaics for VFID1306 r-band, no conv
+Creating GALFIT mosaics for VFID1307 r-band, no conv
+Creating GALFIT mosaics for VFID1310 r-band, no conv
+Creating GALFIT mosaics for VFID1312 r-band, no conv
+PGC051309_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1313 r-band, no conv
+Creating GALFIT mosaics for VFID1316 r-band, no conv
+Creating GALFIT mosaics for VFID1317 r-band, no conv
+Creating GALFIT mosaics for VFID1318 r-band, no conv
+Creating GALFIT mosaics for VFID1336 r-band, no conv
+Creating GALFIT mosaics for VFID1350 r-band, no conv
+Creating GALFIT mosaics for VFID1351 r-band, no conv
+Creating GALFIT mosaics for VFID1352 r-band, no conv
+Creating GALFIT mosaics for VFID1355 r-band, no conv
+Creating GALFIT mosaics for VFID1366 r-band, no conv
+Creating GALFIT mosaics for VFID1370 r-band, no conv
+Creating GALFIT mosaics for VFID1374 r-band, no conv
+Creating GALFIT mosaics for VFID1381 r-band, no conv
+Creating GALFIT mosaics for VFID1382 r-band, no conv
+Creating GALFIT mosaics for VFID1396 r-band, no conv
+Creating GALFIT mosaics for VFID1398 r-band, no conv
+NGC2856_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1399 r-band, no conv
+Creating GALFIT mosaics for VFID1400 r-band, no conv
+Creating GALFIT mosaics for VFID1405 r-band, no conv
+Creating GALFIT mosaics for VFID1406 r-band, no conv
+UGC09056_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1414 r-band, no conv
+NGC3893_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1431 r-band, no conv
+Creating GALFIT mosaics for VFID1438 r-band, no conv
+Creating GALFIT mosaics for VFID1447 r-band, no conv
+Creating GALFIT mosaics for VFID1451 r-band, no conv
+Creating GALFIT mosaics for VFID1457 r-band, no conv
+Creating GALFIT mosaics for VFID1459 r-band, no conv
+Creating GALFIT mosaics for VFID1463 r-band, no conv
+Creating GALFIT mosaics for VFID1469 r-band, no conv
+Creating GALFIT mosaics for VFID1472 r-band, no conv
+NGC3583_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1473 r-band, no conv
+Creating GALFIT mosaics for VFID1486 r-band, no conv
+NGC3769_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1498 r-band, no conv
+Creating GALFIT mosaics for VFID1505 r-band, no conv
+Creating GALFIT mosaics for VFID1518 r-band, no conv
+Creating GALFIT mosaics for VFID1531 r-band, no conv
+Creating GALFIT mosaics for VFID1532 r-band, no conv
+Creating GALFIT mosaics for VFID1541 r-band, no conv
+Creating GALFIT mosaics for VFID1548 r-band, no conv
+Creating GALFIT mosaics for VFID1551 r-band, no conv
+Creating GALFIT mosaics for VFID1553 r-band, no conv
+Creating GALFIT mosaics for VFID1554 r-band, no conv
+Creating GALFIT mosaics for VFID1561 r-band, no conv
+Creating GALFIT mosaics for VFID1590 r-band, no conv
+Creating GALFIT mosaics for VFID1597 r-band, no conv
+Creating GALFIT mosaics for VFID1600 r-band, no conv
+Creating GALFIT mosaics for VFID1601 r-band, no conv
+Creating GALFIT mosaics for VFID1603 r-band, no conv
+Creating GALFIT mosaics for VFID1622 r-band, no conv
+Creating GALFIT mosaics for VFID1628 r-band, no conv
+Creating GALFIT mosaics for VFID1635 r-band, no conv
+Creating GALFIT mosaics for VFID1643 r-band, no conv
+Creating GALFIT mosaics for VFID1651 r-band, no conv
+Creating GALFIT mosaics for VFID1652 r-band, no conv
+Creating GALFIT mosaics for VFID1654 r-band, no conv
+Creating GALFIT mosaics for VFID1660 r-band, no conv
+Creating GALFIT mosaics for VFID1661 r-band, no conv
+Creating GALFIT mosaics for VFID1676 r-band, no conv
+Creating GALFIT mosaics for VFID1683 r-band, no conv
+Creating GALFIT mosaics for VFID1700 r-band, no conv
+Creating GALFIT mosaics for VFID1723 r-band, no conv
+Creating GALFIT mosaics for VFID1726 r-band, no conv
+Creating GALFIT mosaics for VFID1753 r-band, no conv
+UGC09476_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1755 r-band, no conv
+Creating GALFIT mosaics for VFID1756 r-band, no conv
+Creating GALFIT mosaics for VFID1759 r-band, no conv
+Creating GALFIT mosaics for VFID1776 r-band, no conv
+Creating GALFIT mosaics for VFID1786 r-band, no conv
+NGC5297_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1789 r-band, no conv
+Creating GALFIT mosaics for VFID1803 r-band, no conv
+Creating GALFIT mosaics for VFID1808 r-band, no conv
+Creating GALFIT mosaics for VFID1824 r-band, no conv
+Creating GALFIT mosaics for VFID1830 r-band, no conv
+NGC5731_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1877 r-band, no conv
+IC0750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1884 r-band, no conv
+Creating GALFIT mosaics for VFID1898 r-band, no conv
+Creating GALFIT mosaics for VFID1913 r-band, no conv
+Creating GALFIT mosaics for VFID1926 r-band, no conv
+Creating GALFIT mosaics for VFID1928 r-band, no conv
+Creating GALFIT mosaics for VFID1930 r-band, no conv
+Creating GALFIT mosaics for VFID1932 r-band, no conv
+NGC2798_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1933 r-band, no conv
+Creating GALFIT mosaics for VFID1950 r-band, no conv
+NGC5290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1953 r-band, no conv
+NGC4490_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1961 r-band, no conv
+Creating GALFIT mosaics for VFID1969 r-band, no conv
+Creating GALFIT mosaics for VFID1977 r-band, no conv
+Creating GALFIT mosaics for VFID1984 r-band, no conv
+Creating GALFIT mosaics for VFID1988 r-band, no conv
+Creating GALFIT mosaics for VFID1999 r-band, no conv
+Creating GALFIT mosaics for VFID2000 r-band, no conv
+Creating GALFIT mosaics for VFID2009 r-band, no conv
+Creating GALFIT mosaics for VFID2036 r-band, no conv
+Creating GALFIT mosaics for VFID2037 r-band, no conv
+UGC09858_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2050 r-band, no conv
+Creating GALFIT mosaics for VFID2057 r-band, no conv
+Creating GALFIT mosaics for VFID2058 r-band, no conv
+Creating GALFIT mosaics for VFID2061 r-band, no conv
+Creating GALFIT mosaics for VFID2083 r-band, no conv
+Creating GALFIT mosaics for VFID2086 r-band, no conv
+Creating GALFIT mosaics for VFID2087 r-band, no conv
+Creating GALFIT mosaics for VFID2092 r-band, no conv
+Creating GALFIT mosaics for VFID2101 r-band, no conv
+Creating GALFIT mosaics for VFID2113 r-band, no conv
+Creating GALFIT mosaics for VFID2140 r-band, no conv
+Creating GALFIT mosaics for VFID2144 r-band, no conv
+Creating GALFIT mosaics for VFID2148 r-band, no conv
+Creating GALFIT mosaics for VFID2154 r-band, no conv
+Creating GALFIT mosaics for VFID2169 r-band, no conv
+Creating GALFIT mosaics for VFID2172 r-band, no conv
+Creating GALFIT mosaics for VFID2209 r-band, no conv
+Creating GALFIT mosaics for VFID2222 r-band, no conv
+Creating GALFIT mosaics for VFID2225 r-band, no conv
+Creating GALFIT mosaics for VFID2235 r-band, no conv
+NGC5303_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2254 r-band, no conv
+NGC5403_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2260 r-band, no conv
+Creating GALFIT mosaics for VFID2268 r-band, no conv
+Creating GALFIT mosaics for VFID2269 r-band, no conv
+NGC3652_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2293 r-band, no conv
+Creating GALFIT mosaics for VFID2313 r-band, no conv
+Creating GALFIT mosaics for VFID2324 r-band, no conv
+Creating GALFIT mosaics for VFID2329 r-band, no conv
+Creating GALFIT mosaics for VFID2343 r-band, no conv
+Creating GALFIT mosaics for VFID2355 r-band, no conv
+NGC3432_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2364 r-band, no conv
+Creating GALFIT mosaics for VFID2368 r-band, no conv
+Creating GALFIT mosaics for VFID2372 r-band, no conv
+NGC3755_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2387 r-band, no conv
+Creating GALFIT mosaics for VFID2401 r-band, no conv
+NGC2543_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2405 r-band, no conv
+NGC5529_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2408 r-band, no conv
+Creating GALFIT mosaics for VFID2418 r-band, no conv
+Creating GALFIT mosaics for VFID2465 r-band, no conv
+Creating GALFIT mosaics for VFID2480 r-band, no conv
+Creating GALFIT mosaics for VFID2492 r-band, no conv
+Creating GALFIT mosaics for VFID2498 r-band, no conv
+Creating GALFIT mosaics for VFID2513 r-band, no conv
+Creating GALFIT mosaics for VFID2526 r-band, no conv
+Creating GALFIT mosaics for VFID2531 r-band, no conv
+Creating GALFIT mosaics for VFID2544 r-band, no conv
+Creating GALFIT mosaics for VFID2560 r-band, no conv
+Creating GALFIT mosaics for VFID2591 r-band, no conv
+Creating GALFIT mosaics for VFID2617 r-band, no conv
+Creating GALFIT mosaics for VFID2620 r-band, no conv
+Creating GALFIT mosaics for VFID2625 r-band, no conv
+Creating GALFIT mosaics for VFID2626 r-band, no conv
+Creating GALFIT mosaics for VFID2628 r-band, no conv
+UGC06892_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2656 r-band, no conv
+NGC2770_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2657 r-band, no conv
+NGC3396_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2665 r-band, no conv
+Creating GALFIT mosaics for VFID2670 r-band, no conv
+Creating GALFIT mosaics for VFID2716 r-band, no conv
+Creating GALFIT mosaics for VFID2721 r-band, no conv
+NGC3991_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2723 r-band, no conv
+Creating GALFIT mosaics for VFID2735 r-band, no conv
+Creating GALFIT mosaics for VFID2765 r-band, no conv
+Creating GALFIT mosaics for VFID2772 r-band, no conv
+Creating GALFIT mosaics for VFID2780 r-band, no conv
+Creating GALFIT mosaics for VFID2795 r-band, no conv
+Creating GALFIT mosaics for VFID2812 r-band, no conv
+Creating GALFIT mosaics for VFID2819 r-band, no conv
+Creating GALFIT mosaics for VFID2822 r-band, no conv
+Creating GALFIT mosaics for VFID2856 r-band, no conv
+Creating GALFIT mosaics for VFID2880 r-band, no conv
+Creating GALFIT mosaics for VFID2883 r-band, no conv
+Creating GALFIT mosaics for VFID2891 r-band, no conv
+Creating GALFIT mosaics for VFID2899 r-band, no conv
+Creating GALFIT mosaics for VFID2909 r-band, no conv
+UGC07017_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2912 r-band, no conv
+Creating GALFIT mosaics for VFID2913 r-band, no conv
+NGC2604_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2943 r-band, no conv
+NGC3687_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2945 r-band, no conv
+Creating GALFIT mosaics for VFID2948 r-band, no conv
+Creating GALFIT mosaics for VFID2964 r-band, no conv
+NGC5375_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2975 r-band, no conv
+Creating GALFIT mosaics for VFID2992 r-band, no conv
+NGC4793_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2995 r-band, no conv
+Creating GALFIT mosaics for VFID3017 r-band, no conv
+NGC4448_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3022 r-band, no conv
+Creating GALFIT mosaics for VFID3026 r-band, no conv
+Creating GALFIT mosaics for VFID3036 r-band, no conv
+Creating GALFIT mosaics for VFID3063 r-band, no conv
+Creating GALFIT mosaics for VFID3079 r-band, no conv
+Creating GALFIT mosaics for VFID3084 r-band, no conv
+Creating GALFIT mosaics for VFID3093 r-band, no conv
+Creating GALFIT mosaics for VFID3103 r-band, no conv
+NGC4961_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3116 r-band, no conv
+Creating GALFIT mosaics for VFID3129 r-band, no conv
+Creating GALFIT mosaics for VFID3156 r-band, no conv
+Creating GALFIT mosaics for VFID3164 r-band, no conv
+Creating GALFIT mosaics for VFID3172 r-band, no conv
+Creating GALFIT mosaics for VFID3173 r-band, no conv
+Creating GALFIT mosaics for VFID3174 r-band, no conv
+Creating GALFIT mosaics for VFID3185 r-band, no conv
+Creating GALFIT mosaics for VFID3200 r-band, no conv
+NGC2735_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3241 r-band, no conv
+Creating GALFIT mosaics for VFID3249 r-band, no conv
+Creating GALFIT mosaics for VFID3269 r-band, no conv
+Creating GALFIT mosaics for VFID3284 r-band, no conv
+Creating GALFIT mosaics for VFID3286 r-band, no conv
+NGC2750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3292 r-band, no conv
+Creating GALFIT mosaics for VFID3300 r-band, no conv
+Creating GALFIT mosaics for VFID3303 r-band, no conv
+Creating GALFIT mosaics for VFID3306 r-band, no conv
+Creating GALFIT mosaics for VFID3325 r-band, no conv
+Creating GALFIT mosaics for VFID3334 r-band, no conv
+Creating GALFIT mosaics for VFID3336 r-band, no conv
+Creating GALFIT mosaics for VFID3343 r-band, no conv
+Creating GALFIT mosaics for VFID3386 r-band, no conv
+Creating GALFIT mosaics for VFID3388 r-band, no conv
+Creating GALFIT mosaics for VFID3389 r-band, no conv
+NGC2480_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3411 r-band, no conv
+Creating GALFIT mosaics for VFID3427 r-band, no conv
+Creating GALFIT mosaics for VFID3456 r-band, no conv
+Creating GALFIT mosaics for VFID3459 r-band, no conv
+Creating GALFIT mosaics for VFID3463 r-band, no conv
+Creating GALFIT mosaics for VFID3477 r-band, no conv
+Creating GALFIT mosaics for VFID3489 r-band, no conv
+NGC3190_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3551 r-band, no conv
+Creating GALFIT mosaics for VFID3564 r-band, no conv
+Creating GALFIT mosaics for VFID3574 r-band, no conv
+Creating GALFIT mosaics for VFID3578 r-band, no conv
+Creating GALFIT mosaics for VFID3612 r-band, no conv
+Creating GALFIT mosaics for VFID3618 r-band, no conv
+Creating GALFIT mosaics for VFID3657 r-band, no conv
+IC0610_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3672 r-band, no conv
+NGC6168_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3675 r-band, no conv
+Creating GALFIT mosaics for VFID3678 r-band, no conv
+Creating GALFIT mosaics for VFID3687 r-band, no conv
+Creating GALFIT mosaics for VFID3698 r-band, no conv
+NGC3227_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3708 r-band, no conv
+Creating GALFIT mosaics for VFID3723 r-band, no conv
+Creating GALFIT mosaics for VFID3725 r-band, no conv
+Creating GALFIT mosaics for VFID3750 r-band, no conv
+Creating GALFIT mosaics for VFID3779 r-band, no conv
+Creating GALFIT mosaics for VFID3780 r-band, no conv
+Creating GALFIT mosaics for VFID3820 r-band, no conv
+Creating GALFIT mosaics for VFID3861 r-band, no conv
+Creating GALFIT mosaics for VFID3863 r-band, no conv
+Creating GALFIT mosaics for VFID3876 r-band, no conv
+Creating GALFIT mosaics for VFID3884 r-band, no conv
+Creating GALFIT mosaics for VFID3891 r-band, no conv
+Creating GALFIT mosaics for VFID3897 r-band, no conv
+Creating GALFIT mosaics for VFID3930 r-band, no conv
+Creating GALFIT mosaics for VFID3945 r-band, no conv
+NGC3370_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3958 r-band, no conv
+Creating GALFIT mosaics for VFID3961 r-band, no conv
+Creating GALFIT mosaics for VFID3966 r-band, no conv
+Creating GALFIT mosaics for VFID3979 r-band, no conv
+Creating GALFIT mosaics for VFID3980 r-band, no conv
+Creating GALFIT mosaics for VFID3985 r-band, no conv
+Creating GALFIT mosaics for VFID3993 r-band, no conv
+Creating GALFIT mosaics for VFID3994 r-band, no conv
+Creating GALFIT mosaics for VFID4017 r-band, no conv
+NGC5962_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4026 r-band, no conv
+Creating GALFIT mosaics for VFID4029 r-band, no conv
+Creating GALFIT mosaics for VFID4056 r-band, no conv
+Creating GALFIT mosaics for VFID4057 r-band, no conv
+Creating GALFIT mosaics for VFID4087 r-band, no conv
+Creating GALFIT mosaics for VFID4092 r-band, no conv
+Creating GALFIT mosaics for VFID4094 r-band, no conv
+Creating GALFIT mosaics for VFID4099 r-band, no conv
+Creating GALFIT mosaics for VFID4115 r-band, no conv
+Creating GALFIT mosaics for VFID4119 r-band, no conv
+Creating GALFIT mosaics for VFID4126 r-band, no conv
+Creating GALFIT mosaics for VFID4135 r-band, no conv
+Creating GALFIT mosaics for VFID4143 r-band, no conv
+NGC4312_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4144 r-band, no conv
+Creating GALFIT mosaics for VFID4164 r-band, no conv
+Creating GALFIT mosaics for VFID4165 r-band, no conv
+Creating GALFIT mosaics for VFID4168 r-band, no conv
+Creating GALFIT mosaics for VFID4170 r-band, no conv
+Creating GALFIT mosaics for VFID4188 r-band, no conv
+Creating GALFIT mosaics for VFID4191 r-band, no conv
+Creating GALFIT mosaics for VFID4194 r-band, no conv
+Creating GALFIT mosaics for VFID4201 r-band, no conv
+Creating GALFIT mosaics for VFID4203 r-band, no conv
+Creating GALFIT mosaics for VFID4211 r-band, no conv
+Creating GALFIT mosaics for VFID4212 r-band, no conv
+Creating GALFIT mosaics for VFID4220 r-band, no conv
+Creating GALFIT mosaics for VFID4226 r-band, no conv
+Creating GALFIT mosaics for VFID4239 r-band, no conv
+Creating GALFIT mosaics for VFID4250 r-band, no conv
+Creating GALFIT mosaics for VFID4254 r-band, no conv
+Creating GALFIT mosaics for VFID4269 r-band, no conv
+Creating GALFIT mosaics for VFID4283 r-band, no conv
+Creating GALFIT mosaics for VFID4299 r-band, no conv
+Creating GALFIT mosaics for VFID4303 r-band, no conv
+Creating GALFIT mosaics for VFID4306 r-band, no conv
+Creating GALFIT mosaics for VFID4321 r-band, no conv
+Creating GALFIT mosaics for VFID4330 r-band, no conv
+Creating GALFIT mosaics for VFID4334 r-band, no conv
+Creating GALFIT mosaics for VFID4336 r-band, no conv
+Creating GALFIT mosaics for VFID4353 r-band, no conv
+Creating GALFIT mosaics for VFID4382 r-band, no conv
+Creating GALFIT mosaics for VFID4383 r-band, no conv
+Creating GALFIT mosaics for VFID4385 r-band, no conv
+Creating GALFIT mosaics for VFID4387 r-band, no conv
+Creating GALFIT mosaics for VFID4393 r-band, no conv
+Creating GALFIT mosaics for VFID4397 r-band, no conv
+Creating GALFIT mosaics for VFID4414 r-band, no conv
+Creating GALFIT mosaics for VFID4445 r-band, no conv
+Creating GALFIT mosaics for VFID4450 r-band, no conv
+Creating GALFIT mosaics for VFID4479 r-band, no conv
+Creating GALFIT mosaics for VFID4496 r-band, no conv
+Creating GALFIT mosaics for VFID4504 r-band, no conv
+Creating GALFIT mosaics for VFID4507 r-band, no conv
+Creating GALFIT mosaics for VFID4513 r-band, no conv
+Creating GALFIT mosaics for VFID4519 r-band, no conv
+Creating GALFIT mosaics for VFID4520 r-band, no conv
+Creating GALFIT mosaics for VFID4548 r-band, no conv
+NGC3024_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4613 r-band, no conv
+Creating GALFIT mosaics for VFID4637 r-band, no conv
+Creating GALFIT mosaics for VFID4644 r-band, no conv
+Creating GALFIT mosaics for VFID4662 r-band, no conv
+Creating GALFIT mosaics for VFID4663 r-band, no conv
+Creating GALFIT mosaics for VFID4751 r-band, no conv
+Creating GALFIT mosaics for VFID4758 r-band, no conv
+Creating GALFIT mosaics for VFID4778 r-band, no conv
+Creating GALFIT mosaics for VFID4782 r-band, no conv
+Creating GALFIT mosaics for VFID4810 r-band, no conv
+Creating GALFIT mosaics for VFID4816 r-band, no conv
+Creating GALFIT mosaics for VFID4820 r-band, no conv
+Creating GALFIT mosaics for VFID4826 r-band, no conv
+Creating GALFIT mosaics for VFID4827 r-band, no conv
+Creating GALFIT mosaics for VFID4860 r-band, no conv
+Creating GALFIT mosaics for VFID4861 r-band, no conv
+NGC4313_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4865 r-band, no conv
+Creating GALFIT mosaics for VFID4878 r-band, no conv
+Creating GALFIT mosaics for VFID4880 r-band, no conv
+Creating GALFIT mosaics for VFID4886 r-band, no conv
+Creating GALFIT mosaics for VFID4906 r-band, no conv
+Creating GALFIT mosaics for VFID4916 r-band, no conv
+Creating GALFIT mosaics for VFID4917 r-band, no conv
+Creating GALFIT mosaics for VFID4923 r-band, no conv
+Creating GALFIT mosaics for VFID4924 r-band, no conv
+Creating GALFIT mosaics for VFID4944 r-band, no conv
+Creating GALFIT mosaics for VFID4949 r-band, no conv
+NGC4568_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4962 r-band, no conv
+Creating GALFIT mosaics for VFID4970 r-band, no conv
+Creating GALFIT mosaics for VFID4983 r-band, no conv
+Creating GALFIT mosaics for VFID5012 r-band, no conv
+Creating GALFIT mosaics for VFID5013 r-band, no conv
+Creating GALFIT mosaics for VFID5018 r-band, no conv
+Creating GALFIT mosaics for VFID5030 r-band, no conv
+Creating GALFIT mosaics for VFID5057 r-band, no conv
+Creating GALFIT mosaics for VFID5082 r-band, no conv
+Creating GALFIT mosaics for VFID5124 r-band, no conv
+Creating GALFIT mosaics for VFID5125 r-band, no conv
+Creating GALFIT mosaics for VFID5154 r-band, no conv
+Creating GALFIT mosaics for VFID5176 r-band, no conv
+Creating GALFIT mosaics for VFID5194 r-band, no conv
+Creating GALFIT mosaics for VFID5200 r-band, no conv
+Creating GALFIT mosaics for VFID5210 r-band, no conv
+PGC027784_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5212 r-band, no conv
+Creating GALFIT mosaics for VFID5219 r-band, no conv
+Creating GALFIT mosaics for VFID5222 r-band, no conv
+Creating GALFIT mosaics for VFID5223 r-band, no conv
+Creating GALFIT mosaics for VFID5236 r-band, no conv
+Creating GALFIT mosaics for VFID5241 r-band, no conv
+Creating GALFIT mosaics for VFID5244 r-band, no conv
+Creating GALFIT mosaics for VFID5257 r-band, no conv
+NGC3876_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5263 r-band, no conv
+Creating GALFIT mosaics for VFID5276 r-band, no conv
+Creating GALFIT mosaics for VFID5292 r-band, no conv
+NGC4519_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5324 r-band, no conv
+Creating GALFIT mosaics for VFID5339 r-band, no conv
+Creating GALFIT mosaics for VFID5344 r-band, no conv
+NGC2906_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5352 r-band, no conv
+Creating GALFIT mosaics for VFID5367 r-band, no conv
+Creating GALFIT mosaics for VFID5379 r-band, no conv
+Creating GALFIT mosaics for VFID5419 r-band, no conv
+Creating GALFIT mosaics for VFID5424 r-band, no conv
+Creating GALFIT mosaics for VFID5429 r-band, no conv
+Creating GALFIT mosaics for VFID5434 r-band, no conv
+Creating GALFIT mosaics for VFID5494 r-band, no conv
+NGC4224_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5503 r-band, no conv
+Creating GALFIT mosaics for VFID5511 r-band, no conv
+Creating GALFIT mosaics for VFID5524 r-band, no conv
+IC3322A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5532 r-band, no conv
+Creating GALFIT mosaics for VFID5534 r-band, no conv
+Creating GALFIT mosaics for VFID5539 r-band, no conv
+Creating GALFIT mosaics for VFID5546 r-band, no conv
+Creating GALFIT mosaics for VFID5573 r-band, no conv
+Creating GALFIT mosaics for VFID5574 r-band, no conv
+Creating GALFIT mosaics for VFID5582 r-band, no conv
+Creating GALFIT mosaics for VFID5586 r-band, no conv
+Creating GALFIT mosaics for VFID5637 r-band, no conv
+Creating GALFIT mosaics for VFID5652 r-band, no conv
+Creating GALFIT mosaics for VFID5676 r-band, no conv
+Creating GALFIT mosaics for VFID5678 r-band, no conv
+Creating GALFIT mosaics for VFID5709 r-band, no conv
+Creating GALFIT mosaics for VFID5713 r-band, no conv
+Creating GALFIT mosaics for VFID5725 r-band, no conv
+Creating GALFIT mosaics for VFID5749 r-band, no conv
+Creating GALFIT mosaics for VFID5759 r-band, no conv
+Creating GALFIT mosaics for VFID5771 r-band, no conv
+NGC2990_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5778 r-band, no conv
+Creating GALFIT mosaics for VFID5787 r-band, no conv
+Creating GALFIT mosaics for VFID5794 r-band, no conv
+Creating GALFIT mosaics for VFID5834 r-band, no conv
+Creating GALFIT mosaics for VFID5842 r-band, no conv
+Creating GALFIT mosaics for VFID5846 r-band, no conv
+Creating GALFIT mosaics for VFID5877 r-band, no conv
+Creating GALFIT mosaics for VFID5880 r-band, no conv
+Creating GALFIT mosaics for VFID5889 r-band, no conv
+Creating GALFIT mosaics for VFID5894 r-band, no conv
+Creating GALFIT mosaics for VFID5901 r-band, no conv
+Creating GALFIT mosaics for VFID5905 r-band, no conv
+NGC3611_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5950 r-band, no conv
+Creating GALFIT mosaics for VFID5962 r-band, no conv
+Creating GALFIT mosaics for VFID5964 r-band, no conv
+Creating GALFIT mosaics for VFID5981 r-band, no conv
+Creating GALFIT mosaics for VFID5988 r-band, no conv
+Creating GALFIT mosaics for VFID5989 r-band, no conv
+Creating GALFIT mosaics for VFID5992 r-band, no conv
+Creating GALFIT mosaics for VFID6023 r-band, no conv
+Creating GALFIT mosaics for VFID6024 r-band, no conv
+Creating GALFIT mosaics for VFID6028 r-band, no conv
+Creating GALFIT mosaics for VFID6031 r-band, no conv
+NGC4289_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6056 r-band, no conv
+Creating GALFIT mosaics for VFID6060 r-band, no conv
+Creating GALFIT mosaics for VFID6069 r-band, no conv
+Creating GALFIT mosaics for VFID6074 r-band, no conv
+NGC5775_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6081 r-band, no conv
+Creating GALFIT mosaics for VFID6091 r-band, no conv
+Creating GALFIT mosaics for VFID6098 r-band, no conv
+Creating GALFIT mosaics for VFID6103 r-band, no conv
+Creating GALFIT mosaics for VFID6106 r-band, no conv
+Creating GALFIT mosaics for VFID6133 r-band, no conv
+Creating GALFIT mosaics for VFID6152 r-band, no conv
+Creating GALFIT mosaics for VFID6179 r-band, no conv
+Creating GALFIT mosaics for VFID6182 r-band, no conv
+Creating GALFIT mosaics for VFID6185 r-band, no conv
+NGC4116_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6204 r-band, no conv
+Creating GALFIT mosaics for VFID6216 r-band, no conv
+Creating GALFIT mosaics for VFID6246 r-band, no conv
+Creating GALFIT mosaics for VFID6247 r-band, no conv
+Creating GALFIT mosaics for VFID6265 r-band, no conv
+Creating GALFIT mosaics for VFID6272 r-band, no conv
+Creating GALFIT mosaics for VFID6286 r-band, no conv
+Creating GALFIT mosaics for VFID6288 r-band, no conv
+Creating GALFIT mosaics for VFID6293 r-band, no conv
+Creating GALFIT mosaics for VFID6317 r-band, no conv
+Creating GALFIT mosaics for VFID6337 r-band, no conv
+Creating GALFIT mosaics for VFID6340 r-band, no conv
+Creating GALFIT mosaics for VFID6342 r-band, no conv
+Creating GALFIT mosaics for VFID6352 r-band, no conv
+Creating GALFIT mosaics for VFID6358 r-band, no conv
+Creating GALFIT mosaics for VFID6362 r-band, no conv
+Creating GALFIT mosaics for VFID6370 r-band, no conv
+Creating GALFIT mosaics for VFID6380 r-band, no conv
+Creating GALFIT mosaics for VFID6394 r-band, no conv
+Creating GALFIT mosaics for VFID6399 r-band, no conv
+Creating GALFIT mosaics for VFID6411 r-band, no conv
+Creating GALFIT mosaics for VFID6430 r-band, no conv
+Creating GALFIT mosaics for VFID6431 r-band, no conv
+Creating GALFIT mosaics for VFID6437 r-band, no conv
+Creating GALFIT mosaics for VFID6480 r-band, no conv
+Creating GALFIT mosaics for VFID6550 r-band, no conv
+NGC3023_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6564 r-band, no conv
+Creating GALFIT mosaics for VFID6602 r-band, no conv
+Creating GALFIT mosaics for VFID6619 r-band, no conv
+Creating GALFIT mosaics for VFID6643 r-band, no conv
+Creating GALFIT mosaics for VFID6645 r-band, no conv
+Creating GALFIT mosaics for VFID6647 r-band, no conv
+Creating GALFIT mosaics for VFID6673 r-band, no conv
+Creating GALFIT mosaics for VFID6677 r-band, no conv
+Creating GALFIT mosaics for VFID6688 r-band, no conv
+Creating GALFIT mosaics for VFID6689 r-band, no conv
+Creating GALFIT mosaics for VFID6708 r-band, no conv
+Creating GALFIT mosaics for VFID6712 r-band, no conv
+Creating GALFIT mosaics for VFID6719 r-band, no conv
+NGC4355_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6742 r-band, no conv
+Creating GALFIT mosaics for VFID6745 r-band, no conv
+Creating GALFIT mosaics for VFID6756 r-band, no conv
+Creating GALFIT mosaics for VFID6759 r-band, no conv
+Creating GALFIT mosaics for VFID6763 r-band, no conv
+UGC07883_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6770 r-band, no conv
+Creating GALFIT mosaics for VFID0001 r-band, conv
+Creating GALFIT mosaics for VFID0002 r-band, conv
+Creating GALFIT mosaics for VFID0005 r-band, conv
+Creating GALFIT mosaics for VFID0008 r-band, conv
+Creating GALFIT mosaics for VFID0011 r-band, conv
+Creating GALFIT mosaics for VFID0013 r-band, conv
+Creating GALFIT mosaics for VFID0019 r-band, conv
+NGC2633_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0020 r-band, conv
+Creating GALFIT mosaics for VFID0026 r-band, conv
+Creating GALFIT mosaics for VFID0027 r-band, conv
+Creating GALFIT mosaics for VFID0029 r-band, conv
+Creating GALFIT mosaics for VFID0030 r-band, conv
+Creating GALFIT mosaics for VFID0036 r-band, conv
+Creating GALFIT mosaics for VFID0045 r-band, conv
+NGC6654A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0046 r-band, conv
+Creating GALFIT mosaics for VFID0047 r-band, conv
+Creating GALFIT mosaics for VFID0051 r-band, conv
+Creating GALFIT mosaics for VFID0052 r-band, conv
+Creating GALFIT mosaics for VFID0053 r-band, conv
+Creating GALFIT mosaics for VFID0055 r-band, conv
+Creating GALFIT mosaics for VFID0058 r-band, conv
+Creating GALFIT mosaics for VFID0060 r-band, conv
+Creating GALFIT mosaics for VFID0066 r-band, conv
+Creating GALFIT mosaics for VFID0070 r-band, conv
+Creating GALFIT mosaics for VFID0076 r-band, conv
+Creating GALFIT mosaics for VFID0077 r-band, conv
+Creating GALFIT mosaics for VFID0082 r-band, conv
+Creating GALFIT mosaics for VFID0089 r-band, conv
+Creating GALFIT mosaics for VFID0092 r-band, conv
+Creating GALFIT mosaics for VFID0097 r-band, conv
+Creating GALFIT mosaics for VFID0098 r-band, conv
+Creating GALFIT mosaics for VFID0099 r-band, conv
+Creating GALFIT mosaics for VFID0100 r-band, conv
+Creating GALFIT mosaics for VFID0106 r-band, conv
+Creating GALFIT mosaics for VFID0107 r-band, conv
+Creating GALFIT mosaics for VFID0109 r-band, conv
+Creating GALFIT mosaics for VFID0122 r-band, conv
+Creating GALFIT mosaics for VFID0124 r-band, conv
+Creating GALFIT mosaics for VFID0127 r-band, conv
+Creating GALFIT mosaics for VFID0141 r-band, conv
+Creating GALFIT mosaics for VFID0145 r-band, conv
+Creating GALFIT mosaics for VFID0149 r-band, conv
+Creating GALFIT mosaics for VFID0165 r-band, conv
+Creating GALFIT mosaics for VFID0166 r-band, conv
+Creating GALFIT mosaics for VFID0168 r-band, conv
+Creating GALFIT mosaics for VFID0172 r-band, conv
+Creating GALFIT mosaics for VFID0176 r-band, conv
+Creating GALFIT mosaics for VFID0187 r-band, conv
+Creating GALFIT mosaics for VFID0208 r-band, conv
+NGC4256_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0212 r-band, conv
+Creating GALFIT mosaics for VFID0214 r-band, conv
+Creating GALFIT mosaics for VFID0233 r-band, conv
+Creating GALFIT mosaics for VFID0241 r-band, conv
+Creating GALFIT mosaics for VFID0244 r-band, conv
+Creating GALFIT mosaics for VFID0251 r-band, conv
+Creating GALFIT mosaics for VFID0263 r-band, conv
+Creating GALFIT mosaics for VFID0267 r-band, conv
+NGC2820_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0281 r-band, conv
+Creating GALFIT mosaics for VFID0304 r-band, conv
+NGC4205_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0314 r-band, conv
+Creating GALFIT mosaics for VFID0321 r-band, conv
+Creating GALFIT mosaics for VFID0323 r-band, conv
+Creating GALFIT mosaics for VFID0334 r-band, conv
+Creating GALFIT mosaics for VFID0349 r-band, conv
+Creating GALFIT mosaics for VFID0358 r-band, conv
+Creating GALFIT mosaics for VFID0377 r-band, conv
+Creating GALFIT mosaics for VFID0378 r-band, conv
+Creating GALFIT mosaics for VFID0382 r-band, conv
+Creating GALFIT mosaics for VFID0393 r-band, conv
+Creating GALFIT mosaics for VFID0394 r-band, conv
+Creating GALFIT mosaics for VFID0402 r-band, conv
+Creating GALFIT mosaics for VFID0411 r-band, conv
+Creating GALFIT mosaics for VFID0413 r-band, conv
+Creating GALFIT mosaics for VFID0419 r-band, conv
+Creating GALFIT mosaics for VFID0432 r-band, conv
+NGC3471_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0438 r-band, conv
+UGC04159_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0442 r-band, conv
+Creating GALFIT mosaics for VFID0450 r-band, conv
+Creating GALFIT mosaics for VFID0477 r-band, conv
+Creating GALFIT mosaics for VFID0479 r-band, conv
+Creating GALFIT mosaics for VFID0497 r-band, conv
+Creating GALFIT mosaics for VFID0509 r-band, conv
+Creating GALFIT mosaics for VFID0519 r-band, conv
+Creating GALFIT mosaics for VFID0528 r-band, conv
+Creating GALFIT mosaics for VFID0538 r-band, conv
+Creating GALFIT mosaics for VFID0541 r-band, conv
+Creating GALFIT mosaics for VFID0545 r-band, conv
+Creating GALFIT mosaics for VFID0552 r-band, conv
+Creating GALFIT mosaics for VFID0553 r-band, conv
+Creating GALFIT mosaics for VFID0567 r-band, conv
+Creating GALFIT mosaics for VFID0568 r-band, conv
+Creating GALFIT mosaics for VFID0569 r-band, conv
+Creating GALFIT mosaics for VFID0573 r-band, conv
+Creating GALFIT mosaics for VFID0584 r-band, conv
+NGC5376_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0585 r-band, conv
+Creating GALFIT mosaics for VFID0588 r-band, conv
+Creating GALFIT mosaics for VFID0610 r-band, conv
+Creating GALFIT mosaics for VFID0611 r-band, conv
+Creating GALFIT mosaics for VFID0613 r-band, conv
+Creating GALFIT mosaics for VFID0619 r-band, conv
+Creating GALFIT mosaics for VFID0630 r-band, conv
+Creating GALFIT mosaics for VFID0637 r-band, conv
+Creating GALFIT mosaics for VFID0642 r-band, conv
+NGC5777_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0650 r-band, conv
+Creating GALFIT mosaics for VFID0674 r-band, conv
+Creating GALFIT mosaics for VFID0682 r-band, conv
+UGC08040_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0686 r-band, conv
+NGC3690_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0711 r-band, conv
+Creating GALFIT mosaics for VFID0720 r-band, conv
+Creating GALFIT mosaics for VFID0722 r-band, conv
+Creating GALFIT mosaics for VFID0740 r-band, conv
+Creating GALFIT mosaics for VFID0746 r-band, conv
+Creating GALFIT mosaics for VFID0764 r-band, conv
+NGC4290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0768 r-band, conv
+Creating GALFIT mosaics for VFID0771 r-band, conv
+Creating GALFIT mosaics for VFID0785 r-band, conv
+Creating GALFIT mosaics for VFID0795 r-band, conv
+NGC3625_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0812 r-band, conv
+Creating GALFIT mosaics for VFID0815 r-band, conv
+Creating GALFIT mosaics for VFID0821 r-band, conv
+Creating GALFIT mosaics for VFID0824 r-band, conv
+Creating GALFIT mosaics for VFID0827 r-band, conv
+Creating GALFIT mosaics for VFID0829 r-band, conv
+Creating GALFIT mosaics for VFID0847 r-band, conv
+Creating GALFIT mosaics for VFID0873 r-band, conv
+Creating GALFIT mosaics for VFID0884 r-band, conv
+Creating GALFIT mosaics for VFID0893 r-band, conv
+NGC3445_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0894 r-band, conv
+Creating GALFIT mosaics for VFID0901 r-band, conv
+Creating GALFIT mosaics for VFID0914 r-band, conv
+Creating GALFIT mosaics for VFID0927 r-band, conv
+Creating GALFIT mosaics for VFID0936 r-band, conv
+Creating GALFIT mosaics for VFID0937 r-band, conv
+Creating GALFIT mosaics for VFID0941 r-band, conv
+NGC3898_GROUP has no mask images.
+Creating GALFIT mosaics for VFID0956 r-band, conv
+Creating GALFIT mosaics for VFID0959 r-band, conv
+Creating GALFIT mosaics for VFID0960 r-band, conv
+Creating GALFIT mosaics for VFID0972 r-band, conv
+Creating GALFIT mosaics for VFID0983 r-band, conv
+Creating GALFIT mosaics for VFID0985 r-band, conv
+Creating GALFIT mosaics for VFID0986 r-band, conv
+Creating GALFIT mosaics for VFID0993 r-band, conv
+Creating GALFIT mosaics for VFID1015 r-band, conv
+Creating GALFIT mosaics for VFID1017 r-band, conv
+Creating GALFIT mosaics for VFID1018 r-band, conv
+Creating GALFIT mosaics for VFID1023 r-band, conv
+Creating GALFIT mosaics for VFID1032 r-band, conv
+Creating GALFIT mosaics for VFID1035 r-band, conv
+Creating GALFIT mosaics for VFID1049 r-band, conv
+Creating GALFIT mosaics for VFID1067 r-band, conv
+Creating GALFIT mosaics for VFID1079 r-band, conv
+Creating GALFIT mosaics for VFID1081 r-band, conv
+Creating GALFIT mosaics for VFID1084 r-band, conv
+Creating GALFIT mosaics for VFID1085 r-band, conv
+Creating GALFIT mosaics for VFID1092 r-band, conv
+Creating GALFIT mosaics for VFID1098 r-band, conv
+Creating GALFIT mosaics for VFID1121 r-band, conv
+Creating GALFIT mosaics for VFID1125 r-band, conv
+Creating GALFIT mosaics for VFID1130 r-band, conv
+Creating GALFIT mosaics for VFID1138 r-band, conv
+Creating GALFIT mosaics for VFID1166 r-band, conv
+Creating GALFIT mosaics for VFID1167 r-band, conv
+Creating GALFIT mosaics for VFID1173 r-band, conv
+Creating GALFIT mosaics for VFID1182 r-band, conv
+Creating GALFIT mosaics for VFID1185 r-band, conv
+Creating GALFIT mosaics for VFID1188 r-band, conv
+Creating GALFIT mosaics for VFID1212 r-band, conv
+Creating GALFIT mosaics for VFID1213 r-band, conv
+Creating GALFIT mosaics for VFID1223 r-band, conv
+Creating GALFIT mosaics for VFID1235 r-band, conv
+Creating GALFIT mosaics for VFID1244 r-band, conv
+Creating GALFIT mosaics for VFID1245 r-band, conv
+Creating GALFIT mosaics for VFID1250 r-band, conv
+Creating GALFIT mosaics for VFID1269 r-band, conv
+Creating GALFIT mosaics for VFID1274 r-band, conv
+Creating GALFIT mosaics for VFID1279 r-band, conv
+Creating GALFIT mosaics for VFID1302 r-band, conv
+Creating GALFIT mosaics for VFID1306 r-band, conv
+Creating GALFIT mosaics for VFID1307 r-band, conv
+Creating GALFIT mosaics for VFID1310 r-band, conv
+Creating GALFIT mosaics for VFID1312 r-band, conv
+PGC051309_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1313 r-band, conv
+Creating GALFIT mosaics for VFID1316 r-band, conv
+Creating GALFIT mosaics for VFID1317 r-band, conv
+Creating GALFIT mosaics for VFID1318 r-band, conv
+Creating GALFIT mosaics for VFID1336 r-band, conv
+Creating GALFIT mosaics for VFID1350 r-band, conv
+Creating GALFIT mosaics for VFID1351 r-band, conv
+Creating GALFIT mosaics for VFID1352 r-band, conv
+Creating GALFIT mosaics for VFID1355 r-band, conv
+Creating GALFIT mosaics for VFID1366 r-band, conv
+Creating GALFIT mosaics for VFID1370 r-band, conv
+Creating GALFIT mosaics for VFID1374 r-band, conv
+Creating GALFIT mosaics for VFID1381 r-band, conv
+Creating GALFIT mosaics for VFID1382 r-band, conv
+Creating GALFIT mosaics for VFID1396 r-band, conv
+Creating GALFIT mosaics for VFID1398 r-band, conv
+NGC2856_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1399 r-band, conv
+Creating GALFIT mosaics for VFID1400 r-band, conv
+Creating GALFIT mosaics for VFID1405 r-band, conv
+Creating GALFIT mosaics for VFID1406 r-band, conv
+UGC09056_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1414 r-band, conv
+NGC3893_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1431 r-band, conv
+Creating GALFIT mosaics for VFID1438 r-band, conv
+Creating GALFIT mosaics for VFID1447 r-band, conv
+Creating GALFIT mosaics for VFID1451 r-band, conv
+Creating GALFIT mosaics for VFID1457 r-band, conv
+Creating GALFIT mosaics for VFID1459 r-band, conv
+Creating GALFIT mosaics for VFID1463 r-band, conv
+Creating GALFIT mosaics for VFID1469 r-band, conv
+Creating GALFIT mosaics for VFID1472 r-band, conv
+NGC3583_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1473 r-band, conv
+Creating GALFIT mosaics for VFID1486 r-band, conv
+NGC3769_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1498 r-band, conv
+Creating GALFIT mosaics for VFID1505 r-band, conv
+Creating GALFIT mosaics for VFID1518 r-band, conv
+Creating GALFIT mosaics for VFID1531 r-band, conv
+Creating GALFIT mosaics for VFID1532 r-band, conv
+Creating GALFIT mosaics for VFID1541 r-band, conv
+Creating GALFIT mosaics for VFID1548 r-band, conv
+Creating GALFIT mosaics for VFID1551 r-band, conv
+Creating GALFIT mosaics for VFID1553 r-band, conv
+Creating GALFIT mosaics for VFID1554 r-band, conv
+Creating GALFIT mosaics for VFID1561 r-band, conv
+Creating GALFIT mosaics for VFID1590 r-band, conv
+Creating GALFIT mosaics for VFID1597 r-band, conv
+Creating GALFIT mosaics for VFID1600 r-band, conv
+Creating GALFIT mosaics for VFID1601 r-band, conv
+Creating GALFIT mosaics for VFID1603 r-band, conv
+Creating GALFIT mosaics for VFID1622 r-band, conv
+Creating GALFIT mosaics for VFID1628 r-band, conv
+Creating GALFIT mosaics for VFID1635 r-band, conv
+Creating GALFIT mosaics for VFID1643 r-band, conv
+Creating GALFIT mosaics for VFID1651 r-band, conv
+Creating GALFIT mosaics for VFID1652 r-band, conv
+Creating GALFIT mosaics for VFID1654 r-band, conv
+Creating GALFIT mosaics for VFID1660 r-band, conv
+Creating GALFIT mosaics for VFID1661 r-band, conv
+Creating GALFIT mosaics for VFID1676 r-band, conv
+Creating GALFIT mosaics for VFID1683 r-band, conv
+Creating GALFIT mosaics for VFID1700 r-band, conv
+Creating GALFIT mosaics for VFID1723 r-band, conv
+Creating GALFIT mosaics for VFID1726 r-band, conv
+Creating GALFIT mosaics for VFID1753 r-band, conv
+UGC09476_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1755 r-band, conv
+Creating GALFIT mosaics for VFID1756 r-band, conv
+Creating GALFIT mosaics for VFID1759 r-band, conv
+Creating GALFIT mosaics for VFID1776 r-band, conv
+Creating GALFIT mosaics for VFID1786 r-band, conv
+NGC5297_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1789 r-band, conv
+Creating GALFIT mosaics for VFID1803 r-band, conv
+Creating GALFIT mosaics for VFID1808 r-band, conv
+Creating GALFIT mosaics for VFID1824 r-band, conv
+Creating GALFIT mosaics for VFID1830 r-band, conv
+NGC5731_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1877 r-band, conv
+IC0750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1884 r-band, conv
+Creating GALFIT mosaics for VFID1898 r-band, conv
+Creating GALFIT mosaics for VFID1913 r-band, conv
+Creating GALFIT mosaics for VFID1926 r-band, conv
+Creating GALFIT mosaics for VFID1928 r-band, conv
+Creating GALFIT mosaics for VFID1930 r-band, conv
+Creating GALFIT mosaics for VFID1932 r-band, conv
+NGC2798_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1933 r-band, conv
+Creating GALFIT mosaics for VFID1950 r-band, conv
+NGC5290_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1953 r-band, conv
+NGC4490_GROUP has no mask images.
+Creating GALFIT mosaics for VFID1961 r-band, conv
+Creating GALFIT mosaics for VFID1969 r-band, conv
+Creating GALFIT mosaics for VFID1977 r-band, conv
+Creating GALFIT mosaics for VFID1984 r-band, conv
+Creating GALFIT mosaics for VFID1988 r-band, conv
+Creating GALFIT mosaics for VFID1999 r-band, conv
+Creating GALFIT mosaics for VFID2000 r-band, conv
+Creating GALFIT mosaics for VFID2009 r-band, conv
+Creating GALFIT mosaics for VFID2036 r-band, conv
+Creating GALFIT mosaics for VFID2037 r-band, conv
+UGC09858_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2050 r-band, conv
+Creating GALFIT mosaics for VFID2057 r-band, conv
+Creating GALFIT mosaics for VFID2058 r-band, conv
+Creating GALFIT mosaics for VFID2061 r-band, conv
+Creating GALFIT mosaics for VFID2083 r-band, conv
+Creating GALFIT mosaics for VFID2086 r-band, conv
+Creating GALFIT mosaics for VFID2087 r-band, conv
+Creating GALFIT mosaics for VFID2092 r-band, conv
+Creating GALFIT mosaics for VFID2101 r-band, conv
+Creating GALFIT mosaics for VFID2113 r-band, conv
+Creating GALFIT mosaics for VFID2140 r-band, conv
+Creating GALFIT mosaics for VFID2144 r-band, conv
+Creating GALFIT mosaics for VFID2148 r-band, conv
+Creating GALFIT mosaics for VFID2154 r-band, conv
+Creating GALFIT mosaics for VFID2169 r-band, conv
+Creating GALFIT mosaics for VFID2172 r-band, conv
+Creating GALFIT mosaics for VFID2209 r-band, conv
+Creating GALFIT mosaics for VFID2222 r-band, conv
+Creating GALFIT mosaics for VFID2225 r-band, conv
+Creating GALFIT mosaics for VFID2235 r-band, conv
+NGC5303_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2254 r-band, conv
+NGC5403_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2260 r-band, conv
+Creating GALFIT mosaics for VFID2268 r-band, conv
+Creating GALFIT mosaics for VFID2269 r-band, conv
+NGC3652_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2293 r-band, conv
+Creating GALFIT mosaics for VFID2313 r-band, conv
+Creating GALFIT mosaics for VFID2324 r-band, conv
+Creating GALFIT mosaics for VFID2329 r-band, conv
+Creating GALFIT mosaics for VFID2343 r-band, conv
+Creating GALFIT mosaics for VFID2355 r-band, conv
+NGC3432_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2364 r-band, conv
+Creating GALFIT mosaics for VFID2368 r-band, conv
+Creating GALFIT mosaics for VFID2372 r-band, conv
+NGC3755_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2387 r-band, conv
+Creating GALFIT mosaics for VFID2401 r-band, conv
+NGC2543_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2405 r-band, conv
+NGC5529_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2408 r-band, conv
+GALFIT did not run correctly for VFID2408 - no model...
+Creating GALFIT mosaics for VFID2418 r-band, conv
+Creating GALFIT mosaics for VFID2465 r-band, conv
+Creating GALFIT mosaics for VFID2480 r-band, conv
+Creating GALFIT mosaics for VFID2492 r-band, conv
+Creating GALFIT mosaics for VFID2498 r-band, conv
+Creating GALFIT mosaics for VFID2513 r-band, conv
+Creating GALFIT mosaics for VFID2526 r-band, conv
+Creating GALFIT mosaics for VFID2531 r-band, conv
+Creating GALFIT mosaics for VFID2544 r-band, conv
+Creating GALFIT mosaics for VFID2560 r-band, conv
+Creating GALFIT mosaics for VFID2591 r-band, conv
+Creating GALFIT mosaics for VFID2617 r-band, conv
+Creating GALFIT mosaics for VFID2620 r-band, conv
+Creating GALFIT mosaics for VFID2625 r-band, conv
+Creating GALFIT mosaics for VFID2626 r-band, conv
+Creating GALFIT mosaics for VFID2628 r-band, conv
+UGC06892_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2656 r-band, conv
+NGC2770_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2657 r-band, conv
+NGC3396_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2665 r-band, conv
+Creating GALFIT mosaics for VFID2670 r-band, conv
+Creating GALFIT mosaics for VFID2716 r-band, conv
+Creating GALFIT mosaics for VFID2721 r-band, conv
+NGC3991_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2723 r-band, conv
+Creating GALFIT mosaics for VFID2735 r-band, conv
+Creating GALFIT mosaics for VFID2765 r-band, conv
+Creating GALFIT mosaics for VFID2772 r-band, conv
+Creating GALFIT mosaics for VFID2780 r-band, conv
+Creating GALFIT mosaics for VFID2795 r-band, conv
+Creating GALFIT mosaics for VFID2812 r-band, conv
+Creating GALFIT mosaics for VFID2819 r-band, conv
+Creating GALFIT mosaics for VFID2822 r-band, conv
+Creating GALFIT mosaics for VFID2856 r-band, conv
+Creating GALFIT mosaics for VFID2880 r-band, conv
+Creating GALFIT mosaics for VFID2883 r-band, conv
+Creating GALFIT mosaics for VFID2891 r-band, conv
+Creating GALFIT mosaics for VFID2899 r-band, conv
+Creating GALFIT mosaics for VFID2909 r-band, conv
+UGC07017_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2912 r-band, conv
+Creating GALFIT mosaics for VFID2913 r-band, conv
+NGC2604_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2943 r-band, conv
+NGC3687_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2945 r-band, conv
+Creating GALFIT mosaics for VFID2948 r-band, conv
+Creating GALFIT mosaics for VFID2964 r-band, conv
+NGC5375_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2975 r-band, conv
+Creating GALFIT mosaics for VFID2992 r-band, conv
+NGC4793_GROUP has no mask images.
+Creating GALFIT mosaics for VFID2995 r-band, conv
+Creating GALFIT mosaics for VFID3017 r-band, conv
+NGC4448_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3022 r-band, conv
+Creating GALFIT mosaics for VFID3026 r-band, conv
+Creating GALFIT mosaics for VFID3036 r-band, conv
+Creating GALFIT mosaics for VFID3063 r-band, conv
+Creating GALFIT mosaics for VFID3079 r-band, conv
+Creating GALFIT mosaics for VFID3084 r-band, conv
+Creating GALFIT mosaics for VFID3093 r-band, conv
+Creating GALFIT mosaics for VFID3103 r-band, conv
+NGC4961_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3116 r-band, conv
+Creating GALFIT mosaics for VFID3129 r-band, conv
+Creating GALFIT mosaics for VFID3156 r-band, conv
+Creating GALFIT mosaics for VFID3164 r-band, conv
+Creating GALFIT mosaics for VFID3172 r-band, conv
+Creating GALFIT mosaics for VFID3173 r-band, conv
+Creating GALFIT mosaics for VFID3174 r-band, conv
+Creating GALFIT mosaics for VFID3185 r-band, conv
+Creating GALFIT mosaics for VFID3200 r-band, conv
+NGC2735_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3241 r-band, conv
+Creating GALFIT mosaics for VFID3249 r-band, conv
+Creating GALFIT mosaics for VFID3269 r-band, conv
+Creating GALFIT mosaics for VFID3284 r-band, conv
+Creating GALFIT mosaics for VFID3286 r-band, conv
+NGC2750_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3292 r-band, conv
+Creating GALFIT mosaics for VFID3300 r-band, conv
+Creating GALFIT mosaics for VFID3303 r-band, conv
+Creating GALFIT mosaics for VFID3306 r-band, conv
+Creating GALFIT mosaics for VFID3325 r-band, conv
+Creating GALFIT mosaics for VFID3334 r-band, conv
+Creating GALFIT mosaics for VFID3336 r-band, conv
+Creating GALFIT mosaics for VFID3343 r-band, conv
+Creating GALFIT mosaics for VFID3386 r-band, conv
+Creating GALFIT mosaics for VFID3388 r-band, conv
+Creating GALFIT mosaics for VFID3389 r-band, conv
+NGC2480_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3411 r-band, conv
+Creating GALFIT mosaics for VFID3427 r-band, conv
+Creating GALFIT mosaics for VFID3456 r-band, conv
+Creating GALFIT mosaics for VFID3459 r-band, conv
+Creating GALFIT mosaics for VFID3463 r-band, conv
+Creating GALFIT mosaics for VFID3477 r-band, conv
+Creating GALFIT mosaics for VFID3489 r-band, conv
+NGC3190_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3551 r-band, conv
+Creating GALFIT mosaics for VFID3564 r-band, conv
+Creating GALFIT mosaics for VFID3574 r-band, conv
+Creating GALFIT mosaics for VFID3578 r-band, conv
+Creating GALFIT mosaics for VFID3612 r-band, conv
+Creating GALFIT mosaics for VFID3618 r-band, conv
+Creating GALFIT mosaics for VFID3657 r-band, conv
+IC0610_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3672 r-band, conv
+NGC6168_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3675 r-band, conv
+Creating GALFIT mosaics for VFID3678 r-band, conv
+Creating GALFIT mosaics for VFID3687 r-band, conv
+Creating GALFIT mosaics for VFID3698 r-band, conv
+NGC3227_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3708 r-band, conv
+Creating GALFIT mosaics for VFID3723 r-band, conv
+Creating GALFIT mosaics for VFID3725 r-band, conv
+Creating GALFIT mosaics for VFID3750 r-band, conv
+Creating GALFIT mosaics for VFID3779 r-band, conv
+Creating GALFIT mosaics for VFID3780 r-band, conv
+Creating GALFIT mosaics for VFID3820 r-band, conv
+Creating GALFIT mosaics for VFID3861 r-band, conv
+Creating GALFIT mosaics for VFID3863 r-band, conv
+Creating GALFIT mosaics for VFID3876 r-band, conv
+Creating GALFIT mosaics for VFID3884 r-band, conv
+Creating GALFIT mosaics for VFID3891 r-band, conv
+Creating GALFIT mosaics for VFID3897 r-band, conv
+Creating GALFIT mosaics for VFID3930 r-band, conv
+Creating GALFIT mosaics for VFID3945 r-band, conv
+NGC3370_GROUP has no mask images.
+Creating GALFIT mosaics for VFID3958 r-band, conv
+Creating GALFIT mosaics for VFID3961 r-band, conv
+Creating GALFIT mosaics for VFID3966 r-band, conv
+Creating GALFIT mosaics for VFID3979 r-band, conv
+Creating GALFIT mosaics for VFID3980 r-band, conv
+Creating GALFIT mosaics for VFID3985 r-band, conv
+Creating GALFIT mosaics for VFID3993 r-band, conv
+Creating GALFIT mosaics for VFID3994 r-band, conv
+Creating GALFIT mosaics for VFID4017 r-band, conv
+NGC5962_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4026 r-band, conv
+Creating GALFIT mosaics for VFID4029 r-band, conv
+Creating GALFIT mosaics for VFID4056 r-band, conv
+Creating GALFIT mosaics for VFID4057 r-band, conv
+Creating GALFIT mosaics for VFID4087 r-band, conv
+Creating GALFIT mosaics for VFID4092 r-band, conv
+Creating GALFIT mosaics for VFID4094 r-band, conv
+Creating GALFIT mosaics for VFID4099 r-band, conv
+Creating GALFIT mosaics for VFID4115 r-band, conv
+Creating GALFIT mosaics for VFID4119 r-band, conv
+Creating GALFIT mosaics for VFID4126 r-band, conv
+Creating GALFIT mosaics for VFID4135 r-band, conv
+Creating GALFIT mosaics for VFID4143 r-band, conv
+NGC4312_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4144 r-band, conv
+Creating GALFIT mosaics for VFID4164 r-band, conv
+Creating GALFIT mosaics for VFID4165 r-band, conv
+Creating GALFIT mosaics for VFID4168 r-band, conv
+Creating GALFIT mosaics for VFID4170 r-band, conv
+Creating GALFIT mosaics for VFID4188 r-band, conv
+Creating GALFIT mosaics for VFID4191 r-band, conv
+Creating GALFIT mosaics for VFID4194 r-band, conv
+Creating GALFIT mosaics for VFID4201 r-band, conv
+Creating GALFIT mosaics for VFID4203 r-band, conv
+Creating GALFIT mosaics for VFID4211 r-band, conv
+Creating GALFIT mosaics for VFID4212 r-band, conv
+Creating GALFIT mosaics for VFID4220 r-band, conv
+Creating GALFIT mosaics for VFID4226 r-band, conv
+Creating GALFIT mosaics for VFID4239 r-band, conv
+Creating GALFIT mosaics for VFID4250 r-band, conv
+Creating GALFIT mosaics for VFID4254 r-band, conv
+Creating GALFIT mosaics for VFID4269 r-band, conv
+Creating GALFIT mosaics for VFID4283 r-band, conv
+Creating GALFIT mosaics for VFID4299 r-band, conv
+Creating GALFIT mosaics for VFID4303 r-band, conv
+Creating GALFIT mosaics for VFID4306 r-band, conv
+Creating GALFIT mosaics for VFID4321 r-band, conv
+Creating GALFIT mosaics for VFID4330 r-band, conv
+Creating GALFIT mosaics for VFID4334 r-band, conv
+Creating GALFIT mosaics for VFID4336 r-band, conv
+Creating GALFIT mosaics for VFID4353 r-band, conv
+Creating GALFIT mosaics for VFID4382 r-band, conv
+Creating GALFIT mosaics for VFID4383 r-band, conv
+Creating GALFIT mosaics for VFID4385 r-band, conv
+Creating GALFIT mosaics for VFID4387 r-band, conv
+Creating GALFIT mosaics for VFID4393 r-band, conv
+Creating GALFIT mosaics for VFID4397 r-band, conv
+Creating GALFIT mosaics for VFID4414 r-band, conv
+Creating GALFIT mosaics for VFID4445 r-band, conv
+Creating GALFIT mosaics for VFID4450 r-band, conv
+Creating GALFIT mosaics for VFID4479 r-band, conv
+Creating GALFIT mosaics for VFID4496 r-band, conv
+Creating GALFIT mosaics for VFID4504 r-band, conv
+Creating GALFIT mosaics for VFID4507 r-band, conv
+Creating GALFIT mosaics for VFID4513 r-band, conv
+Creating GALFIT mosaics for VFID4519 r-band, conv
+Creating GALFIT mosaics for VFID4520 r-band, conv
+Creating GALFIT mosaics for VFID4548 r-band, conv
+NGC3024_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4613 r-band, conv
+Creating GALFIT mosaics for VFID4637 r-band, conv
+Creating GALFIT mosaics for VFID4644 r-band, conv
+Creating GALFIT mosaics for VFID4662 r-band, conv
+Creating GALFIT mosaics for VFID4663 r-band, conv
+Creating GALFIT mosaics for VFID4751 r-band, conv
+Creating GALFIT mosaics for VFID4758 r-band, conv
+Creating GALFIT mosaics for VFID4778 r-band, conv
+Creating GALFIT mosaics for VFID4782 r-band, conv
+Creating GALFIT mosaics for VFID4810 r-band, conv
+Creating GALFIT mosaics for VFID4816 r-band, conv
+Creating GALFIT mosaics for VFID4820 r-band, conv
+Creating GALFIT mosaics for VFID4826 r-band, conv
+Creating GALFIT mosaics for VFID4827 r-band, conv
+Creating GALFIT mosaics for VFID4860 r-band, conv
+Creating GALFIT mosaics for VFID4861 r-band, conv
+NGC4313_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4865 r-band, conv
+Creating GALFIT mosaics for VFID4878 r-band, conv
+Creating GALFIT mosaics for VFID4880 r-band, conv
+Creating GALFIT mosaics for VFID4886 r-band, conv
+Creating GALFIT mosaics for VFID4906 r-band, conv
+Creating GALFIT mosaics for VFID4916 r-band, conv
+Creating GALFIT mosaics for VFID4917 r-band, conv
+Creating GALFIT mosaics for VFID4923 r-band, conv
+Creating GALFIT mosaics for VFID4924 r-band, conv
+Creating GALFIT mosaics for VFID4944 r-band, conv
+Creating GALFIT mosaics for VFID4949 r-band, conv
+NGC4568_GROUP has no mask images.
+Creating GALFIT mosaics for VFID4962 r-band, conv
+Creating GALFIT mosaics for VFID4970 r-band, conv
+Creating GALFIT mosaics for VFID4983 r-band, conv
+Creating GALFIT mosaics for VFID5012 r-band, conv
+Creating GALFIT mosaics for VFID5013 r-band, conv
+Creating GALFIT mosaics for VFID5018 r-band, conv
+Creating GALFIT mosaics for VFID5030 r-band, conv
+Creating GALFIT mosaics for VFID5057 r-band, conv
+Creating GALFIT mosaics for VFID5082 r-band, conv
+Creating GALFIT mosaics for VFID5124 r-band, conv
+Creating GALFIT mosaics for VFID5125 r-band, conv
+Creating GALFIT mosaics for VFID5154 r-band, conv
+Creating GALFIT mosaics for VFID5176 r-band, conv
+Creating GALFIT mosaics for VFID5194 r-band, conv
+Creating GALFIT mosaics for VFID5200 r-band, conv
+Creating GALFIT mosaics for VFID5210 r-band, conv
+PGC027784_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5212 r-band, conv
+Creating GALFIT mosaics for VFID5219 r-band, conv
+Creating GALFIT mosaics for VFID5222 r-band, conv
+Creating GALFIT mosaics for VFID5223 r-band, conv
+Creating GALFIT mosaics for VFID5236 r-band, conv
+Creating GALFIT mosaics for VFID5241 r-band, conv
+Creating GALFIT mosaics for VFID5244 r-band, conv
+Creating GALFIT mosaics for VFID5257 r-band, conv
+NGC3876_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5263 r-band, conv
+Creating GALFIT mosaics for VFID5276 r-band, conv
+Creating GALFIT mosaics for VFID5292 r-band, conv
+NGC4519_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5324 r-band, conv
+Creating GALFIT mosaics for VFID5339 r-band, conv
+Creating GALFIT mosaics for VFID5344 r-band, conv
+NGC2906_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5352 r-band, conv
+Creating GALFIT mosaics for VFID5367 r-band, conv
+Creating GALFIT mosaics for VFID5379 r-band, conv
+Creating GALFIT mosaics for VFID5419 r-band, conv
+Creating GALFIT mosaics for VFID5424 r-band, conv
+Creating GALFIT mosaics for VFID5429 r-band, conv
+Creating GALFIT mosaics for VFID5434 r-band, conv
+Creating GALFIT mosaics for VFID5494 r-band, conv
+NGC4224_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5503 r-band, conv
+Creating GALFIT mosaics for VFID5511 r-band, conv
+Creating GALFIT mosaics for VFID5524 r-band, conv
+IC3322A_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5532 r-band, conv
+Creating GALFIT mosaics for VFID5534 r-band, conv
+Creating GALFIT mosaics for VFID5539 r-band, conv
+Creating GALFIT mosaics for VFID5546 r-band, conv
+Creating GALFIT mosaics for VFID5573 r-band, conv
+Creating GALFIT mosaics for VFID5574 r-band, conv
+Creating GALFIT mosaics for VFID5582 r-band, conv
+Creating GALFIT mosaics for VFID5586 r-band, conv
+Creating GALFIT mosaics for VFID5637 r-band, conv
+Creating GALFIT mosaics for VFID5652 r-band, conv
+Creating GALFIT mosaics for VFID5676 r-band, conv
+Creating GALFIT mosaics for VFID5678 r-band, conv
+Creating GALFIT mosaics for VFID5709 r-band, conv
+Creating GALFIT mosaics for VFID5713 r-band, conv
+Creating GALFIT mosaics for VFID5725 r-band, conv
+Creating GALFIT mosaics for VFID5749 r-band, conv
+Creating GALFIT mosaics for VFID5759 r-band, conv
+Creating GALFIT mosaics for VFID5771 r-band, conv
+NGC2990_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5778 r-band, conv
+Creating GALFIT mosaics for VFID5787 r-band, conv
+Creating GALFIT mosaics for VFID5794 r-band, conv
+Creating GALFIT mosaics for VFID5834 r-band, conv
+Creating GALFIT mosaics for VFID5842 r-band, conv
+Creating GALFIT mosaics for VFID5846 r-band, conv
+Creating GALFIT mosaics for VFID5877 r-band, conv
+Creating GALFIT mosaics for VFID5880 r-band, conv
+Creating GALFIT mosaics for VFID5889 r-band, conv
+Creating GALFIT mosaics for VFID5894 r-band, conv
+Creating GALFIT mosaics for VFID5901 r-band, conv
+Creating GALFIT mosaics for VFID5905 r-band, conv
+NGC3611_GROUP has no mask images.
+Creating GALFIT mosaics for VFID5950 r-band, conv
+Creating GALFIT mosaics for VFID5962 r-band, conv
+Creating GALFIT mosaics for VFID5964 r-band, conv
+Creating GALFIT mosaics for VFID5981 r-band, conv
+Creating GALFIT mosaics for VFID5988 r-band, conv
+Creating GALFIT mosaics for VFID5989 r-band, conv
+Creating GALFIT mosaics for VFID5992 r-band, conv
+Creating GALFIT mosaics for VFID6023 r-band, conv
+Creating GALFIT mosaics for VFID6024 r-band, conv
+Creating GALFIT mosaics for VFID6028 r-band, conv
+Creating GALFIT mosaics for VFID6031 r-band, conv
+NGC4289_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6056 r-band, conv
+Creating GALFIT mosaics for VFID6060 r-band, conv
+Creating GALFIT mosaics for VFID6069 r-band, conv
+Creating GALFIT mosaics for VFID6074 r-band, conv
+NGC5775_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6081 r-band, conv
+Creating GALFIT mosaics for VFID6091 r-band, conv
+Creating GALFIT mosaics for VFID6098 r-band, conv
+Creating GALFIT mosaics for VFID6103 r-band, conv
+Creating GALFIT mosaics for VFID6106 r-band, conv
+Creating GALFIT mosaics for VFID6133 r-band, conv
+Creating GALFIT mosaics for VFID6152 r-band, conv
+Creating GALFIT mosaics for VFID6179 r-band, conv
+Creating GALFIT mosaics for VFID6182 r-band, conv
+Creating GALFIT mosaics for VFID6185 r-band, conv
+NGC4116_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6204 r-band, conv
+Creating GALFIT mosaics for VFID6216 r-band, conv
+Creating GALFIT mosaics for VFID6246 r-band, conv
+Creating GALFIT mosaics for VFID6247 r-band, conv
+Creating GALFIT mosaics for VFID6265 r-band, conv
+Creating GALFIT mosaics for VFID6272 r-band, conv
+Creating GALFIT mosaics for VFID6286 r-band, conv
+Creating GALFIT mosaics for VFID6288 r-band, conv
+Creating GALFIT mosaics for VFID6293 r-band, conv
+Creating GALFIT mosaics for VFID6317 r-band, conv
+Creating GALFIT mosaics for VFID6337 r-band, conv
+Creating GALFIT mosaics for VFID6340 r-band, conv
+Creating GALFIT mosaics for VFID6342 r-band, conv
+Creating GALFIT mosaics for VFID6352 r-band, conv
+Creating GALFIT mosaics for VFID6358 r-band, conv
+Creating GALFIT mosaics for VFID6362 r-band, conv
+Creating GALFIT mosaics for VFID6370 r-band, conv
+Creating GALFIT mosaics for VFID6380 r-band, conv
+Creating GALFIT mosaics for VFID6394 r-band, conv
+Creating GALFIT mosaics for VFID6399 r-band, conv
+Creating GALFIT mosaics for VFID6411 r-band, conv
+Creating GALFIT mosaics for VFID6430 r-band, conv
+Creating GALFIT mosaics for VFID6431 r-band, conv
+Creating GALFIT mosaics for VFID6437 r-band, conv
+Creating GALFIT mosaics for VFID6480 r-band, conv
+Creating GALFIT mosaics for VFID6550 r-band, conv
+NGC3023_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6564 r-band, conv
+Creating GALFIT mosaics for VFID6602 r-band, conv
+Creating GALFIT mosaics for VFID6619 r-band, conv
+Creating GALFIT mosaics for VFID6643 r-band, conv
+Creating GALFIT mosaics for VFID6645 r-band, conv
+Creating GALFIT mosaics for VFID6647 r-band, conv
+Creating GALFIT mosaics for VFID6673 r-band, conv
+Creating GALFIT mosaics for VFID6677 r-band, conv
+Creating GALFIT mosaics for VFID6688 r-band, conv
+Creating GALFIT mosaics for VFID6689 r-band, conv
+Creating GALFIT mosaics for VFID6708 r-band, conv
+Creating GALFIT mosaics for VFID6712 r-band, conv
+Creating GALFIT mosaics for VFID6719 r-band, conv
+NGC4355_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6742 r-band, conv
+Creating GALFIT mosaics for VFID6745 r-band, conv
+Creating GALFIT mosaics for VFID6756 r-band, conv
+Creating GALFIT mosaics for VFID6759 r-band, conv
+Creating GALFIT mosaics for VFID6763 r-band, conv
+UGC07883_GROUP has no mask images.
+Creating GALFIT mosaics for VFID6770 r-band, conv

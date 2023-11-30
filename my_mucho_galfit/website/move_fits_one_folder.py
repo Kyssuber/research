@@ -97,18 +97,16 @@ def grab_mask_images(catalog, host_folder_path, target_folder):
             print('Moving '+im)
             os.system('cp '+im+' '+target_folder)
 
-def gather_w1_fits.py(catalog, host_folder_path, target_folder):
-
-    cutout_ext = '-custom-image-W1.fits'   #generic image extension for the images
-
+def gather_w1_fits(catalog, host_folder_path_w1, target_folder):
     vf_cut = catalog[catalog['subsample_flag']]  #reduces number of rows to 496, which corresponds with the number of subsample galaxies (pre-GALFIT)
     
     dirnames = vf_cut['VFID']   #all directory names are simply the VFIDs
-    
+     
     for n in range(len(dirnames)):
       os.chdir(host_folder_path+dirnames[n])   #cd to correct directory
       
-      cutout_fits = glob.glob('*'+cutout_ext)[0]
+      cutout_fits = glob.glob('*-custom-image-W1.fits')[0]   #FITS cutout of galaxy
+      print(cutout_fits)
       out1_fits = glob.glob('*-W1-out1.fits')[0]   #unconvolved model parameters
       out2_fits = glob.glob('*-W1-out2.fits')[0]   #convolved model parameters
     
@@ -117,7 +115,7 @@ def gather_w1_fits.py(catalog, host_folder_path, target_folder):
 if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
-  vf = Table.read(homedir+'/sgacut_coadd.fits')   #contains objnames, RAs, and VFIDs; subsample_flag
+  vf = Table.read(homedir+'/v2_snrcoadd.fits')   #contains objnames, RAs, and VFIDs; subsample_flag
   
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
   input_cutouts_path = '/mnt/virgofilaments-data/'
@@ -140,4 +138,6 @@ if __name__ == '__main__':
   print('Move W1 images --> cutouts and out1, out2 parameters...)
   gather_w1_fits(vf, host_folder_path, onefolder_path)
   ''')
+
+  os.system('cd /mnt/astrophysics/kconger_wisesize/github/research/my_mucho_galfit/website/')
   
