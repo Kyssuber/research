@@ -118,6 +118,7 @@ class output_galaxy:
             
             image_header = fits.getheader(self.outimage,2)   #grab header information from the model image
             
+            #if there are more than 1 sersic objects in the cutout, check that GALFIT was set up such that it could successfully run on these group galaxies (if the outskirt galax(y/ies) is/are disregarded, then the sky header will only be 2_SKY and not [self.ncomp+1]_SKY).
             if (self.ncomp>1):
                 sky_num = str(self.ncomp+1)
                 sky_head = sky_num+'_SKY'
