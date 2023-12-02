@@ -2965,3 +2965,87 @@ Creating GALFIT mosaics for VFID6759 r-band, conv
 Creating GALFIT mosaics for VFID6763 r-band, conv
 UGC07883_GROUP has no mask images.
 Creating GALFIT mosaics for VFID6770 r-band, conv
+If running in terminal, use -h or --help for the list of arguments. Otherwise...*
+    
+    USAGE (iPython/Jupyter):
+    ---Running this program automatically initiates the HomePage class (hp)
+    ---if the -test arg is False, then replace single_galpage with hp in order to generate all images and such:
+            --hp.html_setup() --> create .html homepages for all galaxies in the VF subsample; also initiates GalPage 
+            class(single_galpage) for every galaxy in a loop, creating all relevant folders and files.
+            --hp.create_LS_figures()
+            --hp.create_galfit_mosaics()
+            --hp.create_mask_mosaics(psf_index) --> (w3, nopsf), 1 (w3, psf), 2 (w1, nopsf), 3 (w1, psf)
+    ---If the -test arg is True, then the user is wanting to test the GalPage class (this is a stategic idea, 
+            since this class contains the bulk of the functions required for the script to run successfully). 
+            In this case, the script automatically defines a single galpage class (single_galpage; 
+            uses index 0 for a random test galaxy), with which the user can test the following methods:
+            --single_galpage.compile_LS_cutouts()
+            --single_galpage.create_LS_mosaics()
+            --single_galpage.create_model_mosaics_names()
+            --single_galpage.create_model_mosaics(psf_index) --> 0 (w3, nopsf), 1 (w3, psf), 2 (w1, nopsf), 3 (w1, psf)
+            --single_galpage.create_mask_mosaics()
+            --single_galpage.tabulate_parameters()
+            --single_galpage.WRITETHEGALPAGE()            
+            
+    
+-----------------------------------------------------
+
+test is false
+Creating LS cutout for VFID0001
+Creating LS mosaic for VFID0001
+Creating LS cutout for VFID0002
+Creating LS mosaic for VFID0002
+Creating LS cutout for VFID0005
+Creating LS mosaic for VFID0005
+Creating LS cutout for VFID0008
+Creating LS mosaic for VFID0008
+Creating LS cutout for VFID0011
+Creating LS mosaic for VFID0011
+Creating LS cutout for VFID0013
+Creating LS mosaic for VFID0013
+Creating LS cutout for VFID0019
+Creating LS mosaic for VFID0019
+Creating LS cutout for VFID0026
+Creating LS mosaic for VFID0026
+Creating LS cutout for VFID0027
+Creating LS mosaic for VFID0027
+Creating LS cutout for VFID0029
+Creating LS mosaic for VFID0029
+Creating LS cutout for VFID0030
+Creating LS mosaic for VFID0030
+Creating LS cutout for VFID0036
+Creating LS mosaic for VFID0036
+Creating LS cutout for VFID0045
+Creating LS mosaic for VFID0045
+Creating LS cutout for VFID0047
+Creating LS mosaic for VFID0047
+Creating LS cutout for VFID0051
+Creating LS mosaic for VFID0051
+Creating LS cutout for VFID0052
+Creating LS mosaic for VFID0052
+Creating LS cutout for VFID0053
+Creating LS mosaic for VFID0053
+Creating LS cutout for VFID0055
+Creating LS mosaic for VFID0055
+Creating LS cutout for VFID0058
+Creating LS mosaic for VFID0058
+Creating LS cutout for VFID0060
+Creating LS mosaic for VFID0060
+Creating LS cutout for VFID0066
+Creating LS mosaic for VFID0066
+Creating LS cutout for VFID0070
+Creating LS mosaic for VFID0070
+Creating LS cutout for VFID0076
+Creating LS mosaic for VFID0076
+Creating LS cutout for VFID0077
+Creating LS mosaic for VFID0077
+Creating LS cutout for VFID0082
+Creating LS mosaic for VFID0082
+Traceback (most recent call last):
+  File "build_html_website_MG.py", line 731, in <module>
+    hp.create_LS_figures()
+  File "build_html_website_MG.py", line 172, in create_LS_figures
+    LS_mosaic_folder=self.LS_mosaics, fits_folder=self.fits_folder, test=True)
+  File "build_html_website_MG.py", line 272, in __init__
+    path_to_w3 = glob.glob(self.fits_folder+self.objname+'-custom-image-W3.fits')[0]
+IndexError: list index out of range

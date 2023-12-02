@@ -75,8 +75,9 @@ class HomePage():
     
         #call the remaining parameter files...
         self.w3params_nopsf = Table.read(self.path_to_params+'output_params_W3_nopsf.fits')[flag_for_re]
-        self.params_w3_nopsf = self.w3params_nopsf.copy()  #will help to identify groups below...somewhere. This script is becoming unruly.
+        self.params_w3_nopsf = self.w3params_nopsf.copy()     #will help to identify groups below...somewhere. This script is becoming unruly.
         self.w3params_psf = Table.read(self.path_to_params+'output_params_W3_psf.fits')[flag_for_re]
+        self.params_w3_psf = self.w3params_psf.copy()
         #self.rparams_nopsf = Table.read(self.path_to_params+'output_params_r_nopsf.fits')[flag_for_re]
         #self.rparams_psf = Table.read(self.path_to_params+'output_params_r_psf.fits')[flag_for_re]
         self.w1params_nopsf = Table.read(self.path_to_params+'output_params_W1_nopsf.fits')[flag_for_re]
@@ -746,14 +747,14 @@ if __name__ == '__main__':
         else:
             cutcat = catalog
          
-        w3params_nopsf = Table.read(path_to_params+'/output_params_W3_nopsf.fits')        
-        w3params_psf = Table.read(path_to_params+'/output_params_W3_psf.fits')
-        #rparams_nopsf = Table.read(path_to_params+'/output_params_r_nopsf.fits')
-        #rparams_psf = Table.read(path_to_params+'/output_params_r_psf.fits')
-        w1params_nopsf = Table.read(path_to_params+'/output_params_W1_nopsf.fits')
-        w1params_psf = Table.read(path_to_params+'/output_params_W1_psf.fits')
+        w3params_nopsf = Table.read(path_to_params+'output_params_W3_nopsf.fits')        
+        w3params_psf = Table.read(path_to_params+'output_params_W3_psf.fits')
+        #rparams_nopsf = Table.read(path_to_params+'output_params_r_nopsf.fits')
+        #rparams_psf = Table.read(path_to_params+'output_params_r_psf.fits')
+        w1params_nopsf = Table.read(path_to_params+'output_params_W1_nopsf.fits')
+        w1params_psf = Table.read(path_to_params+'output_params_W1_psf.fits')
         
-        single_galpage = GalPage(galaxy_index=59, psf_indices=psf_indices, page_name='VFID0281.html', catalog=cutcat, 
+        single_galpage = GalPage(galaxy_index=1, psf_indices=psf_indices, page_name='test.html', catalog=cutcat, 
                                  local_path=local_path, LS_cutout_folder=LS_cutout_folder, 
                                  LS_mosaic_folder=LS_mosaic_folder, mask_folder=mask_folder, fits_folder=fits_folder, 
                                  gal_mosaic_folder=gal_mosaic_folder, w3params_nopsf=w3params_nopsf, w3params_psf=w3params_psf, 

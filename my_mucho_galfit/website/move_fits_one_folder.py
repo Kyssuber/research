@@ -11,12 +11,15 @@ from astropy.io import fits
 #convert cutouts from .fz to .fits, then save .fits to target_folder. not currently needed (all input files are already in the VFID output directories).
 def fz_to_fits(path_to_im, galaxy_name, target_folder, group_name=None, group_flag=False):
     galaxy_w3 = galaxy_name+'-custom-image-W3.fits.fz'
-    galaxy_r = galaxy_name+'-custom-image-r.fits.fz'
-    galaxies = [galaxy_w3,galaxy_r]
+    #galaxy_r = galaxy_name+'-custom-image-r.fits.fz'
+    #galaxies = [galaxy_w3,galaxy_r]
+    galaxiew=[galaxy_w3]
     if group_name is not None:
         group_w3 = group_name+'-custom-image-W3.fits.fz'
-        group_r = group_name+'-custom-image-r.fits.fz'
-        groups = [group_w3,group_r]
+        #group_r = group_name+'-custom-image-r.fits.fz'
+        #groups = [group_w3,group_r]
+        groups = [group_w3]
+
     for n in range(2):
         galaxy_path = path_to_im+galaxies[n]
         if group_flag==True:
@@ -42,11 +45,13 @@ def grab_input_cutouts(catalog, cutouts_path, target_folder):
         
         print(VFIDs[i]+' input time')
         galaxy_folder = cutouts_path+VFIDs[i]+'/'
-        input_r = glob.glob(galaxy_folder+'*-custom-image-r.fits')
+        #input_r = glob.glob(galaxy_folder+'*-custom-image-r.fits')
         input_w3 = glob.glob(galaxy_folder+'*-custom-image-W3.fits')
-        input_im = np.concatenate([input_w3,input_r])
+        #input_im = np.concatenate([input_w3,input_r])
+        input_im=input_w3
         print(input_im)
         for im in input_im:  #if no images in output_mosaics, then none will be cp'd. if only one, then only one will be cp'd. usw.
+            print(im)
             print('Moving '+im)
             os.system('cp '+im+' '+target_folder)
                   
@@ -74,11 +79,13 @@ def grab_output_cutouts(catalog, host_folder_path, target_folder):
     for i in range(len(catalog)):
         print('Moving '+VFIDs[i]+' output file, if any.')
         galaxy_folder = host_folder_path+VFIDs[i]+'/'
-        output_mosaics_r = glob.glob(galaxy_folder+'*r-out*')
+        #output_mosaics_r = glob.glob(galaxy_folder+'*r-out*')
         output_mosaics_w3 = glob.glob(galaxy_folder+'*W3-out*')
-        output_mosaics = np.concatenate([output_mosaics_r,output_mosaics_w3])
+        #output_mosaics = np.concatenate([output_mosaics_r,output_mosaics_w3])
+        output_mosaics = output_mosaics_w3
 
         for im in output_mosaics:   #if no images in output_mosaics, then none will be cp'd. if only one, then only one will be cp'd. usw.
+            print(im)
             print('Moving '+im)
             os.system('cp '+im+' '+target_folder)
 
@@ -89,10 +96,11 @@ def grab_mask_images(catalog, host_folder_path, target_folder):
     for i in range(len(catalog)):
         print('Moving '+VFIDs[i]+' mask(s), if any.')
         galaxy_folder = host_folder_path+VFIDs[i]+'/'
-        rmask = glob.glob(galaxy_folder+'*r-mask.fits')
+        #rmask = glob.glob(galaxy_folder+'*r-mask.fits')
         w3mask = glob.glob(galaxy_folder+'*wise-mask.fits')
-        masks = np.concatenate([rmask,w3mask])
-        
+        #masks = np.concatenate([rmask,w3mask])
+        masks = w3mask
+
         for im in masks:   #if no images in masks, then none will be cp'd. if only one, then only one will be cp'd. usw.
             print('Moving '+im)
             os.system('cp '+im+' '+target_folder)
@@ -116,7 +124,8 @@ if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
   vf = Table.read(homedir+'/v2_snrcoadd.fits')   #contains objnames, RAs, and VFIDs; subsample_flag
-  
+  vf = vf[vf['subsample_flag']]
+
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
   input_cutouts_path = '/mnt/virgofilaments-data/'
 
