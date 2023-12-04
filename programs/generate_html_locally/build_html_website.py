@@ -323,7 +323,7 @@ class GalPage():
             #when multiplied by image, only the unmasked object (only -- and all of -- the central galaxy, ideally) remains
             self.w3_mask_bool = ~(self.w3_mask>0)
             #self.r_mask_bool = ~(self.r_mask>0)
-            self.w1_mask_bool = ~(self.w1_mask>0)  #same rationale as above
+            self.w1_mask_bool = ~(self.w1_mask>0)
             
         except:
             print(self.objname+' has no mask images.')
@@ -472,28 +472,28 @@ class GalPage():
                 v1 = [scoreatpercentile(images[0]*bool_mask,percentile1),
                     scoreatpercentile(images[0]*bool_mask,percentile1),
                     scoreatpercentile(images[0]*bool_mask,percentile1),
-                    scoreatpercentile(images[2]*bool_mask,p1residual)]
+                    scoreatpercentile(images[3]*bool_mask,p1residual)]
                 v2 = [scoreatpercentile(images[0]*bool_mask,percentile2),
                     scoreatpercentile(images[0]*bool_mask,percentile2),
                     scoreatpercentile(images[0]*bool_mask,percentile2),
-                    scoreatpercentile(images[2]*bool_mask,p2residual)]
+                    scoreatpercentile(images[3]*bool_mask,p2residual)]
                 norms = [simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
                        simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
                        simple_norm(images[0]*bool_mask,'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),
-                       simple_norm(images[2]*bool_mask,'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
+                       simple_norm(images[3]*bool_mask,'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
             except:
                 v1 = [scoreatpercentile(images[0],percentile1),
                     scoreatpercentile(images[0],percentile1),
                     scoreatpercentile(images[0],percentile1),
-                    scoreatpercentile(images[2],p1residual)]
+                    scoreatpercentile(images[3],p1residual)]
                 v2 = [scoreatpercentile(images[0],percentile2),
                     scoreatpercentile(images[0],percentile2),
                     scoreatpercentile(images[0],percentile2),
-                    scoreatpercentile(images[2],p2residual)]
+                    scoreatpercentile(images[3],p2residual)]
                 norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
                        simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
                        simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),
-                       simple_norm(images[2],'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
+                       simple_norm(images[3],'linear',max_percent=p2residual,min_cut=v1[3],max_cut=v2[3])]
         
         else:
             print(f'GALFIT did not run correctly for {self.VFID} - no model...')
@@ -525,38 +525,50 @@ class GalPage():
         plt.savefig(self.pngnames[psf_index],bbox_inches='tight', pad_inches=0.2)   #dpi=200
         plt.close()    
 
-    def create_mask_mosaics(self, percentile1=.5, percentile2=99.8, cmap='viridis'):
-
-        #titles = ['W3 Image', 'W3 Mask', 'W1 Image', 'W1 Mask']
-        #images = [self.wise_im, self.w3_mask, self.w1_im, self.w1_mask]
+    def create_mask_mosaics(self, percentile1=.5, percentile2=99.9, cmap='viridis'):
         
         titles = ['W3 Image', 'W1 Image', 'WISE Mask']
         try:
             images = [self.wise_im, self.w1_im, self.w3_mask]
         except:
+            #another failsafe...just in case.
             images = [self.wise_im, self.w1_im, np.zeros(self.wise_im.shape)+1]
             titles = ['W3 Image', 'W1 Image', 'No Mask']
         
+        #create boolean masks for scaling purposes (prevents domination of prominent stars or other artifacts)
+        try:
+            bool_masks = [self.w3_mask_bool, self.w1_mask_bool]
+        except:
+            #if no image masks defined (failsafe), I just create a simple nxn matrix of 1s, so multiplying by bool_mask does not affect the image
+            bool_masks = [np.zeros(self.wise_im.shape)+1, 
+                          np.zeros(self.w1_im.shape)+1]
+
         #norms for images but not for masks
-        v1 = [scoreatpercentile(images[0],percentile1),scoreatpercentile(images[2],percentile1),0]
-        v2 = [scoreatpercentile(images[0],percentile2),scoreatpercentile(images[2],percentile2),1]
-        norms = [simple_norm(images[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]), 
-                 simple_norm(images[2],'asinh',max_percent=percentile2,min_cut=v1[2],max_cut=v2[2]),None]
-              
+        v1 = [scoreatpercentile(images[0]*bool_masks[0],percentile1),
+                    scoreatpercentile(images[1]*bool_masks[1],percentile1),0]
+        v2 = [scoreatpercentile(images[0]*bool_masks[0],percentile2),
+                    scoreatpercentile(images[1]*bool_masks[1],percentile2),1]
+        norms = [simple_norm(images[0]*bool_masks[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
+                       simple_norm(images[1]*bool_masks[1],'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
+                       None]
+        
         plt.figure(figsize=(14,6))
         plt.subplots_adjust(wspace=.0)
         for i,im in enumerate(images): 
-            if i<=1:
-                ax = plt.subplot(1,3,i+1,projection=self.wcs_w3)                    
-            if i>=2:
+            if i==0:
+                ax = plt.subplot(1,3,i+1,projection=self.wcs_w3)
+                ax.imshow(im, origin='lower', cmap=cmap, norm=norms[i])
+            if i==1:
                 ax = plt.subplot(1,3,i+1,projection=self.wcs_w1)
-            if (i==0)|(i==2):
-                plt.imshow(im, origin='lower', cmap=cmap, norm=norms[i])
-            else:
-                plt.imshow(im, origin='lower', cmap=cmap, vmin=v1[i], vmax=v2[i])
+                ax.imshow(im, origin='lower', cmap=cmap, norm=norms[i])
+            if i==2:
+                ax = plt.subplot(1,3,i+1,projection=self.wcs_w1)
+                ax.imshow(im, origin='lower', cmap=cmap, vmin=v1[i], vmax=v2[i])
+            
             ax.set_xlabel('RA')
             if i == 0:
                 ax.set_ylabel('DEC')
+            
             else:
                 plt.ylabel(' ')
                 ax = plt.gca()
@@ -691,7 +703,7 @@ if __name__ == '__main__':
             --single_galpage.compile_LS_cutouts()
             --single_galpage.create_LS_mosaics()
             --single_galpage.create_model_mosaics_names()
-            --single_galpage.create_model_mosaics(psf_index) --> 0 (w3, nopsf), 1 (w3, psf), 2 (r, nopsf), 3 (r, psf)
+            --single_galpage.create_model_mosaics(psf_index) --> 0 (w3, nopsf), 1 (w3, psf), 2 (w1, nopsf), 3 (w1, psf)
             --single_galpage.create_mask_mosaics()
             --single_galpage.tabulate_parameters()
             --single_galpage.WRITETHEGALPAGE()
