@@ -106,19 +106,18 @@ def grab_mask_images(catalog, host_folder_path, target_folder):
             os.system('cp '+im+' '+target_folder)
 
 def gather_w1_fits(catalog, host_folder_path_w1, target_folder):
-    vf_cut = catalog[catalog['subsample_flag']]  #reduces number of rows to 496, which corresponds with the number of subsample galaxies (pre-GALFIT)
     
-    dirnames = vf_cut['VFID']   #all directory names are simply the VFIDs
-     
+    dirnames = catalog['VFID']   #all directory names are simply the VFIDs
     for n in range(len(dirnames)):
       os.chdir(host_folder_path+dirnames[n])   #cd to correct directory
-      
+      print(dirnames[n])
       cutout_fits = glob.glob('*-custom-image-W1.fits')[0]   #FITS cutout of galaxy
       print(cutout_fits)
       out1_fits = glob.glob('*-W1-out1.fits')[0]   #unconvolved model parameters
       out2_fits = glob.glob('*-W1-out2.fits')[0]   #convolved model parameters
+      print(out1_fits,out2_fits)
     
-      os.system(f'cp {cutout_fits} {out1_fits} {out2_fits} {target_folder}')
+      os.system('cp '+cutout_fits+' '+out1_fits+' '+out2_fits+' '+target_folder)
 
 if __name__ == '__main__':
   

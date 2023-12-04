@@ -269,6 +269,7 @@ class GalPage():
         self.ncomp = len(np.where(self.cutcat['group_name']==self.cutcat['group_name'][self.galaxy_index])[0])
         
         #need w3 header information and w3, r-band image data
+        print(self.fits_folder+self.objname+'-custom-image-W3.fits')
         path_to_w3 = glob.glob(self.fits_folder+self.objname+'-custom-image-W3.fits')[0]
         #path_to_r = glob.glob(self.fits_folder+self.objname+'-custom-image-r.fits')[0]
         path_to_w1 = glob.glob(self.fits_folder+self.objname+'-custom-image-W1.fits')[0]
