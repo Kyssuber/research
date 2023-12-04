@@ -115,11 +115,17 @@ def gather_w1_fits(catalog, host_folder_path_w1, target_folder):
       for im in cutout_fits:
           print(im)
           os.system(f'cp {im} {target_folder}')
-      out1_fits = glob.glob('*-W1-out1.fits')[0]   #unconvolved model parameters
-      out2_fits = glob.glob('*-W1-out2.fits')[0]   #convolved model parameters
-    
-      os.system('cp '+out1_fits+' '+out2_fits+' '+target_folder)
+      out1_fits = glob.glob('*-W1-out1.fits')   #unconvolved model parameters
+      out2_fits = glob.glob('*-W1-out2.fits')   #convolved model parameters
+     
+      for imout1 in out1_fits:
 
+        os.system(f'cp {imout1} {target_folder}')
+      
+      for imout2 in out2_fits:
+
+          os.system(f'cp {imout2} {target_folder}')
+      
 if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
