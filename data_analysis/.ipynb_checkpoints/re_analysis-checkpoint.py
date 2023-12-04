@@ -17,6 +17,7 @@ from itertools import combinations
 from scipy.stats import kstest
 from scipy.stats import binned_statistic
 from scipy.stats import spearmanr
+from scipy.stats import linregress
 from matplotlib import ticker
 
 import os
@@ -84,13 +85,14 @@ class catalogs:
         subsample_flag_temp = self.v2_main['sgacut_flag']
         massflag = self.v2_main['massflag']
         ssfrflag = self.v2_main['sSFR_flag']
+        sfrflag = self.v2_main['SFRflag']
         
         
         #unfortunately, re tables begin with a length of 702, necessitating a separate flag 
         #(v2_main and the rest are length 6780)
-        flag_for_re = (self.v2_main.copy()[subsample_flag_temp]['massflag']) & (self.v2_main.copy()[subsample_flag_temp]['sSFR_flag'])
+        flag_for_re = (self.v2_main.copy()[subsample_flag_temp]['massflag']) & (self.v2_main.copy()[subsample_flag_temp]['sSFR_flag']) & (self.v2_main.copy()[subsample_flag_temp]['SFRflag'])
         
-        subsample_flag=subsample_flag_temp&massflag&ssfrflag
+        subsample_flag=subsample_flag_temp&massflag&ssfrflag&sfrflag
         
         self.v2_env = self.v2_env[subsample_flag]
         self.v2_maincut = self.v2_main[subsample_flag]
@@ -117,17 +119,23 @@ class catalogs:
         r_flag = (self.re_rband == 0.0)
         w3_flag = (self.re_w3band == 0.0)
         err_flag = (self.rdat['err_flag'][flag_for_re]==1) | (self.w3dat['err_flag'][flag_for_re]==1)
+        sersic_flag = (self.rdat['nsersic'][flag_for_re]>6) | (self.w3dat['nsersic'][flag_for_re]>6) #unphysical
+        
+        nsersic_fails = len(self.re_w3band[sersic_flag])
+
+        n_fails_r = len(self.re_rband[r_flag])
+        n_fails_w3 = len(self.re_w3band[w3_flag])
         
         if self.W1: 
             fail_flag = (self.re_w1band == 0.0) | (self.re_w3band == 0.0)
             w1_flag = (self.re_w1band == 0)
             err_flag = (self.w1dat['CERROR'][subsample_flag]==1) | (self.w3dat['err_flag'][flag_for_re]==1) | (self.w1dat['CRE'][subsample_flag]==0) | (np.isnan(self.w1dat['CRE'][subsample_flag]))
+            sersic_flag = (self.w1dat['CN'][subsample_flag]>6) | (self.w3dat['nsersic'][flag_for_re]>6) #unphysical 
+            
             n_fails_w1 = len(self.re_w1band[w1_flag])
-        
-        n_fails_r = len(self.re_rband[r_flag])
-        n_fails_w3 = len(self.re_w3band[w3_flag])
-        
-        self.cut_flags = (~fail_flag)&(~err_flag)
+            nsersic_fails = len(self.re_w3band[sersic_flag])
+            
+        self.cut_flags = (~fail_flag)&(~err_flag)&(~sersic_flag)
         
         #apply optional AGN cut
         if self.cutAGN:
@@ -145,7 +153,7 @@ class catalogs:
             print(f'# WISE AGN in VF subsample: {len(self.v2_maincut[self.wise_agn_flag])}')
             print(f'# BPT AGN in VF subsample: {len(self.v2_maincut[self.agn_kauffman_flag])}')
 
-            self.cut_flags = (~AGN_flags) & (~fail_flag) & (~err_flag)
+            self.cut_flags = (~AGN_flags) & (~fail_flag) & (~err_flag) & (~sersic_flag)
             print(f'Number of galaxies flagged with AGN and a GALFIT error: {len(self.v2_env[(AGN_flags) & (err_flag)])}')
         
         self.re_rband_cut = self.re_rband[self.cut_flags]
@@ -188,7 +196,10 @@ class catalogs:
         if not self.W1:
             print(f'No GALFIT data for {n_fails_w3} w3 galaxies and {n_fails_r} r galaxies.')
         print(f'Total number of galaxies with GALFIT errors or error flags: {int(np.sum(np.ones(len(err_flag))*err_flag))}')
-        print(f'Total number of galaxies (including those with errors/error flags): {n_tot}')
+        print(f'Total number of galaxies with nser>6: {nsersic_fails}')
+
+        print(f'Total number of subsample galaxies before running GALFIT: {n_tot}')
+        print(f'Total number of subsample galaxies after running GALFIT: {len(self.re_w3band_cut)}')
 
         self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
         self.PArats = self.PA_w3band_cut/self.PA_rband_cut          
@@ -418,8 +429,8 @@ class catalogs:
         err_flag_cut = (self.magphyscut['magphysFlag'])
         
         MHI_to_Mstar_cut = MHI_to_Mstar[(v2_main['sgacut_flag']) & (err_flag) & (logmass>8)]
-        logsfr_cut = logsfr[(v2_main['sgacut_flag']) & (err_flag) & (logmass>8)]
-        logmass_cut = logmass[v2_main['sgacut_flag'] & (err_flag) & (logmass>8)]
+        logsfr_cut = logsfr[(v2_main['sgacut_flag']) & (v2_main['massflag']) & (err_flag) & (logmass>8)]
+        logmass_cut = logmass[(v2_main['sgacut_flag']) & (v2_main['massflag']) & (err_flag) & (logmass>8)]
         
         d25_cut = d25[(v2_main['sgacut_flag']) & (err_flag) & (logmass>8)]
         
@@ -427,7 +438,7 @@ class catalogs:
         logmass = logmass[err_flag]
 
         plt.figure(figsize=(10,6))
-        plt.scatter(logmass,logsfr,color='gray',s=3,alpha=0.05,label='VF sample')
+        plt.scatter(logmass,logsfr,color='gray',s=3,alpha=0.05)
         
         if show_HI:
             plt.scatter(logmass_cut,logsfr_cut,marker='^',color='red',s=30,alpha=0.3,label='VF subsample')
@@ -440,10 +451,15 @@ class catalogs:
         
         if show_sizerat:
             plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], 
-                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VF Subsample')
+                        c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VF Subsample',zorder=2)
             cb = plt.colorbar()
-            cb.set_label(label=r'R$_{12}$/R$_r$',size=23)
-            plt.clim(0.1,1)
+            if self.W1:
+                cb.set_label(label=r'R$_{12}$/R$_{3.4}$',size=23)
+                plt.clim(0.65,1.2)
+            if not self.W1:
+                cb.set_label(label=r'R$_{12}$/R$_r$',size=23)
+                plt.clim(0.1,1)
+            
             
         if show_D25:
             plt.scatter(logmass_cut,logsfr_cut, c=d25_cut, cmap='viridis', s=60, 
@@ -462,11 +478,25 @@ class catalogs:
 
         x_p = np.linspace(np.min(logmass),np.max(logmass),1000)
 
-        plt.plot(x_p,p1(x_p),color='black',label='MS fit',alpha=0.7,linewidth=3)
+        plt.plot(x_p,p1(x_p),color='black',label='Main Sequence fit',alpha=0.7,linewidth=3,zorder=2)
         #plt.plot(x_p,p2(x_p),color='blue',label='2d fit')
         print(f'p1 parameters: m={np.round(p1[1],2)}, b={np.round(p1[0],2)}')
         
-        plt.plot(logmass, -11.5+logmass, color='red', linestyle='-', alpha=0.5, label='log(sSFR)>-11.5 limit')
+        xplot = np.sort(logmass,axis=None)
+        
+        plt.plot([xplot[0],np.max(xplot)], [-11.5+xplot[0],-11.5+np.max(xplot)], color='red', linestyle=':', alpha=0.5, label='log(sSFR)>-11.5 limit',zorder=3)
+        
+        plt.axhline(-1.96,color='blue',linestyle='-.',alpha=0.5,label='log(SFR)>-1.96 limit',zorder=3)
+        
+        plt.scatter(logmass_cut[((logsfr_cut-logmass_cut)<-11.5)],logsfr_cut[((logsfr_cut-logmass_cut)<-11.5)],
+                    color='crimson',facecolor='None',s=250,zorder=3)
+        plt.scatter(logmass_cut[logsfr_cut<-1.96],logsfr_cut[logsfr_cut<-1.96],color='blue',
+                    facecolor='None',s=250,zorder=3)
+        
+        plt.scatter(logmass_cut[(logsfr_cut<-1.96)&((logsfr_cut-logmass_cut)<-11.5)],
+                    logsfr_cut[(logsfr_cut<-1.96)&((logsfr_cut-logmass_cut)<-11.5)],edgecolor='black',
+                    facecolor='purple',alpha=0.3,s=250,zorder=1)
+
         
         cb.ax.tick_params(labelsize=15)
         
@@ -558,7 +588,7 @@ class catalogs:
         
         plt.show()
      
-    def r12_vs_rstar(self, sfr_mstar='mstar', savefig=False):
+    def r12_vs_rstar(self, savefig=False):
         
         logsfr = self.magphyscut['logSFR']
         logmass = self.magphyscut['logMstar']
@@ -568,8 +598,11 @@ class catalogs:
         
         logsfr = logsfr[err_flag]
         logmass = logmass[err_flag]
-        
-        r_arcsec = self.re_rband_cut[(self.v2_maincut['VFID']!='VFID1984')&(err_flag)]*0.262
+
+        if self.W1:
+            r_arcsec = self.re_w1band_cut[(self.v2_maincut['VFID']!='VFID1984')&(err_flag)]*2.75
+        if not self.W1:
+            r_arcsec = self.re_rband_cut[(self.v2_maincut['VFID']!='VFID1984')&(err_flag)]*0.262
         w3_arcsec = self.re_w3band_cut[(self.v2_maincut['VFID']!='VFID1984')&(err_flag)]*2.75
         
         rr_dat = [r_arcsec,
@@ -602,56 +635,16 @@ class catalogs:
         labels = ['Full Subsample','Cluster','Rich Group','Poor Group','Filament','Field']
         
         colors=['purple','crimson','black','magenta','green','blue']
-        '''
-        fig = plt.figure(figsize=(30,16))
-        plt.subplots_adjust(hspace=.2,wspace=.3)
         
-        for n in range(1,7):
-            ax = fig.add_subplot(2,3,n)
-            if sfr_mstar=='mstar':
-                plt.scatter(rr_dat[n-1],w3_dat[n-1],alpha=1,c=logmass_dat[n-1],edgecolors='black',
-                            s=150,cmap='viridis')
-            if sfr_mstar=='sfr':
-                plt.scatter(rr_dat[n-1],w3_dat[n-1],alpha=0.9,c=logsfr_dat[n-1],edgecolors='black',
-                            s=150,cmap='plasma')
-            plt.axline((0, 0), slope=1, color='indigo')
-            plt.text(.05, .95, labels[n-1], ha='left', va='top',transform=ax.transAxes,fontsize=25)
-            
-            plt.xlim(0.7,800)
-            plt.ylim(0.7,340)
-            
-            plt.xscale('log')
-            plt.yscale('log')
-
-            plt.xlabel(r'R$_{r}$ (arcsec)',fontsize=25)
-            plt.ylabel(r'R$_{12}$ (arcsec)',fontsize=25)
-        
-            plt.xticks(fontsize=20)
-            plt.yticks(fontsize=20)
-            
-            cb = plt.colorbar()
-            if sfr_mstar=='mstar':
-                cb.set_label(label=r'log(M$_{star}$/M$_{\odot}$)',size=25)
-                plt.clim(8.5,10)
-            if sfr_mstar=='sfr':
-                cb.set_label(label=r'log(SFR/($M_\odot$/yr))',size=25)
-                plt.clim(-1,0.6)
-            cb.ax.tick_params(labelsize=20)
-        
-        if savefig==True:
-            plt.savefig(homedir+'/Desktop/r12_rstar.png', dpi=100, bbox_inches='tight', pad_inches=0.2)
-        
-        plt.show()
-        '''
         #take upper left panel of mstar figure and create one row of three panels, separated according to different mass bins; color-code by sSFR. this plot will be generated regardless of whether the user selects mstar or sfr.
         
-        logsfr = logsfr[logmass>=8.3]
-        r_arcsec = r_arcsec[logmass>=8.3]
-        w3_arcsec = w3_arcsec[logmass>=8.3]
+        logsfr = logsfr[logmass>=8.02]
+        r_arcsec = r_arcsec[logmass>=8.02]
+        w3_arcsec = w3_arcsec[logmass>=8.02]
         envflags = self.v2_envcut[err_flag]
-        envflags = envflags[logmass>=8.3]
+        envflags = envflags[logmass>=8.02]
         
-        logmass = logmass[logmass>=8.3]
+        logmass = logmass[logmass>=8.02]
 
         max_mass = np.max(logmass)
         min_mass = np.min(logmass)
@@ -671,40 +664,9 @@ class catalogs:
         labels = ['Cluster','Cluster','Cluster','Filament/Groups','Filament/Groups','Filament/Groups',
                   'Field','Field','Field']
         
-        '''
-        fig2 = plt.figure(figsize=(25,6))
-        plt.subplots_adjust(hspace=.2,wspace=.3)
-        
-        for n in range(1,4):
-            ax = fig2.add_subplot(1,3,n)
-            #color-code by log(sSFR)
-            plt.scatter(r_arcsec[mass_bins[n-1]],w3_arcsec[mass_bins[n-1]],edgecolors='black',
-                        c=(logsfr[mass_bins[n-1]]-logmass[mass_bins[n-1]]),s=100,cmap='plasma')
-            plt.axline((0, 0), slope=1, color='indigo')
-            
-            cb = plt.colorbar()
-            cb.set_label(label=r'log(sSFR)',size=20)
-            plt.clim(-11,-9)
-            plt.title(titles[n-1],fontsize=20)
-            plt.xlim(0.7,800)
-            plt.ylim(0.7,342)
-            
-            plt.xscale('log')
-            plt.yscale('log')
-
-            plt.xlabel(r'R$_{r}$ (arcsec)',fontsize=20)
-            plt.ylabel(r'R$_{12}$ (arcsec)',fontsize=20)
-        
-            plt.xticks(fontsize=15)
-            plt.yticks(fontsize=15)
-            
-            #plt.text(.05, .95, labels[n-1], ha='left', va='top',transform=ax.transAxes,fontsize=25)
-        '''
-        
         filgroupflag = ((envflags['rich_group_memb'])|(envflags['poor_group_memb'])|(envflags['filament_member']))
         
         fig2 = plt.figure(figsize=(38,28))
-        #fig2 = plt.figure(figsize=(10,2))
         plt.subplots_adjust(hspace=.15,wspace=.2)
         
         for n in range(1,10):
@@ -714,18 +676,24 @@ class catalogs:
                 plt.scatter(r_arcsec[mass_bins[n-1]&envflags['cluster_member']],
                             w3_arcsec[mass_bins[n-1]&envflags['cluster_member']],edgecolors='black',
                         c=(logsfr[mass_bins[n-1]&envflags['cluster_member']]-logmass[mass_bins[n-1]&envflags['cluster_member']]),s=100,cmap='plasma')
+                
+                print('std for cluster:',np.std(w3_arcsec[mass_bins[n-1]&envflags['cluster_member']]/r_arcsec[mass_bins[n-1]&envflags['cluster_member']]))
             
-            elif (n>=4) & (n<6):
+            elif (n>=4) & (n<=6):
                 plt.scatter(r_arcsec[mass_bins[n-1]&filgroupflag],w3_arcsec[mass_bins[n-1]&filgroupflag],
                             edgecolors='black',s=100,
                             c=(logsfr[mass_bins[n-1]&filgroupflag]-logmass[mass_bins[n-1]&filgroupflag]),
-                            cmap='plasma')
+                            cmap='plasma')        
+
+                print('std for filament/groups:',np.std(w3_arcsec[mass_bins[n-1]&filgroupflag]/r_arcsec[mass_bins[n-1]&filgroupflag]))
                 
             else:
                 plt.scatter(r_arcsec[mass_bins[n-1]&envflags['pure_field']],
                             w3_arcsec[mass_bins[n-1]&envflags['pure_field']],edgecolors='black',
                         c=(logsfr[mass_bins[n-1]&envflags['pure_field']]-logmass[mass_bins[n-1]&envflags['pure_field']]),s=100,cmap='plasma')
-            
+
+                print('std for field:', np.std(w3_arcsec[mass_bins[n-1]&envflags['pure_field']]/r_arcsec[mass_bins[n-1]&envflags['pure_field']]))
+
             plt.axline((0, 0), slope=1, color='indigo')
             
             cb = plt.colorbar()
@@ -738,7 +706,7 @@ class catalogs:
             tick_locator = ticker.MaxNLocator(nbins=5)
             cb.locator = tick_locator
             cb.update_ticks()
-            plt.xlim(0.7, 800)
+            plt.xlim(0.7, 1e3)
             plt.ylim(0.7, 342)
             
             plt.xscale('log')
@@ -746,7 +714,10 @@ class catalogs:
             if n in [1,2,3]:
                 plt.title(titles[n-1],fontsize=35,pad=20)
             if n in [7,8,9]:
-                plt.xlabel(r'R$_{r}$ (arcsec)',fontsize=30)
+                if not self.W1:
+                    plt.xlabel(r'R$_{r}$ (arcsec)',fontsize=30)
+                else:
+                    plt.xlabel(r'R$_{3.4}$ (arcsec)',fontsize=30)
             if n in [1,4,7]:
                 plt.ylabel(r'R$_{12}$ (arcsec)',fontsize=30)
         
@@ -754,8 +725,7 @@ class catalogs:
             plt.yticks(fontsize=25)
             
             plt.text(.05, .95, labels[n-1], ha='left', va='top',transform=ax.transAxes,fontsize=35)
-        
-        
+                    
         if savefig==True:
             plt.savefig(homedir+'/Desktop/r12_rstar_all.png', dpi=100, bbox_inches='tight', pad_inches=0.2)
         
@@ -787,11 +757,16 @@ class catalogs:
         #Now calculate distance of each point to the best-fit line
         #Distance = (| a*x1 + b*y1 + c |) / (sqrt( a*a + b*b))
         dist = ((m*logmass[err_flag_cut]) + (-1*logsfr[err_flag_cut]) + b) / (np.sqrt((m)**2 + (1)**2))
+        dist = -1*dist
         
         MHI_to_Mstar_cut = MHI_to_Mstar[err_flag_cut]
         
         plt.figure(figsize=(10,6))
         plt.axhline(1,linestyle='--',color='r',alpha=0.4)
+        
+        t=self.re_w3band_cut[err_flag_cut]
+        t1=self.re_w1band_cut[err_flag_cut]
+        t2=self.v2_envcut[err_flag_cut]
         
         if showHI:
             plt.scatter(dist,self.sizerats[err_flag_cut],color='gray',s=10,alpha=0.3)   #all points
@@ -800,12 +775,22 @@ class catalogs:
             plt.clim(0,1)
         if not showHI:
             plt.scatter(dist,self.sizerats[err_flag_cut],color='blue',s=40,alpha=0.7)   #all points
-        
-        #plt.yscale('log')
-        plt.ylim(0, 1.75)   #artificially trim outliers with size ratios>5 (there is indeed one with ratio~100)
-        
+                
         plt.xlabel(r'Distance from Main Sequence Line',fontsize=17)
-        plt.ylabel(r'Size Ratio ($R_{12}/R_{r}$)',fontsize=17)
+        if self.W1:
+            plt.ylabel(r'Size Ratio ($R_{12}/R_{3.4}$)',fontsize=17)
+            #plt.yscale('log')
+            #plt.ylim(0,2)    
+            
+            print(len(self.sizerats[err_flag_cut & (np.abs(dist<0.5))]))
+            
+            
+            
+            
+            
+        if not self.W1:
+            plt.ylabel(r'Size Ratio ($R_{12}/R_{r}$)',fontsize=17)
+            plt.ylim(0, 1.75)   #artificially trim outliers with size ratios>5 (there is indeed one with ratio~100)
         
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
@@ -1129,7 +1114,7 @@ class catalogs:
         print('K-S p-value (> 0.003 (3sigma), "same distribution"):')
         for n in range(len(env_names)):
             print(env_names[n])
-            print('%.5f'%(kstest(z0mgs_env_mass[n],magphys_env_mass[n])[1]))
+            #print('%.5f'%(kstest(z0mgs_env_mass[n],magphys_env_mass[n])[1]))
         
         if savefig==True:
             plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=100)
@@ -1157,11 +1142,11 @@ class catalogs:
             fieldflag = v2_env['pure_field']
             magphys_mass = self.magphys['logMstar']
             err_flag = (self.magphys['magphysFlag'])
-            magphys_env_mass = [magphys_mass[clusflag&err_flag&(magphys_mass>8.3)], 
-                                magphys_mass[rgflag&err_flag&(magphys_mass>8.3)],
-                                magphys_mass[pgflag&err_flag&(magphys_mass>8.3)], 
-                                magphys_mass[filflag&err_flag&(magphys_mass>8.3)],
-                                magphys_mass[fieldflag&err_flag&(magphys_mass>8.3)]]
+            magphys_env_mass = [magphys_mass[clusflag&err_flag&(magphys_mass>8.02)], 
+                                magphys_mass[rgflag&err_flag&(magphys_mass>8.02)],
+                                magphys_mass[pgflag&err_flag&(magphys_mass>8.02)], 
+                                magphys_mass[filflag&err_flag&(magphys_mass>8.02)],
+                                magphys_mass[fieldflag&err_flag&(magphys_mass>8.02)]]
                                 
         
         env_names = ['cluster','rich group','poor group','filament','field']
@@ -1194,8 +1179,11 @@ class catalogs:
     
     def hist_dist_rats(self, savefig=False):
         
-        mybins=np.linspace(0,3,30)
-        xlabels=['', '', '', '', r'$R_{12}$/$R_r$']
+        mybins=np.linspace(0,3,40)
+        if self.W1:
+            xlabels=['', '', '', '', r'R$_{12}$/R$_{3.4}$']
+        if not self.W1:
+            xlabels=['', '', '', '', r'$R_{12}$/$R_r$']
         colors=['crimson','orange','green','blue','violet']
         labels=['Cluster','Rich Group','Poor Group','Filament','Field']
         
@@ -1234,7 +1222,7 @@ class catalogs:
             ax.set_ylabel(r'N$_{gal}$',fontsize=20)
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
-            plt.xlim(-0.05,1.7)
+            plt.xlim(-0.05,2.2)
             ax.legend(fontsize=14)
         
         if savefig==True:

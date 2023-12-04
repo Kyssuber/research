@@ -41,18 +41,18 @@ def get_bootstrap_confint(d,bootfunc=np.median,nboot=100):
 
 class catalogs:
     
-    def __init__(self,conv=False,MeanMedian='mean',cutAGN=False):
+    def __init__(self,conv=False,MeanMedian='mean',cutAGN=False,W1=False):
         path_to_dir = homedir+'/Desktop/v2-20220820/'
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
         self.v2_main = Table.read(homedir+'/v2_snrcoadd.fits')
         self.magphys = Table.read(path_to_dir+'vf_v2_magphys_07-Jul-2022.fits')
-        self.z0mgs = Table.read(path_to_dir+'vf_v2_z0mgs.fits')
         
         self.MeanMedian = MeanMedian  #whether I plot median or mean size ratios for the self.env_means() figure
         
         self.conv = conv
         print('Convolution: ',str(self.conv))
-        self.cutAGN=cutAGN
+        self.cutAGN = cutAGN
+        self.W1 = W1   #whether I use r-band or W1 for stellar disk sizes
         
         if self.conv==False:
             self.rdat = Table.read(homedir+'/output_params_r_nopsf.fits')
@@ -60,21 +60,34 @@ class catalogs:
         if self.conv==True:
             self.rdat = Table.read(homedir+'/output_params_r_psf.fits')
             self.w3dat = Table.read(homedir+'/output_params_W3_psf.fits')
-    
+        
+        if self.W1:
+            self.w1dat = Table.read(homedir+'/Desktop/v2-20220820/vf_v2_galfit_W1.fits')
+        
         self.cut_cats()
     
     def cut_cats(self):
-        subsample_flag = (self.v2_main['sgacut_flag'])
-        logmass_flag = (self.magphys['logMstar']>8)
-        logmasscut_flag = (self.magphys[self.v2_main['sgacut_flag']]['logMstar']>8)
+        subsample_flag_temp = (self.v2_main['sgacut_flag'])
+        massflag = self.v2_main['massflag']
+        ssfrflag = self.v2_main['sSFR_flag']
+        sfrflag = self.v2_main['SFRflag']
+            
+        #unfortunately, re tables begin with a length of 702, necessitating a separate flag 
+        #(v2_main and the rest are length 6780)
+        flag_for_re = (self.v2_main.copy()[subsample_flag_temp]['massflag']) & (self.v2_main.copy()[subsample_flag_temp]['sSFR_flag']) & (self.v2_main.copy()[subsample_flag_temp]['SFRflag'])
         
-        self.rdat = self.rdat[logmasscut_flag]
-        self.w3dat = self.w3dat[logmasscut_flag]
+        subsample_flag=subsample_flag_temp&massflag&ssfrflag&sfrflag
         
-        self.v2_env = self.v2_env[subsample_flag & logmass_flag]
-        self.v2_maincut = self.v2_main[subsample_flag & logmass_flag]
-        self.magphyscut = self.magphys[subsample_flag & logmass_flag]
-        self.z0mgscut = self.z0mgs[subsample_flag & logmass_flag]
+        self.rdat = self.rdat[flag_for_re]
+        self.w3dat = self.w3dat[flag_for_re]
+        
+        if self.W1:
+            self.w1dat = self.w1dat[subsample_flag]
+            self.re_w1band = self.w1dat['CRE']
+        
+        self.v2_env = self.v2_env[subsample_flag]
+        self.v2_maincut = self.v2_main[subsample_flag]
+        self.magphyscut = self.magphys[subsample_flag]
         
         self.re_rband = self.rdat['re']
         self.re_w3band = self.w3dat['re']
@@ -84,11 +97,22 @@ class catalogs:
         r_flag = (self.re_rband == 0.0)
         w3_flag = (self.re_w3band == 0.0)
         err_flag = (self.rdat['err_flag']==1) | (self.w3dat['err_flag']==1)
+        sersic_flag = (self.rdat['nsersic']>6) | (self.w3dat['nsersic']>6) #unphysical
         
         n_fails_w3 = len(self.re_rband[r_flag])
         n_fails_r = len(self.re_w3band[w3_flag])
         
-        self.cut_flags = (~fail_flag)&(~err_flag)
+        if self.W1: 
+            fail_flag = (self.re_w1band == 0.0) | (self.re_w3band == 0.0)
+            w1_flag = (self.re_w1band == 0)
+            err_flag = (self.w1dat['CERROR']==1) | (self.w3dat['err_flag']==1) | (self.w1dat['CRE']==0) | (np.isnan(self.w1dat['CRE']))
+            sersic_flag = (self.w1dat['CN']>6) | (self.w3dat['nsersic']>6) #unphysical 
+
+            n_fails_w1 = len(self.re_w1band[w1_flag])
+        
+        nsersic_fails = len(self.re_w3band[sersic_flag])
+        
+        self.cut_flags = (~fail_flag)&(~err_flag)&(~sersic_flag)
         
         #apply optional AGN cut
         if self.cutAGN:
@@ -106,25 +130,37 @@ class catalogs:
             print(f'# WISE AGN in VF subsample: {len(self.v2_maincut[self.wise_agn_flag])}')
             print(f'# BPT AGN in VF subsample: {len(self.v2_maincut[self.agn_kauffman_flag])}')
             
-            self.cut_flags = (~AGN_flags) & (~fail_flag) & (~err_flag)
+            self.cut_flags = (~AGN_flags) & (~fail_flag) & (~err_flag) & (~sersic_flag)
+        
         
         self.re_rband_cut = self.re_rband[self.cut_flags]
         self.re_w3band_cut = self.re_w3band[self.cut_flags]
-        self.nser = self.nser[self.cut_flags]
+        if self.W1:
+            self.re_w1band_cut = self.re_w1band[self.cut_flags]
+
+        self.nser = self.nser[self.cut_flags]     #from r-band
         
         #apply final cut to envcut and maincut catalogs
         self.v2_envcut = self.v2_env[self.cut_flags]
         self.v2_maincut = self.v2_maincut[self.cut_flags]
         self.magphyscut = self.magphyscut[self.cut_flags]
-        self.z0mgscut = self.z0mgscut[self.cut_flags]
 
         n_tot = len(self.re_rband)     #should be the same for both r-band and w3
 
-        print(f'No GALFIT data for {n_fails_w3} w3 galaxies and {n_fails_r} r galaxies.')
-        print(f'Total number of galaxies with GALFIT error flags: {int(np.sum(np.ones(len(err_flag))*err_flag))}')
-        print(f'Total number of galaxies (including those with error flags): {n_tot}')
-        print()
+        if self.W1:
+            print(f'No GALFIT data for {n_fails_w3} w3 galaxies, {n_fails_w1} w1 galaxies, and {n_fails_r} r galaxies.')
+        if not self.W1:
+            print(f'No GALFIT data for {n_fails_w3} w3 galaxies and {n_fails_r} r galaxies.')
+        print(f'Total number of galaxies with GALFIT errors or error flags: {int(np.sum(np.ones(len(err_flag))*err_flag))}')
+        print(f'Total number of galaxies with nser>6: {nsersic_fails}')
+
+        print(f'Total number of subsample galaxies before running GALFIT: {n_tot}')
+        print(f'Total number of subsample galaxies after running GALFIT: {len(self.re_w3band_cut)}')
+
         self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
+        
+        if self.W1:
+            self.sizerats = (self.re_w3band_cut*2.75)/(self.re_w1band_cut*2.75)
         
         #introduce some important quantities for infall/core distinction
         #define core as being within 1 R200 of the cluster center, infalling as between 1 and 5 R200 from the center
@@ -140,11 +176,11 @@ class catalogs:
         virial_1flag = (dist<=1.5*virial_radius)
         virial_5flag = (dist>virial_radius)&(dist<=five_vir)
         
-        self.data_core = self.sizerats[self.v2_envcut['cluster_member']]
-        self.data_fall = self.sizerats[virial_5flag & (~self.v2_envcut['cluster_member'])]
+        self.data_core = self.sizerats[(self.v2_envcut['cluster_member']) | (virial_1flag)]
+        self.data_fall = self.sizerats[(virial_5flag) & (~self.v2_envcut['cluster_member'])]
         
         self.data = [self.data_core, self.data_fall]
-        self.mass_data = [self.magphyscut['logMstar'][self.v2_envcut['cluster_member']], 
+        self.mass_data = [self.magphyscut['logMstar'][self.v2_envcut['cluster_member'] | (virial_1flag)],
                           self.magphyscut['logMstar'][virial_5flag & (~self.v2_envcut['cluster_member'])]]
         
         #lastly...some code does not function (pun intended) if I do not explicltly remove masked rows
@@ -340,9 +376,14 @@ class catalogs:
     def wisesize_hist(self, savefig=False):
         
         labels = ['Cluster Galaxies', 'Infalling Galaxies']
-        titles = ['WISESize Size Ratio Distribution (r-band nser<2)', '']
+        titles = ['WISESize Size Ratio Distribution', '']
         colors = ['crimson', 'blue']
-        xlabels = ['',r'R$_{12}$/R$_r$']
+        
+        if self.W1:
+            xlabels = ['',r'R$_{12}$/R$_{3.4}$']
+        
+        else:
+            xlabels = ['',r'R$_{12}$/R$_r$']
 
         mybins=np.linspace(0,3,40)
 
@@ -353,7 +394,10 @@ class catalogs:
             ax = fig.add_subplot(2,1,panel+1)
             plt.hist(self.data[panel],bins=mybins,color=colors[panel], alpha=0.7,label=labels[panel],
                      density=False,cumulative=False)
-            plt.hist([], color='white', label=r'0 < R$_{12}$/R$_{r}$ < 2')
+            if not self.W1:
+                plt.hist([], color='white', label=r'0 < R$_{12}$/R$_{r}$ < 2')
+            if self.W1:
+                plt.hist([], color='white', label=r'R$_{12}$/R$_{3.4}$ < 2')
             plt.title(titles[panel],fontsize=16)
             ax.set_xlabel(xlabels[panel],fontsize=20)
             ax.set_ylabel(r'N$_{gal}$',fontsize=20)
@@ -389,7 +433,6 @@ class catalogs:
         
         mass_data = self.mass_data.copy()   #logmass data
         data = self.data.copy()   #Re data
-        logmass = self.z0mgscut['logmass'].copy()
         
         nbins=nbins
         
@@ -444,7 +487,10 @@ class catalogs:
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
             
-        plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
+        if self.W1:
+            plt.ylabel(r'R$_{12}$/R$_{3.4}$',fontsize=18)
+        if not self.W1:
+            plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
         plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
         
         plt.xticks(fontsize=15)
@@ -469,7 +515,7 @@ if __name__ == '__main__':
         MeanMedian will propagate to all plots; can either be 'mean' or 'median.' cutAGN
         will do precisely that, flagging both BPT AGN and AGN based on WISE magnitude colors.
     lcs.wisesize_hist(savefig=False) --> generates vertically-oriented histogram subplots of 
-        R12/Rr distribution, separated into cluster vs. all else (external).
+        R12/Rr or R12/R3.4 distribution, separated into cluster vs. all else (external).
     lcs.LCS_hist(ReDisk='Re',savefig=False) --> generates same type of histogram plot as above but with 
         the actual LCS values. 'Re' or 'Disk' to instruct which column to use for size ratios.
     lcs.wisesize_mass(savefig=False) --> generates scatterplot of size ratio vs. mass bin using 
@@ -477,8 +523,6 @@ if __name__ == '__main__':
         Masses are from John Moustakas' SED fitting. 
     lcs.wisesize_mass(nbins=3, savefig=False) --> generates scatterplot of size ratio vs. mass bin 
         using VFS data, the format being similar to a skeleton version of Figure 13 from Finn+18. 
-        I use z0mgs masses here (odd results with MAGPHYS for min/max, also many galaxies with nan 
-        or masked values). 
     """)
     print('-----------------------------------------------------')
     print()
