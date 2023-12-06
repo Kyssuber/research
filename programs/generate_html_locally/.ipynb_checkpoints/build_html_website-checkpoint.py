@@ -133,10 +133,15 @@ class HomePage():
                     else:
                         group_rows = self.cutcat[[True if str(x)==str(self.group_names[i]) else False for x in self.group_names]]
                         primary_row = group_rows[group_rows['primaryGroup_flag']]   #all column information for the primary galaxy
-                        #pagename = primary_row['VFID'][0]+'.html'   #name of galaxy html page
-                        pagename = self.cutcat['VFID'][i]+'.html'
+                        try:
+                            pagename = primary_row['VFID'][0]+'.html'   #name of galaxy html page
+                        except:
+                            print('Unable to create htmlpage for '+self.cutcat['VFID'][i])
+                            html.write('<td>'+str(self.group_names[i])+'</a></td>\n')   #if the primary_row is empty (for whatever reason), just skip this formality. Ich gebe auf.
+                        
                         print('Linking htmlpage for '+str(self.cutcat['VFID'][i])+' to '+pagename)
                         html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.group_names[i])+'</a></td>\n')   #hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        
                         print('<td><a href='+self.path_to_galhtml+pagename+'>'+str(self.group_names[i])+'</a></td>\n')
                         
                 #if galfit simply *failed* (or the primary galaxy is not a subsample member), disable hyperlink
@@ -363,8 +368,8 @@ class GalPage():
         try:
             bool_masks = [self.w3_mask_bool, self.w1_mask_bool, None]
         except:
-            bool_masks = [np.zeros((len(self.wise_im),len(self.wise_im)))+1, 
-                          np.zeros((len(self.w1_im),len(self.w1_im)))+1, None]
+            bool_masks = [np.zeros(self.wise_im.shape)+1, 
+                          np.zeros(self.w1_im.shape)+1, None]
             print(f'{self.VFID} has no mask images.')
         
         plt.figure(figsize=(12,6))
