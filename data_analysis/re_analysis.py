@@ -18,6 +18,7 @@ from scipy.stats import kstest
 from scipy.stats import binned_statistic
 from scipy.stats import spearmanr
 from scipy.stats import linregress
+from scipy.stats import ttest_1samp
 from matplotlib import ticker
 
 import os
@@ -428,11 +429,11 @@ class catalogs:
         err_flag = (magphys['magphysFlag'])
         err_flag_cut = (self.magphyscut['magphysFlag'])
         
-        MHI_to_Mstar_cut = MHI_to_Mstar[(v2_main['sgacut_flag']) & (err_flag) & (logmass>8)]
-        logsfr_cut = logsfr[(v2_main['sgacut_flag']) & (v2_main['massflag']) & (err_flag) & (logmass>8)]
-        logmass_cut = logmass[(v2_main['sgacut_flag']) & (v2_main['massflag']) & (err_flag) & (logmass>8)]
+        MHI_to_Mstar_cut = MHI_to_Mstar[(v2_main['sgacut_flag']) & (err_flag)]
+        logsfr_cut = logsfr[(v2_main['sgacut_flag']) & (err_flag)]
+        logmass_cut = logmass[(v2_main['sgacut_flag']) & (err_flag)]
         
-        d25_cut = d25[(v2_main['sgacut_flag']) & (err_flag) & (logmass>8)]
+        d25_cut = d25[(v2_main['sgacut_flag']) & (err_flag)]
         
         logsfr = logsfr[err_flag]
         logmass = logmass[err_flag]
@@ -487,15 +488,18 @@ class catalogs:
         plt.plot([xplot[0],np.max(xplot)], [-11.5+xplot[0],-11.5+np.max(xplot)], color='red', linestyle=':', alpha=0.5, label='log(sSFR)>-11.5 limit',zorder=3)
         
         plt.axhline(-1.96,color='blue',linestyle='-.',alpha=0.5,label='log(SFR)>-1.96 limit',zorder=3)
+        plt.axvline(8.02,color='green',linestyle='--',alpha=0.5,label=r'log(M$_*$)>8.02 limit',zorder=3)
         
         plt.scatter(logmass_cut[((logsfr_cut-logmass_cut)<-11.5)],logsfr_cut[((logsfr_cut-logmass_cut)<-11.5)],
-                    color='crimson',facecolor='None',s=250,zorder=3)
-        plt.scatter(logmass_cut[logsfr_cut<-1.96],logsfr_cut[logsfr_cut<-1.96],color='blue',
-                    facecolor='None',s=250,zorder=3)
+                    color='crimson',facecolor='None',s=100,zorder=3)
+        plt.scatter(logmass_cut[logsfr_cut<-1.96],logsfr_cut[logsfr_cut<-1.96],color='crimson',
+                    facecolor='None',s=100,zorder=3)
+        plt.scatter(logmass_cut[logmass_cut<8.02],logsfr_cut[logmass_cut<8.02],color='crimson',
+                    facecolor='None',s=100,zorder=3)
         
-        plt.scatter(logmass_cut[(logsfr_cut<-1.96)&((logsfr_cut-logmass_cut)<-11.5)],
-                    logsfr_cut[(logsfr_cut<-1.96)&((logsfr_cut-logmass_cut)<-11.5)],edgecolor='black',
-                    facecolor='purple',alpha=0.3,s=250,zorder=1)
+        #plt.scatter(logmass_cut[(logsfr_cut<-1.96)&((logsfr_cut-logmass_cut)<-11.5)],
+        #            logsfr_cut[(logsfr_cut<-1.96)&((logsfr_cut-logmass_cut)<-11.5)],edgecolor='black',
+        #            facecolor='purple',alpha=0.3,s=100,zorder=1)
 
         
         cb.ax.tick_params(labelsize=15)
@@ -509,7 +513,7 @@ class catalogs:
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
         
-        plt.legend(fontsize=15)
+        plt.legend(fontsize=12)
 
         if savefig==True:
             plt.savefig(homedir+'/Desktop/sfrmstar_magphys.png', dpi=100, bbox_inches='tight', pad_inches=0.2)
@@ -706,8 +710,8 @@ class catalogs:
             tick_locator = ticker.MaxNLocator(nbins=5)
             cb.locator = tick_locator
             cb.update_ticks()
-            plt.xlim(0.7, 1e3)
-            plt.ylim(0.7, 342)
+            plt.xlim(3, 1e2)
+            plt.ylim(1.5, 130)
             
             plt.xscale('log')
             plt.yscale('log')
@@ -725,7 +729,7 @@ class catalogs:
             plt.yticks(fontsize=25)
             
             plt.text(.05, .95, labels[n-1], ha='left', va='top',transform=ax.transAxes,fontsize=35)
-                    
+             
         if savefig==True:
             plt.savefig(homedir+'/Desktop/r12_rstar_all.png', dpi=100, bbox_inches='tight', pad_inches=0.2)
         
@@ -1063,7 +1067,9 @@ class catalogs:
             
         plt.show()    
         
-        
+        t_stat, p_val = ttest_1samp(a=re_data[0], popmean = central_pts[-1])
+        print(central_pts[0],central_pts[-1])
+        print(t_stat,p_val)
         
     
     def mass_hist(self, z0mgs_comp=False, savefig=False):

@@ -191,25 +191,25 @@ class catalogs:
         
     def LCS_hist(self, ReDisk='Re', savefig=False):
         
-        lcs_tab = Table.read(homedir+'/Desktop/misc_cats/LCS_final_sample.fits')
+        lcs_tab = Table.read(homedir+'/Desktop/misc_cats/LCS_paper1_final_sample.fits')
         disk_sizes = lcs_tab['sizeratio_disk']
         re_sizes = lcs_tab['sizeratio_re']
         
         #if disk sizes, restrict B/T ratio; if Re, restrict sersic index
         if ReDisk=='Re':
-            infall_flag = (lcs_tab['infall']) & (lcs_tab['sersic_n']<2)
+            ext_flag = (~lcs_tab['core']) & (lcs_tab['sersic_n']<2)
             core_flag = (lcs_tab['core']) & (lcs_tab['sersic_n']<2)
         if ReDisk=='Disk':
-            infall_flag = (lcs_tab['infall']) & (lcs_tab['BT']<0.3)
+            ext_flag = (~lcs_tab['core']) & (lcs_tab['BT']<0.3)
             core_flag = (lcs_tab['core']) & (lcs_tab['BT']<0.3)
                     
-        data = [disk_sizes[core_flag],disk_sizes[infall_flag]]
+        data = [disk_sizes[core_flag],disk_sizes[ext_flag]]
         titles = ['LCS Disk Size Ratio Distribution (B/T<0.3)', '']
         if ReDisk=='Re':
-            data = [re_sizes[core_flag],re_sizes[infall_flag]]
+            data = [re_sizes[core_flag],re_sizes[ext_flag]]
             titles = ['LCS Re Size Ratio Distribution (nser<2)', '']
         
-        labels = ['Core Galaxies', 'Infalling Galaxies']
+        labels = ['Core Galaxies', 'External Galaxies']
         
         colors = ['crimson', 'blue']
         xlabels = ['',r'R$_{24}$/R$_r$']
@@ -238,18 +238,18 @@ class catalogs:
         
         #ks-test statistics
         uncertainty_core = np.std(data[0][data[0]<=3])/np.sqrt(len(data[0][data[0]<=3]))
-        uncertainty_infall = np.std(data[0][data[0]<=3])/np.sqrt(len(data[0][data[0]<=3]))
+        uncertainty_ext = np.std(data[1][data[1]<=3])/np.sqrt(len(data[1][data[1]<=3]))
         
         print('K-S p-value (> 0.003 (3sigma), "same distribution"):')
         print('%.5f'%(kstest(data[0],data[1])[1]))
         print()
         print('Mean core size ratio: %.3f'%(np.mean(data[0])))
         print('Median core size ratio: %.3f'%(np.median(data[0])))
-        print('Mean infalling size ratio: %.3f'%(np.mean(data[1])))
-        print('Median infalling size ratio: %.3f'%(np.median(data[1])))
+        print('Mean external size ratio: %.3f'%(np.mean(data[1])))
+        print('Median external size ratio: %.3f'%(np.median(data[1])))
         print()
         print('Core mean/median uncertainty: %.3f'%uncertainty_core)
-        print('Infalling mean/median uncertainty: %.3f'%uncertainty_infall)
+        print('External mean/median uncertainty: %.3f'%uncertainty_ext)
     
     def LCS_mass(self, ReDisk='Re', savefig=False):
         
@@ -262,14 +262,16 @@ class catalogs:
         
         #if disk sizes, restrict B/T ratio; if Re, restrict sersic index
         if ReDisk=='Re':
-            infall_flag = (lcs_tab['infall']) & (lcs_tab['sersic_n']<2)
+            ext_flag = (~lcs_tab['core']) & (lcs_tab['sersic_n']<2)
             core_flag = (lcs_tab['core']) & (lcs_tab['sersic_n']<2)
-            data = [re_sizes[core_flag],re_sizes[infall_flag]]
+            data = [re_sizes[core_flag],re_sizes[ext_flag]]
+            figname = homedir+'/Desktop/LCS_comp_mass_re.png'
         if ReDisk=='Disk':
-            infall_flag = (lcs_tab['infall']) & (lcs_tab['BT']<0.3)
+            ext_flag = (~lcs_tab['core']) & (lcs_tab['BT']<0.3)
             core_flag = (lcs_tab['core']) & (lcs_tab['BT']<0.3)
-            data = [disk_sizes[core_flag],disk_sizes[infall_flag]]
-        mass_data = [lcs_tab['logMstar'][core_flag],lcs_tab['logMstar'][infall_flag]]
+            data = [disk_sizes[core_flag],disk_sizes[ext_flag]]
+            figname = homedir+'/Desktop/LCS_comp_mass_disk.png'
+        mass_data = [lcs_tab['logMstar'][core_flag],lcs_tab['logMstar'][ext_flag]]
         
         bin_med_clus, bin_edges_clus, binnumber_clus = binned_statistic(mass_data[0],data[0],statistic='median', bins=nbins,range=[(9, 11)])
         bin_centers_clus = .5*(bin_edges_clus[:-1]+bin_edges_clus[1:])
@@ -307,20 +309,20 @@ class catalogs:
         plt.figure(figsize=(8,6))
         
         plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Core',zorder=1)
-        plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='Infall',zorder=1)
+        plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='External',zorder=1)
         plt.scatter(bin_centers_clus, bin_med_clus, color='crimson', s=250, edgecolors='black', label='<Core>',zorder=3)
-        plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label='<Infall>',zorder=3)
+        plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label='<External>',zorder=3)
 
         for n in range(nbins):
             plt.plot([bin_centers_clus[n],bin_centers_clus[n]], [err_clus[n][0],err_clus[n][1]],color='crimson',zorder=2)
             #create lower, upper caps on errorbars
-            plt.plot([bin_centers_clus[n]-0.08,bin_centers_clus[n]+0.08],[err_clus[n][0],err_clus[n][0]],color='crimson',zorder=2)  
-            plt.plot([bin_centers_clus[n]-0.08,bin_centers_clus[n]+0.08],[err_clus[n][1],err_clus[n][1]],color='crimson',zorder=2)
+            plt.plot([bin_centers_clus[n]-0.05,bin_centers_clus[n]+0.05],[err_clus[n][0],err_clus[n][0]],color='crimson',zorder=2)  
+            plt.plot([bin_centers_clus[n]-0.05,bin_centers_clus[n]+0.05],[err_clus[n][1],err_clus[n][1]],color='crimson',zorder=2)
 
             plt.plot([bin_centers_fall[n],bin_centers_fall[n]], [err_fall[n][0],err_fall[n][1]],color='blue',zorder=2)
             #create lower, upper caps on errorbars
-            plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
-            plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
+            plt.plot([bin_centers_fall[n]-0.05,bin_centers_fall[n]+0.05],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
+            plt.plot([bin_centers_fall[n]-0.05,bin_centers_fall[n]+0.05],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
             
         plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
         plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
@@ -369,13 +371,13 @@ class catalogs:
         plt.legend(fontsize=14)
         '''
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/LCS_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
+            plt.savefig(figname, bbox_inches='tight', pad_inches=0.2, dpi=100)
 
         plt.show()    
 
     def wisesize_hist(self, savefig=False):
         
-        labels = ['Cluster Galaxies', 'Infalling Galaxies']
+        labels = ['Cluster Galaxies', 'External Galaxies']
         titles = ['WISESize Size Ratio Distribution', '']
         colors = ['crimson', 'blue']
         
@@ -398,7 +400,7 @@ class catalogs:
                 plt.hist([], color='white', label=r'0 < R$_{12}$/R$_{r}$ < 2')
             if self.W1:
                 plt.hist([], color='white', label=r'R$_{12}$/R$_{3.4}$ < 2')
-            plt.title(titles[panel],fontsize=16)
+            #plt.title(titles[panel],fontsize=16)
             ax.set_xlabel(xlabels[panel],fontsize=20)
             ax.set_ylabel(r'N$_{gal}$',fontsize=20)
             plt.xticks(fontsize=15)
@@ -423,11 +425,11 @@ class catalogs:
         print()
         print('Mean core size ratio: %.3f'%(np.mean(data_core[data_core<=3])))
         print('Median core size ratio: %.3f'%(np.median(data_core[data_core<=3])))
-        print('Mean infalling size ratio: %.3f'%(np.mean(data_fall[data_fall<=3])))
-        print('Median infalling size ratio: %.3f'%(np.median(data_fall[data_fall<=3])))
+        print('Mean external size ratio: %.3f'%(np.mean(data_fall[data_fall<=3])))
+        print('Median external size ratio: %.3f'%(np.median(data_fall[data_fall<=3])))
         print()
         print('Core mean/median uncertainty: %.3f'%(np.std(data_core[data_core<=3])/np.sqrt(len(data_core[data_core<=3]))))
-        print('Infalling mean/median uncertainty: %.3f'%(np.std(data_fall[data_fall<=3])/np.sqrt(len(data_fall[data_fall<=3])))) 
+        print('External mean/median uncertainty: %.3f'%(np.std(data_fall[data_fall<=3])/np.sqrt(len(data_fall[data_fall<=3])))) 
     
     def wisesize_mass(self, nbins=3, savefig=False):
         
@@ -472,9 +474,9 @@ class catalogs:
         plt.figure(figsize=(8,6))
         
         plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Cluster',zorder=1)
-        plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='Infall',zorder=1)
+        plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='External',zorder=1)
         plt.scatter(bin_centers_clus, bin_med_clus, color='crimson', s=250, edgecolors='black', label='<Cluster>',zorder=3)
-        plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label='<Infall>',zorder=3)
+        plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label='<External>',zorder=3)
 
         for n in range(nbins):
             plt.plot([bin_centers_clus[n],bin_centers_clus[n]], [err_clus[n][0],err_clus[n][1]],color='crimson',zorder=2)
@@ -496,7 +498,7 @@ class catalogs:
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
         
-        plt.title('Median Re Size Ratios vs. Stellar Mass (VFS)',fontsize=20)
+        #plt.title('Median Re Size Ratios vs. Stellar Mass (VFS)',fontsize=20)
         #plt.ylim(0.5,0.92)
         plt.xlim(8,11.)
         plt.legend(fontsize=14)
