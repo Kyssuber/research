@@ -32,6 +32,9 @@ from midi2audio import FluidSynth
 from scipy.stats import scoreatpercentile
 from astropy.visualization import simple_norm
 
+homedir=os.getenv("HOME")
+
+plt.rcParams['animation.ffmpeg_path'] = homedir+'/Downloads/ffmpeg' 
 
 def define_strips(fits_type, filepath, gal_name, filename, vf, r25_multiple_x, r25_multiple_y):
 
@@ -180,7 +183,8 @@ def save_midi_file(t_data, midi_data, volume, bpm, midi_savename, VFID=None):
     #create midi file object, add tempo
     my_midi_file = MIDIFile(1) #one track
     my_midi_file.addTempo(track=0,time=0,tempo=bpm) #only one track, so track=0th track; begin at time=0, tempo is bpm
-
+    my_midi_file.addProgramChange(tracknum=0, channel=0, time=0, program=10)
+    
     #add midi notes to file
     for i in range(len(t_data)):
         my_midi_file.addNote(track=0,channel=0,pitch=midi_data[i],time=t_data[i],duration=2,volume=vel_data[i])
@@ -291,7 +295,7 @@ def create_animation_cutout(fits_type, filepath, filename, im, lower_bound_x, up
     line_anim.save(vid_name_cutout,fps=len(X_VALS)/time)
     plt.close()
 
-def convert_to_wav(midi_savename,wav_savename,soundfont,gain=2):
+def convert_to_wav(midi_savename,wav_savename,soundfont,gain=3):
     #the .sf2 file was downloaded from internet; can select alternative .sf2 files which act as converter maps between midi values and notes.
     #gain = 2; helps control volume. if run without, then resulting file is too soft. :-( 
     
