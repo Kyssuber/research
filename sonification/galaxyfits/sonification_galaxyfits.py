@@ -297,7 +297,7 @@ def create_animation_cutout(fits_type, filepath, filename, im, lower_bound_x, up
 
 def convert_to_wav(midi_savename,wav_savename,soundfont,gain=3):
     #the .sf2 file was downloaded from internet; can select alternative .sf2 files which act as converter maps between midi values and notes.
-    #gain = 2; helps control volume. if run without, then resulting file is too soft. :-( 
+    #gain = 3; helps control volume. if run without, then resulting file is too soft. :-( 
     
     fs = FluidSynth(sound_font=soundfont, gain=gain)
     fs.midi_to_audio(midi_savename, wav_savename)  
