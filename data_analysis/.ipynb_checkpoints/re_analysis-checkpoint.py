@@ -52,7 +52,7 @@ class catalogs:
         self.MADmultiplier = MADmultiplier
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
         self.v2_main = Table.read(homedir+'/v2_snrcoadd.fits')
-        self.magphys = Table.read(path_to_dir+'vf_v2_magphys_07-Jul-2022.fits')
+        self.magphys = Table.read(path_to_dir+'/vf_v2_magphys_legacyExt_final.fits')
         self.z0mgs = Table.read(path_to_dir+'vf_v2_z0mgs.fits')
         self.HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
         self.hyp_tab = Table.read(path_to_dir+'vf_v2_hyperleda.fits')
@@ -103,7 +103,7 @@ class catalogs:
         self.hyp_tab = self.hyp_tab[subsample_flag]
         self.sgaparams = self.sgaparams[flag_for_re]   #also begins at length 702...
         self.kimparams = self.kimparams[flag_for_re]   #and this.
-        self.roseparams = self.roseparams[flag_for_re] #AND THIS...stoopid mass cut.
+        self.roseparams = self.roseparams[flag_for_re] #AND THIS...stupid mass cut.
                 
         if self.W1:
             self.re_w1band = self.w1dat['CRE'][subsample_flag]
@@ -241,10 +241,10 @@ class catalogs:
         for index in range(len(m_clus)):
             
             #for every cluster galaxy, randomly choose two galaxies from each environment with masses within 0.3 dex of the cluster galaxy mass
-            field_pool = m_field[(m_field['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_field['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
-            rg_pool = m_rg[(m_rg['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_rg['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
-            pg_pool = m_pg[(m_pg['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_pg['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
-            fil_pool = m_fil[(m_fil['logMstar'] < (m_clus['logMstar'][index]+n_dex)) & (m_fil['logMstar'] > (m_clus['logMstar'][index]-n_dex))]
+            field_pool = m_field[(m_field['logMstar_med'] < (m_clus['logMstar_med'][index]+n_dex)) & (m_field['logMstar_med'] > (m_clus['logMstar_med'][index]-n_dex))]
+            rg_pool = m_rg[(m_rg['logMstar_med'] < (m_clus['logMstar_med'][index]+n_dex)) & (m_rg['logMstar_med'] > (m_clus['logMstar_med'][index]-n_dex))]
+            pg_pool = m_pg[(m_pg['logMstar_med'] < (m_clus['logMstar_med'][index]+n_dex)) & (m_pg['logMstar_med'] > (m_clus['logMstar_med'][index]-n_dex))]
+            fil_pool = m_fil[(m_fil['logMstar_med'] < (m_clus['logMstar_med'][index]+n_dex)) & (m_fil['logMstar_med'] > (m_clus['logMstar_med'][index]-n_dex))]
             
             #the 'pools' of galaxies from which the mass-matched samples will be drawn
             pools = [field_pool, rg_pool, pg_pool, fil_pool]
@@ -276,8 +276,8 @@ class catalogs:
                 index_sizes = np.where(VFID==self.v2_maincut['VFID'])[0]
                 index_sizes = index_sizes[0]
                 self.matched_sizes[env].append(self.sizerats[index_sizes])
-                self.matched_SFR[env].append(self.magphyscut['logSFR'][index_sizes])
-                self.matched_Mstar[env].append(self.magphyscut['logMstar'][index_sizes])
+                self.matched_SFR[env].append(self.magphyscut['logSFR_med'][index_sizes])
+                self.matched_Mstar[env].append(self.magphyscut['logMstar_med'][index_sizes])
                 
     def inclination_check(self, savefig=False):
         
@@ -289,8 +289,8 @@ class catalogs:
         err_flag_cut = (self.magphyscut['magphysFlag'])
         
         #cut logsfr, logmass
-        logsfr_cut = self.magphyscut['logSFR'][err_flag_cut]
-        logmass_cut = self.magphyscut['logMstar'][err_flag_cut]
+        logsfr_cut = self.magphyscut['logSFR_med'][err_flag_cut]
+        logmass_cut = self.magphyscut['logMstar_med'][err_flag_cut]
         
         #cut size ratio, optical axis ratio arrays
         sizerats = self.sizerats[err_flag_cut]
@@ -299,7 +299,7 @@ class catalogs:
         x = [BA, BA[(logsfr_cut>-6)], BA[(logmass_cut>6)]]
         y = [sizerats, logsfr_cut[(logsfr_cut>-6)], logmass_cut[(logmass_cut>6)]]
         colors = ['crimson','green','blue']
-        y_labels = [r'R$_{12}$/R$_r$', 'logSFR', r'log$M_*$']
+        y_labels = [r'R$_{12}$/R$_r$', 'logSFR_med', r'log$M_*$']
         png_titles = ['Sizerat vs BA', 'SFR vs BA', 'Mstar vs BA']
         
         fig=plt.figure(figsize=(20,4))
@@ -372,7 +372,7 @@ class catalogs:
         
         mass_bins = np.arange(6,11.5,0.15)
         
-        logmass = self.magphys['logMstar']
+        logmass = self.magphys['logMstar_med']
         
         #remove entries where there is no magphys data available for that galaxy
         err_flag = (self.magphys['magphysFlag'])
@@ -414,7 +414,7 @@ class catalogs:
         d25 = 10**(hyp_tab['logd25'])
                 
         #prepare MHI_to_Mstar data for colorbar
-        MHI_to_Mstar = HI_tab['MHI']/(10**magphys['logMstar'])
+        MHI_to_Mstar = HI_tab['MHI']/(10**magphys['logMstar_med'])
         
         for n in range(len(MHI_to_Mstar)):
             if HI_tab['MHI'].mask[n]:     #if value is masked, set to be -999
@@ -422,8 +422,8 @@ class catalogs:
             else:
                 MHI_to_Mstar[n] = MHI_to_Mstar[n] if ((np.log(HI_tab['MHI'][n])>0) & (MHI_to_Mstar[n]<10) & (MHI_to_Mstar[n]!=1)) else -999
         
-        logsfr = magphys['logSFR']
-        logmass = magphys['logMstar']
+        logsfr = magphys['logSFR_med']
+        logmass = magphys['logMstar_med']
         
         #remove entries where there is no magphys data available for that galaxy
         err_flag = (magphys['magphysFlag'])
@@ -451,7 +451,7 @@ class catalogs:
             plt.clim(0,1)
         
         if show_sizerat:
-            plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], 
+            plt.scatter(self.magphyscut['logMstar_med'][err_flag_cut],self.magphyscut['logSFR_med'][err_flag_cut], 
                         c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VF Subsample',zorder=2)
             cb = plt.colorbar()
             if self.W1:
@@ -557,7 +557,7 @@ class catalogs:
             plt.clim(0,1)
         
         if show_sizerat:
-            plt.scatter(self.magphyscut['logMstar'][err_flag_cut],self.magphyscut['logSFR'][err_flag_cut], 
+            plt.scatter(self.magphyscut['logMstar_med'][err_flag_cut],self.magphyscut['logSFR_med'][err_flag_cut], 
                         c=self.sizerats[err_flag_cut], cmap='viridis', s=60, alpha=0.6, label='VF Subsample')
             cb = plt.colorbar()
             cb.set_label(label=r'R$_{12}$/R$_r$',size=23)
@@ -594,8 +594,8 @@ class catalogs:
      
     def r12_vs_rstar(self, savefig=False):
         
-        logsfr = self.magphyscut['logSFR']
-        logmass = self.magphyscut['logMstar']
+        logsfr = self.magphyscut['logSFR_med']
+        logmass = self.magphyscut['logMstar_med']
         
         #remove entries where there is no magphys data available for that galaxy
         err_flag = (self.magphyscut['magphysFlag'])
@@ -741,10 +741,10 @@ class catalogs:
         b = -9.05
         
         #prepare MHI_to_Mstar data for colorbar
-        MHI_to_Mstar = self.HI_tab_cut['MHI']/(10**self.magphyscut['logMstar'])
+        MHI_to_Mstar = self.HI_tab_cut['MHI']/(10**self.magphyscut['logMstar_med'])
         
-        logsfr = self.magphyscut['logSFR']
-        logmass = self.magphyscut['logMstar']
+        logsfr = self.magphyscut['logSFR_med']
+        logmass = self.magphyscut['logMstar_med']
         
         #fit main-sequence line to data (1D --> p1; parameters taken from sfrmstar_magphys)
         Mstar_full = logmass
@@ -1075,7 +1075,7 @@ class catalogs:
     def mass_hist(self, z0mgs_comp=False, savefig=False):
         
         z0mgs_mass = self.z0mgscut['logmass']
-        magphys_mass = self.magphyscut['logMstar']
+        magphys_mass = self.magphyscut['logMstar_med']
         
         #remove entries where there is no magphys data available for that galaxy
         err_flag = (self.magphyscut['magphysFlag'])
@@ -1129,7 +1129,7 @@ class catalogs:
  
     def mass_hist_oneplot(self, fullsample=False, savefig=False):
         
-        magphys_mass = self.magphyscut['logMstar']
+        magphys_mass = self.magphyscut['logMstar_med']
         
         #remove entries where there is no magphys data available for that galaxy
         err_flag = (self.magphyscut['magphysFlag'])
@@ -1146,7 +1146,7 @@ class catalogs:
             pgflag = v2_env['poor_group_memb']
             filflag = v2_env['filament_member']
             fieldflag = v2_env['pure_field']
-            magphys_mass = self.magphys['logMstar']
+            magphys_mass = self.magphys['logMstar_med']
             err_flag = (self.magphys['magphysFlag'])
             magphys_env_mass = [magphys_mass[clusflag&err_flag&(magphys_mass>8.02)], 
                                 magphys_mass[rgflag&err_flag&(magphys_mass>8.02)],
