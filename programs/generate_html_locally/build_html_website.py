@@ -32,8 +32,8 @@ from IPython.display import clear_output
 
 class HomePage():
     def __init__(self,website_title=None,home_color=None,homepage_name=None,catalog=None,local_path=None,
-              path_to_galhtml=None,path_to_params=None,LS_cutout_folder=None,LS_mosaic_folder=None,mask_folder=None,fits_folder=None,
-                 gal_mosaic_folder=None,indices=None):
+              path_to_galhtml=None,path_to_params=None,LS_cutout_folder=None,LS_mosaic_folder=None,fits_folder=None,
+                 gal_mosaic_folder=None,indices=None,magphys=None):
         
         #index = 0 for w3_nopsf, 1 for w3_psf, 2 for w1_nopsf, 3 for w1_psf
         if indices is None:
@@ -42,10 +42,10 @@ class HomePage():
             self.indices = indices
         
         self.cat = Table.read(catalog)   #vf subsample catalog
+        self.magphys = Table.read(magphys)
         self.path_to_galhtml = path_to_galhtml   #path to the folder containing each individual galpage html file
         self.local_path = local_path   #path to the folder containing html directories/files when running the website locally
         self.homepage_name = homepage_name
-        self.mask_mosaics = mask_folder   #path to the folder holding the .png mask mosaics
         self.LS_mosaics = LS_mosaic_folder   #contains mosaics of w3 cutout, r-band or w1 cutout, and LS cutout
         self.htmlpath = self.path_to_galhtml+self.homepage_name   #path to homepage html
         self.fits_folder = fits_folder   #path to all w3, r-band, and/or w1 postage stamps
@@ -57,11 +57,13 @@ class HomePage():
         self.path_to_params = path_to_params   #path to galfit output parameter files
         self.LS_cutouts = LS_cutout_folder   #will contain the .png files of LS cutouts       
 
-        #if I am using the v2_snrcoadd.fits file, the length is 6780. current subsample size is 496.
-        if len(self.cat)>496:
+        #if I am using the v2_snrcoadd.fits file, the length is 6780. current subsample size is 701.
+        if len(self.cat)>701:
             self.cutcat = self.cat[self.cat['subsample_flag']]
+            self.magphys_cut = self.magphys[self.cat['subsample_flag']]
         else:
             self.cutcat = self.cat
+            self.magphys_cut = self.magphys[self.cat['subsample_flag']]
         
         #define group columns
         group_flag_list = self.cutcat['ncomp']>1
@@ -71,16 +73,9 @@ class HomePage():
         
         #call the remaining parameter files...
         #be sure that the size of these tables are compatible with the self.cutcat size. 
-        subsample_flag_temp = self.cat['sgacut_flag'] #trim main catalog to length 702
-        flag_for_re = (self.cat.copy()[subsample_flag_temp]['massflag']) & (self.cat.copy()[subsample_flag_temp]['sSFR_flag']) & (self.cat.copy()[subsample_flag_temp]['SFRflag'])
         
-        self.w3params_nopsf = Table.read(self.path_to_params+'output_params_W3_nopsf.fits')[flag_for_re]
-        self.params_w3_nopsf = self.w3params_nopsf.copy()  #will help to identify groups below...somewhere. This script is becoming unruly. just pretend this variable makes sense. 
-        self.w3params_psf = Table.read(self.path_to_params+'output_params_W3_psf.fits')[flag_for_re]
-        #self.rparams_nopsf = Table.read(self.path_to_params+'output_params_r_nopsf.fits')[flag_for_re]
-        #self.rparams_psf = Table.read(self.path_to_params+'output_params_r_psf.fits')[flag_for_re]
-        self.w1params_nopsf = Table.read(self.path_to_params+'output_params_W1_nopsf.fits')[flag_for_re]
-        self.w1params_psf = Table.read(self.path_to_params+'output_params_W1_psf.fits')[flag_for_re]
+        self.w3_params = Table.read(path_to_params+'/galfit_W3_03112024.fits')
+        self.w1_params = Table.read(path_to_params+'/galfit_W1_03112024.fits')
         
     
     def html_setup(self):
@@ -91,7 +86,7 @@ class HomePage():
             
             #initialize title page
             html.write('<html><body>\n')
-            html.write('<title>Virgo WISESize Project</title>\n')
+            html.write('<title>Virgo WISESize Project (V2)</title>\n')
             html.write(f'<body style="background-color:{self.home_color};">\n')   #be gentle with the background color (e.g., no limegreen)
             html.write('<style type="text/css">\n')
             html.write('table, td, th {padding: 5px; text-align: center; border: 2px solid black;}\n')
@@ -100,27 +95,28 @@ class HomePage():
             html.write(f'<font size="40">{self.website_title}</font>\n')
             
             #begin to populate the table. first line is header information; loop creates the data rows.
-            html.write('<table><tr><th>VFID</th><th>LS Cutout</th><th>Prefix</th><th>RA</th><th>DEC</th><th>Comments</th>\n')
+            html.write('<table><tr><th>VFID</th><th>LS Cutout</th><th>Prefix</th><th>RA</th><th>DEC</th><th>log(Mstar) (best)</th><th>log(SFR) (best)</th><th>log(sSFR) (best)</th><th>AGN</th><th>Comments</th>\n')
             
             for i in range(len(self.cutcat)):
                 print_counter += 1   #add +1 to the counter
                 html.write('<tr><td>'+self.cutcat['VFID'][i]+'</td>\n')   #add index number
-                html.write('<td><img src = "' + self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg' + '" height="25%" width = "25%"></img></td>\n')   #cutouts will have the name VFIDxxxx-LS.png, using the v2 IDs
+                if os.path.isfile(self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg'):
+                    html.write('<td><img src = "' + self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg' + '" height="40%" width = "40%"></img></td>\n')   #cutouts will have the name VFIDxxxx-LS.png, using the v2 IDs
+                else:
+                    html.write('<td>No Image Available for this Galaxy</td>\n')
+                #if galfit did not run successfully on a (group) galaxy then all parameters will be zeros, and heaps of trouble in terms of generating the galaxy page arises. We disable the hyperlinks in these cases. Otherwise, 
                 
-                #if galfit did not run successfully on a group galaxy then all parameters will be zeros, and heaps of trouble in terms of generating the galaxy page arises. We disable the hyperlinks in these cases. Otherwise, 
-                
-                if self.params_w3_nopsf['xc'][i]>0:
+                if self.w3_params['CXC'][i]>0:
                     if (self.primaryGroup_flag[i])|(~self.group_flag[i]):   #only run this loop if galaxy is primary (or not part of a projected group)
-                                        
+       
                         #CREATE SINGLE GALPAGE using the GalPage class (see below)
                         single_galpage = GalPage(galaxy_index=i, psf_indices=self.indices, 
                                                  page_name=self.cutcat['VFID'][i]+'.html', catalog=self.cutcat, 
                                                  local_path=self.local_path, 
                                                  path_to_galhtml=self.path_to_galhtml, LS_cutout_folder=self.LS_cutouts, 
-                                                 LS_mosaic_folder=self.LS_mosaics, mask_folder=self.mask_mosaics, 
+                                                 LS_mosaic_folder=self.LS_mosaics, 
                                                  fits_folder=self.fits_folder, gal_mosaic_folder=self.gal_mosaic_folder, 
-                                                 w3params_nopsf=self.w3params_nopsf, w3params_psf=self.w3params_psf, 
-                                                 w1params_nopsf=self.w1params_nopsf, w1params_psf=self.w1params_psf,
+                                                 w1_params=self.w1_params, w3_params=self.w3_params,
                                                  homepage_name=self.homepage_name)
 
                         print('Creating htmlpage for '+self.cutcat['VFID'][i])
@@ -147,10 +143,30 @@ class HomePage():
                 #if galfit simply *failed* (or the primary galaxy is not a subsample member), disable hyperlink
                 else:
                     print('Unable to create htmlpage for '+self.cutcat['VFID'][i])
-                    html.write('<td>'+str(self.group_names[i])+'</a></td>\n')
+                    html.write(f'<td>{self.group_names[i]}</a></td>\n')
                 
-                html.write('<td>'+str(self.cutcat['RA_1'][i])+'</td>\n')
-                html.write('<td>'+str(self.cutcat['DEC_1'][i])+'</td>\n')
+                ra = np.round(self.cutcat['RA'][i],5)
+                dec = np.round(self.cutcat['DEC'][i],5)
+                sfr = np.round(self.magphys_cut[i]['logSFR_best'],3)
+                mstar = np.round(self.magphys_cut[i]['logMstar_best'],3)
+                ssfr = np.round(self.magphys_cut[i]['logsSFR_best'],3)
+                
+                html.write(f'<td>{ra}</td>\n')
+                html.write(f'<td>{dec}</td>\n')
+                
+                html.write(f'<td>{mstar}</td>')
+                html.write(f'<td>{sfr}</td>')
+                html.write(f'<td>{ssfr}</td>')
+                
+                #add some AGN flags
+                if (self.cutcat[i]['WISE_AGN_flag'])&~(self.cutcat[i]['kauffman_AGN_flag']):
+                    html.write('<td>WISE AGN</td>\n')
+                elif ~(self.cutcat[i]['WISE_AGN_flag'])&(self.cutcat[i]['kauffman_AGN_flag']):
+                    html.write('<td>BPT AGN</td>\n')
+                elif (self.cutcat[i]['WISE_AGN_flag'])&(self.cutcat[i]['kauffman_AGN_flag']):
+                    html.write('<td>BPT & WISE AGN</td>\n')
+                else:
+                    html.write('<td>--</td>\n')
                                 
                 #if the VFID (v2) is part of a group galaxy, then write in the Comments column that this particular galaxy is a member of a group. Else, keep blank (with a -----).
                 if (self.group_flag[i]) | ('GROUP' in self.group_names[i]):
@@ -173,8 +189,8 @@ class HomePage():
 
         for i in range(len(self.cutcat)):
             
-            #if galfit ran successfully...
-            if (self.params_w3_nopsf['xc'][i]>0):
+            #if galfit ran successfully (regardless of numerical errors)...
+            if (self.w1_params['CXC'][i]>0):
 
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
                 single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, 
@@ -203,15 +219,14 @@ class HomePage():
         
         for i in range(len(self.cutcat)):
             #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
+            if (self.w3_params['CXC'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
                 
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
                 single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
                                         catalog=self.cutcat, local_path=self.local_path, 
                                         path_to_galhtml=self.path_to_galhtml, fits_folder=self.fits_folder, 
-                                        gal_mosaic_folder=self.gal_mosaic_folder, w3params_nopsf=self.w3params_nopsf, 
-                                        w3params_psf=self.w3params_psf, w1params_nopsf=self.w1params_nopsf, 
-                                        w1params_psf=self.w1params_psf,test=True)                
+                                        gal_mosaic_folder=self.gal_mosaic_folder, 
+                                        w3_params=self.w3_params, w1_params=self.w1_params, test=True)                
         
                 single_galaxy.create_model_mosaics_names()
                 print('Creating GALFIT mosaics for '+single_galaxy.VFID+f' {index_dict[psf_index]}')
@@ -221,37 +236,12 @@ class HomePage():
                
                 del single_galaxy     #more memory leakage prevention measures
                 
-    def create_mask_mosaics(self):
-        counter=0
-        
-        for i in range(len(self.cutcat)):
-            counter+=1
-            
-            #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.params_w3_nopsf['xc'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
 
-                #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
-                single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
-                                        catalog=self.cutcat, local_path=self.local_path, 
-                                        path_to_galhtml=self.path_to_galhtml, fits_folder=self.fits_folder, 
-                                        gal_mosaic_folder=self.gal_mosaic_folder, mask_folder=self.mask_mosaics, test=True)                
-                
-                print('Creating mask mosaic for '+single_galaxy.VFID)
-                single_galaxy.create_mask_mosaics()
-                
-                if counter==10:
-                    clear_output(wait=False)   #clear printed output
-                    counter=0  #reset counter
-            try:
-                del single_galaxy
-            except:
-                pass
-                
 class GalPage():
     def __init__(self,galaxy_index=None, psf_indices = [0,1,2,3], page_name=None, catalog=None, 
-                 local_path=None, path_to_galhtml=None, LS_cutout_folder=None, LS_mosaic_folder=None, mask_folder=None, 
-                 fits_folder=None, gal_mosaic_folder=None, w3params_nopsf=None, w3params_psf=None, rparams_nopsf=None, 
-                 rparams_psf=None, w1params_nopsf=None, w1params_psf=None, homepage_name=None, test=False):
+                 local_path=None, path_to_galhtml=None, LS_cutout_folder=None, LS_mosaic_folder=None, 
+                 fits_folder=None, gal_mosaic_folder=None, w3_params=None, w1_params=None, r_params=None, 
+                 homepage_name=None, test=False):
         
         self.galaxy_index = int(galaxy_index)
         self.psf_indices = psf_indices
@@ -262,22 +252,23 @@ class GalPage():
         self.local_path = local_path
         self.LS_cutouts = LS_cutout_folder
         self.LS_mosaics = LS_mosaic_folder
-        self.mask_mosaics = mask_folder
         self.fits_folder = fits_folder
         self.gal_mosaic_folder = gal_mosaic_folder
         self.path_to_galhtml = path_to_galhtml
         
-        self.w3params_nopsf = w3params_nopsf
-        self.w3params_psf = w3params_psf
-        #self.rparams_nopsf = rparams_nopsf
-        #self.rparams_psf = rparams_psf
-        self.w1params_nopsf = w1params_nopsf
-        self.w1params_psf = w1params_psf
+        self.w3_params = w3_params
+        self.w1_params = w1_params
+        #self.r_params = r_params
         
-        self.RA = str(self.cutcat['RA_1'][self.galaxy_index])
-        self.DEC = str(self.cutcat['DEC_1'][self.galaxy_index])
+        self.RA = str(self.cutcat['RA'][self.galaxy_index])
+        self.DEC = str(self.cutcat['DEC'][self.galaxy_index])
         self.VFID = str(self.cutcat['VFID'][self.galaxy_index])
-        self.objname = str(self.cutcat['group_name'][self.galaxy_index])   #group name is proxy for objname; if galaxy is not in group, group_name=objname
+        
+        #group name is proxy for objname; if galaxy is not in group, group_name=objname
+        if self.cutcat['group_name'][self.galaxy_index]=='N/A':
+            self.objname=self.cutcat['objname'][self.galaxy_index]
+        else:
+            self.objname = str(self.cutcat['group_name'][self.galaxy_index])
         
         self.page_name = self.VFID+'.html'   #name of galaxy html page
         
@@ -309,7 +300,6 @@ class GalPage():
         
         self.wise_im, self.wise_header = fits.getdata(path_to_w3, header=True)
         #self.r_im, self.r_header = fits.getdata(path_to_r, header=True)
-        
           
         #WCS header information
         self.wcs_w3 = WCS(self.wise_header)
@@ -361,43 +351,57 @@ class GalPage():
         
         #first must be sure that r-band is projected onto w3 coordinates (ensures all images have same size)
         #r_scaled, footprint = reproject_interp((self.r_im, self.r_header), self.wise_header)
-
-        titles = ['W3 Image', 'W1 Image', 'LS Image']
-        images = [self.wise_im, self.w1_im, self.filename_LS]
+        
+        titles = ['W3 Image', 'W1 Image', 'Mask Image', 'LS Image']
         
         try:
-            bool_masks = [self.w3_mask_bool, self.w1_mask_bool, None]
+            #np.array(self.w3_mask,'bool') converts to 1s (masked) and 0s (not masked)
+            images = [self.wise_im, self.w1_im, np.array(self.w3_mask,'bool'), self.filename_LS]
+        except:
+            #ANOTHER failsafe...just in case.
+            images = [self.wise_im, self.w1_im, np.zeros(self.wise_im.shape)+1, self.filename_LS]
+        
+        try:
+            bool_masks = [self.w3_mask_bool, self.w1_mask_bool, None, None]
         except:
             bool_masks = [np.zeros(self.wise_im.shape)+1, 
-                          np.zeros(self.w1_im.shape)+1, None]
+                          np.zeros(self.w1_im.shape)+1, None, None]
             print(f'{self.VFID} has no mask images.')
         
-        plt.figure(figsize=(12,6))
+        #plt.figure(figsize=(14.5,6.5))
+        plt.subplots(1,4,figsize=(14.5,6.5))
+        
         for i,im in enumerate(images):
             plt.xlabel('RA')
             if (i==0)|(i==1):
                 if i==0:
-                    plt.subplot(1,len(images),i+1,projection = self.wcs_w3)
+                    plt.subplot(1,len(images),i+1,projection = self.wcs_w3, aspect='auto')
+                    plt.tick_params(axis='x',top=False) 
+                    #plt.axis("off")   #note that keeping axis labels on this panel will cause ~1px offsets for the panels
                 if i==1:
-                    plt.subplot(1,len(images),i+1,projection = self.wcs_w1)
-                try:
-                    norm = simple_norm(images[i]*bool_masks[i],stretch='asinh',max_percent=99.9)
-                    plt.imshow(images[i],origin='lower',cmap='viridis',norm=norm)
-                except:
-                    norm = simple_norm(self.w1_im,stretch='asinh',max_percent=99.9)
-                    plt.imshow(self.w1_im,origin='lower',cmap='viridis',norm=norm)
+                    plt.subplot(1,len(images),i+1,projection = self.wcs_w1, aspect='auto')
+                    plt.axis("off")
+                
+                norm = simple_norm(images[i]*bool_masks[i],stretch='asinh',max_percent=99.9)
+                plt.imshow(images[i],origin='lower',cmap='viridis',norm=norm)
+                
                 plt.ylabel('DEC')
                 ax = plt.gca()
                 ax.set_yticks([])
             
             if i==2:
-                plt.subplot(1,len(images),i+1)
+                plt.subplot(1,len(images),i+1, aspect='auto')
+                plt.imshow(images[i],origin='lower',cmap='viridis')
+                plt.axis("off")
+            
+            if i==3:
+                plt.subplot(1,len(images),i+1, aspect='auto')
                 plt.imshow(mpimg.imread(images[i]),origin='lower')
                 plt.gca().invert_yaxis()
-                plt.axis("off")
+                plt.axis("off")          
 
             plt.subplots_adjust(wspace=0,hspace=0)
-            plt.title(titles[i],fontsize=24)
+            plt.title(titles[i],fontsize=20)
         
         if os.path.exists(self.LS_mosaics+self.VFID+'-LS-mosaic.png'):
             os.remove(self.LS_mosaics+self.VFID+'-LS-mosaic.png')
@@ -463,7 +467,6 @@ class GalPage():
             bool_masks = [np.zeros(self.wise_im.shape)+1, 
                           np.zeros(self.w1_im.shape)+1]
         
-        #for index in self.psf_indices:
         if psf_index<2:   #w3 is index=0 or index=1
             images = [self.wise_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
             bool_mask = bool_masks[0]
@@ -521,106 +524,87 @@ class GalPage():
                 plt.imshow(np.zeros((len(self.wise_im),len(self.wise_im))),origin='lower',cmap='gray')
             else:
                 plt.imshow(im,origin='lower',cmap=cmap,norm=norms[i])  #vmin=v1[i],vmax=v2[i]
-
-            ax = plt.gca()
-            ax.xaxis.set_ticklabels([])
-            ax.yaxis.set_ticklabels([])
+            
+            if i!=0:
+                plt.axis('off')
             plt.title(titles[i],fontsize=16)
         
         plt.savefig(self.pngnames[psf_index],bbox_inches='tight', pad_inches=0.2)   #dpi=200
         plt.close()    
-
-    def create_mask_mosaics(self, percentile1=.5, percentile2=99.9, cmap='viridis'):
         
-        titles = ['W3 Image', 'W1 Image', 'WISE Mask']
-        try:
-            images = [self.wise_im, self.w1_im, self.w3_mask]
-        except:
-            #another failsafe...just in case.
-            images = [self.wise_im, self.w1_im, np.zeros(self.wise_im.shape)+1]
-            titles = ['W3 Image', 'W1 Image', 'No Mask']
-        
-        #create boolean masks for scaling purposes (prevents domination of prominent stars or other artifacts)
-        try:
-            bool_masks = [self.w3_mask_bool, self.w1_mask_bool]
-        except:
-            #if no image masks defined (failsafe), I just create a simple nxn matrix of 1s, so multiplying by bool_mask does not affect the image
-            bool_masks = [np.zeros(self.wise_im.shape)+1, 
-                          np.zeros(self.w1_im.shape)+1]
-
-        #norms for images but not for masks
-        v1 = [scoreatpercentile(images[0]*bool_masks[0],percentile1),
-                    scoreatpercentile(images[1]*bool_masks[1],percentile1),0]
-        v2 = [scoreatpercentile(images[0]*bool_masks[0],percentile2),
-                    scoreatpercentile(images[1]*bool_masks[1],percentile2),1]
-        norms = [simple_norm(images[0]*bool_masks[0],'asinh',max_percent=percentile2,min_cut=v1[0],max_cut=v2[0]),
-                       simple_norm(images[1]*bool_masks[1],'asinh',max_percent=percentile2,min_cut=v1[1],max_cut=v2[1]),
-                       None]
-        
-        plt.figure(figsize=(14,6))
-        plt.subplots_adjust(wspace=.0)
-        for i,im in enumerate(images): 
-            if i==0:
-                ax = plt.subplot(1,3,i+1,projection=self.wcs_w3)
-                ax.imshow(im, origin='lower', cmap=cmap, norm=norms[i])
-            if i==1:
-                ax = plt.subplot(1,3,i+1,projection=self.wcs_w1)
-                ax.imshow(im, origin='lower', cmap=cmap, norm=norms[i])
-            if i==2:
-                ax = plt.subplot(1,3,i+1,projection=self.wcs_w1)
-                ax.imshow(im, origin='lower', cmap=cmap, vmin=v1[i], vmax=v2[i])
-            
-            ax.set_xlabel('RA')
-            if i == 0:
-                ax.set_ylabel('DEC')
-            
-            else:
-                plt.ylabel(' ')
-                ax = plt.gca()
-                ax.set_yticks([])
-            plt.title(titles[i],fontsize=16)
-        plt.savefig(self.mask_mosaics+self.VFID+'-mask_mosaic.png',bbox_inches='tight', pad_inches=0.2)   #dpi=200
-        plt.close() 
     
     def tabulate_parameters(self):
         
         #list of each table of parameters
-        params_list = [self.w3params_nopsf,self.w3params_psf,self.w1params_nopsf,self.w1params_psf]
+        #params_list = [self.w3_params_nopsf,self.w3_params_psf,self.w1params_nopsf,self.w1params_psf]
+        params_list = [self.w3_params, self.w3_params, self.w1_params, self.w1_params]
         
         self.page_params = []
         self.page_extparams = []   #initiate extparams list
         
         if self.cutcat['primaryGroup_flag'][self.galaxy_index]:
             groupname = self.cutcat['group_name'][self.galaxy_index]
+            print('group name:',groupname)
 
         #create list of every parameter row for the given indices
         for index in self.psf_indices:
             params=params_list[index]   #selects the correct parameter table from params_list above
-            param_row=params[params['VFID']==self.VFID]   #find the correct parameter row corresponding to the galaxy VFID
-            self.page_params.append(param_row)
+            param_row=params[params['VFID']==self.VFID]   #find the correct parameter row corresponding to the primary galaxy VFID
+            #new naming conventions...yay.
+            
+            if (index==0)|(index==2):
+                needed_params = [param_row['VFID'],param_row['XC'],param_row['XC_ERR'],param_row['YC'],
+                            param_row['YC_ERR'],param_row['MAG'],param_row['MAG_ERR'],param_row['RE'],
+                             param_row['RE_ERR'],param_row['N'],param_row['N_ERR'],param_row['AR'],
+                            param_row['AR_ERR'],param_row['PA'],param_row['PA_ERR'],param_row['Numerical_Error']]
+            
+            if (index==1)|(index==3):
+                needed_params = [param_row['VFID'],param_row['CXC'],param_row['CXC_ERR'],param_row['CYC'],
+                            param_row['CYC_ERR'],param_row['CMAG'],param_row['CMAG_ERR'],param_row['CRE'],
+                             param_row['CRE_ERR'],param_row['CN'],param_row['CN_ERR'],param_row['CAR'],
+                            param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
+            
+            self.page_params.append(needed_params)
+            
             single_extparams=[]   #create empty list for external galaxies for single psf_index
 
             if self.cutcat['primaryGroup_flag'][self.galaxy_index]:   #if primary group galaxy, then find its subsample pals (if any)
+                #find indices at which the relevant external galaxies (in the subsample) lie
                 indices = np.where((self.cutcat['group_name']==groupname)&(~self.cutcat['primaryGroup_flag']))[0]
+                
                 for num in indices: #for every external galaxy, add row of parameters
-                    param_row=params[num]  #find correct row
-                    single_extparams.append(param_row)
+                    self.VFID_ext = str(self.cutcat['VFID'][num])
+                    param_row = params[params['VFID']==self.VFID_ext]
+
+                    #new naming conventions...yay.
+                    if (index==0)|(index==2):
+                        needed_params_ext = [self.VFID_ext,param_row['XC'],param_row['XC_ERR'],param_row['YC'],
+                            param_row['YC_ERR'],param_row['MAG'],param_row['MAG_ERR'],param_row['RE'],
+                             param_row['RE_ERR'],param_row['N'],param_row['N_ERR'],param_row['AR'],
+                            param_row['AR_ERR'],param_row['PA'],param_row['PA_ERR'],param_row['Numerical_Error']]
+                    
+                    if (index==1)|(index==3):
+                        needed_params_ext = [self.VFID_ext,param_row['CXC'],param_row['CXC_ERR'],param_row['CYC'],
+                            param_row['CYC_ERR'],param_row['CMAG'],param_row['CMAG_ERR'],param_row['CRE'],
+                             param_row['CRE_ERR'],param_row['CN'],param_row['CN_ERR'],param_row['CAR'],
+                            param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
+                    
+                    single_extparams.append(needed_params_ext)
 
             self.page_extparams.append(single_extparams)  #will comprise list of external galaxy lists. LISTCEPTION.                
             
     #create VFIDxxxx.html for the galaxy!
     def WRITETHEGALPAGE(self):
         
-        title_dictionary = {0:'w3 noConv',
-                            1:'w3 Conv',
-                            2:'w1 noConv',
-                            3:'w1 Conv'}
+        title_dictionary = {0:'W3 (No Convolution)',
+                            1:'W3 (Convolution)',
+                            2:'W1 (No Convolution)',
+                            3:'W1 (Convolution)'}
         
         LS_path = self.LS_mosaics+self.VFID+'-LS-mosaic.png'
-        mask_path = self.mask_mosaics+self.VFID+'-mask_mosaic.png'
 
         with open(self.gal_htmlpath,'w') as html:
-            
+                        
             i = int(self.galaxy_index)
             
             html.write('<html><body> \n')
@@ -633,64 +617,72 @@ class GalPage():
         
             html.write(f'<font size="40">Central Galaxy: {self.VFID}-{self.objname} </font><br /> \n')
             html.write(f'<a href={self.homepage_name}>Return to Homepage</a></br /> \n')
-
+                        
+            #the embedded if, else statements help reduce the number of instances where clicking "Next Galaxy" or "Previous Galaxy" result in html error message pages. note it does not eliminate the problem - think of these lines as scotch tape rather than duct tape.
             if i != len(self.cutcat)-1:
                 html.write('<a href='+str(self.cutcat['VFID'][i+1])+'.html>Next Galaxy</a></br /> \n') 
-
             if i != 0:
                 html.write('<a href='+str(self.cutcat['VFID'][i-1])+'.html>Previous Galaxy</a></br /> \n')
-            
+                        
             #add the LS mosaic
-            html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+LS_path+'" height="50%" width="55%" /><br /> \n')
-            
-            for index in self.psf_indices:
+            html.write('<div style="text-align: center;" class="img-container"> <!-- Block parent element --> <img src='+'"'+LS_path+'" height="50%" width="80%" /><br /> \n')
+            html.write('</div> \n')
+            for n in range(len(self.psf_indices)):
+                index = self.psf_indices[n]
                 if self.models[index] is not None:
                     mosaic_path = self.pngnames[index]
-                    params = self.page_params[index]
+                    params = self.page_params[n]
                     html.write(f'<font size="30"> GALFIT Output Mosaic {title_dictionary[index]}:</font><br /> \n')
-                    html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaic_path+'" height="70%" width="90%" /><br /> \n')
-
-                    html.write('<table><tr><th>VFID</th><th>Type</th><th>xc</th><th>xc_err</th><th>yc</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th>err_flag</th></tr> \n')
+                    html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaic_path+'" height="45%" width="80%" /><br /> \n')
+                                        
+                    html.write('<table><tr><th>VFID</th><th>Type</th><th>xc (px)</th><th>xc_err</th><th>yc (px)</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re (px)</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th>Numerical_Error</th></tr> \n')
 
                     html.write('<tr><td>'+self.VFID+'</td> \n')
                     html.write('<td>Primary</td> \n')
                     for p in range(1,15):   #for every parameter value in a row
-                        html.write(f'<td>{params[0][p]}</td> \n')   #0th row, which does not change as there is only one row here
-                    html.write(f'<td>{params[0][17]}</td></tr> \n')   #error flag
-
+                        item = params[p].data
+                        item = item[0]             #silly new index conventions smh
+                        html.write(f'<td>{item}</td> \n')   #0th row, which does not change as there is only one row here
+                    #still silly new index conventionsssss.
+                    num_err = params[-1].data
+                    num_err = num_err[0]
+                    html.write(f'<td>{num_err}</td></tr> \n')   #error flag
+                                            
                     #add the external galaxy parameters, if any.
                     if len(self.page_extparams)>0:
 
-                        param_ext=self.page_extparams[index]  #isolate band&psf parameters of the external galaxies (if there are multiple galaxies, then there will be multiple lists for one index/central galaxy). 
+                        param_ext=self.page_extparams[n]  #isolate band&psf parameters of the external galaxies (if there are multiple galaxies, then there will be multiple lists for one index/central galaxy). 
                         for num in range(len(param_ext)): 
                             single_param_ext = param_ext[num]  #isolate the self.ext_list[num] external galaxy parameters
-                            html.write('<tr><td>'+single_param_ext['VFID']+'</td> \n')  #VFID of external galaxy
+                            #I THINK the VFID is single_param_ext[0]
+                            html.write(f'<tr><td>{single_param_ext[0]}</td> \n')  #VFID of external galaxy
                             html.write('<td>External</td> \n')
                             for p in range(1,15):
-                                html.write(f'<td>{single_param_ext[p]}</td> \n')
+                                item = single_param_ext[p].data
+                                item = item[0]             #silly new index conventions smh
+                                html.write(f'<td>{item}</td> \n')
                             if num==self.ncomp-1:
-                                html.write(f'<td>{params[17]}</td></tr> \n')
+                                #still silly new index conventionsssss.
+                                num_err = single_param_ext[-1].data
+                                num_err = num_err[0]
+                                html.write(f'<td>{num_err}</td></tr> \n')   #error flag
 
-                    #I want a table for every nopsf/psf pair, so the table will finish if index is psf w3 or psf r-band (OR neither, in the case that I don't include any psf bands...). I would attempt to account for the case where I am only including nopsf tables, but I do not anticipate this condition being met. Ever.
+                    #I want a table for every nopsf/psf pair, so the table will finish if index is psf w3 or psf w1 (OR neither, in the case that I don't include any no-psf bands...). I would attempt to account for the case where I am only including nopsf tables, but I do not anticipate this condition being met. Ever.
                     if (index==1)|(index==3)|(index==np.max(self.psf_indices)):
                         html.write('</tr></table> \n')
-
-                    #add the mask mosaic
-                    if index == np.max(self.psf_indices):
-                        html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mask_path+'" height="70%" width="85%" /><br /> \n')
-                
+            
+                        html.write('<br /><br />\n')
             html.write(f'<a href={self.homepage_name}>Return to Homepage</a></br /> \n')
            
             if i != len(self.cutcat)-1:
                 html.write('<a href='+str(self.cutcat['VFID'][i+1])+'.html>Next Galaxy</a></br /> \n') 
             if i != 0:
                 html.write('<a href='+str(self.cutcat['VFID'][i-1])+'.html>Previous Galaxy</a></br /> \n')
-
-            html.write('<br /><br />\n')    
+                
             html.write('</html></body>\n')     
 
             html.close()    
-            
+                        
 if __name__ == '__main__':    
     
     print("""USAGE:
@@ -700,7 +692,6 @@ if __name__ == '__main__':
             class(single_galpage) for every galaxy in a loop, creating all relevant folders and files.
             --hp.create_LS_figures()
             --hp.create_galfit_mosaics(psf_index) --> (w3, nopsf), 1 (w3, psf), 2 (w1, nopsf), 3 (w1, psf)
-            --hp.create_mask_mosaics() 
     ---If the -test arg is True, then the user is wanting to test the GalPage class (this is a stategic idea, 
             since this class contains the bulk of the functions required for the script to run successfully). 
             In this case, the script automatically defines a single galpage class (single_galpage; 
@@ -709,7 +700,6 @@ if __name__ == '__main__':
             --single_galpage.create_LS_mosaics()
             --single_galpage.create_model_mosaics_names()
             --single_galpage.create_model_mosaics(psf_index) --> 0 (w3, nopsf), 1 (w3, psf), 2 (w1, nopsf), 3 (w1, psf)
-            --single_galpage.create_mask_mosaics()
             --single_galpage.tabulate_parameters()
             --single_galpage.WRITETHEGALPAGE()
             
@@ -753,8 +743,8 @@ if __name__ == '__main__':
         string=string.strip('[]')
         string=string.replace(',','')
         for num in range(len(string)):
-            num=int(num)
-            new_list.append(num)
+            numb=int(string[num])
+            new_list.append(numb)
         return new_list
     
     #another quick function to create folders if they do not already exist
@@ -766,12 +756,12 @@ if __name__ == '__main__':
     indices_str = param_dict['psf_indices']
     psf_indices = str_to_list(indices_str)
     catalog = homedir+'/'+param_dict['catalog']
+    magphys = homedir+'/'+param_dict['magphys']
     local_path = param_dict['local_path']
     homepage_name = param_dict['homepage_name']
     home_color = param_dict['home_color']
     website_title = param_dict['website_title'].replace('_',' ')
     
-    mask_folder = local_path+param_dict['mask_folder']+'/'
     LS_mosaic_folder = local_path+param_dict['LS_mosaic_folder']+'/'
     fits_folder = local_path+param_dict['fits_folder']+'/'
     gal_mosaic_folder = local_path+param_dict['gal_mosaic_folder']+'/'
@@ -784,41 +774,32 @@ if __name__ == '__main__':
     create_folder(LS_mosaic_folder)
     create_folder(gal_mosaic_folder)
     create_folder(LS_cutout_folder)
-    create_folder(mask_folder)
     create_folder(path_to_galhtml)
     create_folder(path_to_params)
     
     if test=='False':
         hp = HomePage(homepage_name=homepage_name, website_title=website_title, home_color=home_color, catalog=catalog, 
                       local_path=local_path, path_to_galhtml=path_to_galhtml, path_to_params=path_to_params, 
-                      LS_cutout_folder=LS_cutout_folder, LS_mosaic_folder=LS_mosaic_folder, mask_folder=mask_folder, 
+                      LS_cutout_folder=LS_cutout_folder, LS_mosaic_folder=LS_mosaic_folder, magphys=magphys,
                       fits_folder=fits_folder, gal_mosaic_folder=gal_mosaic_folder, indices=psf_indices) 
         
     if test=='True':
+        
+        magphys = Table.read(magphys)
         catalog=Table.read(catalog)
         
-        subsample_flag_temp = catalog['sgacut_flag'] #trim main catalog to length 702
-        flag_for_re = (catalog[subsample_flag_temp]['massflag']) & (catalog[subsample_flag_temp]['sSFR_flag']) & (catalog[subsample_flag_temp]['SFRflag'])
+        catflag = catalog['subsample_flag']
         
-        #if I am using the v2_snrcoadd.fits file, the length is 6780
-        if len(catalog)>496:
-            cutcat = catalog[catalog['subsample_flag']]
-        else:
-            cutcat = catalog
-         
-        w3params_nopsf = Table.read(path_to_params+'/output_params_W3_nopsf.fits')[flag_for_re]        
-        w3params_psf = Table.read(path_to_params+'/output_params_W3_psf.fits')[flag_for_re]
-        #rparams_nopsf = Table.read(path_to_params+'/output_params_r_nopsf.fits')
-        #rparams_psf = Table.read(path_to_params+'/output_params_r_psf.fits')
-        #w1params = Table.read(path_to_params+'/vf_v2_galfit_W1.fits')
-        w1params_nopsf = Table.read(path_to_params+'/output_params_W1_nopsf.fits')[flag_for_re]
-        w1params_psf = Table.read(path_to_params+'/output_params_W1_psf.fits')[flag_for_re]
+        magphys_cut = magphys[catflag]
+        cutcat = catalog[catflag]
         
-        single_galpage = GalPage(galaxy_index=300, psf_indices=psf_indices, page_name='VFID3306.html', catalog=cutcat, 
+        w3_params = Table.read(path_to_params+'/galfit_W3_03112024.fits')
+        w1_params = Table.read(path_to_params+'/galfit_W1_03112024.fits')
+        
+        single_galpage = GalPage(galaxy_index=57, psf_indices=psf_indices, page_name='VFID0281.html', catalog=cutcat, 
                                  local_path=local_path, LS_cutout_folder=LS_cutout_folder, 
-                                 LS_mosaic_folder=LS_mosaic_folder, mask_folder=mask_folder, fits_folder=fits_folder, 
-                                 gal_mosaic_folder=gal_mosaic_folder, w3params_nopsf=w3params_nopsf, 
-                                 w3params_psf=w3params_psf, w1params_nopsf=w1params_nopsf, w1params_psf=w1params_psf, 
-                                 test=True)
+                                 LS_mosaic_folder=LS_mosaic_folder, fits_folder=fits_folder, 
+                                 gal_mosaic_folder=gal_mosaic_folder, w3_params=w3_params, 
+                                 w1_params=w1_params, magphys=magphys_cut, test=True)
         
         print('Single galaxy class single_galpage all set for testing. See printed instructions above.')

@@ -19,7 +19,7 @@ class catalogs:
         self.magphys = Table.read(homedir+'/Desktop/v2-20220820/vf_v2_magphys_legacyExt_final.fits')
 
         #catalog with WISESize flags
-        self.vf = Table.read(homedir+'/Desktop/VF_WISESIZE.fits')
+        self.vf = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_v2.fits')
 
         self.w1_new = Table.read(homedir+'/Desktop/galfit_files/galfit_W1_03112024.fits')
         self.w3_new = Table.read(homedir+'/Desktop/galfit_files/galfit_W3_03112024.fits')
@@ -29,13 +29,15 @@ class catalogs:
         
         self.r_new = Table.read(homedir+'/Desktop/galfit_files/galfit_r_03112024.fits')
         
+        #self.phot = Table.read(homedir+'/Desktop/v2-20220820/virgofilaments-v3b-legacyphot.fits')
+        
         #self.w1_new = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W1-fixBA.fits')
         #self.w3_new = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W3-fixBA.fits')
         
         self.cutcats()
         
     def cutcats(self):
-        #wI can apply t-type, SNR
+        #I can apply t-type, SNR
         snr_flag = self.vf['SNRflag']
         t_flag = self.vf['t_flag']
 
@@ -221,8 +223,6 @@ class catalogs:
             
         plt.subplots_adjust(wspace=0.45)
         plt.show()
-
-        return
     
     
 if __name__=='__main__':

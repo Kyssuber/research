@@ -1,8 +1,8 @@
 #--------------------------------------------------- File Names ----------------------------------------------------
 
-catalog                           v2_snrcoadd.fits                # name of main vf catalog; assumes file is in homedir
-dummycat                          dummycat.fits                   # name of main dummycat.fits; assumes file is in homedir
-local_path                        /Users/k215c316/vf_html/        # path which will contain relevant folders/files
+catalog                           Desktop/galfit_files/VF_WISESIZE_v2.fits   # path to main vf catalog
+magphys                           Desktop/v2-20220820/vf_v2_magphys_legacyExt_final.fits   # location of magphys cat
+local_path                        /Users/k215c316/vf_html_w1_v2/  # path which will contain relevant folders/files
 homepage_name                     home_local.html                 # name of main html file
 mask_folder                       mask_mosaics_png                # name of folder containing .png mask mosaics
 LS_mosaic_folder                  LS_mosaics_png                  # name of folder containing .png LS mosaics
@@ -11,12 +11,12 @@ gal_mosaic_folder                 galfit_mosaics_png              # name of fold
 LS_cutout_folder                  LS_cutouts_png                  # name of folder that WILL contain LS cutouts
 path_to_params                    param_tables                    # name of folder containing galfit output parameter tables
 path_to_galhtml                   galhtml_files                   # name of folder containing each galpage html file
-website_title                     GALFIT_Data_for_Virgowise_VF_Galaxies   #self-explanatory...add _ in place of space; will correct itself.
+website_title                     GALFIT_Data_for_Virgowise_VFS_Galaxies   #self-explanatory...add _ in place of space; will correct itself.
 home_color                        hsla(255, 99, 71, 0.5)          # color of homepage background --> sehr wichtig
 
 #--------------------------------------------------- Parameters ----------------------------------------------------
 
-psf_indices                       [0,1,2,3]                       # 0 for w3_nopsf, 1 for w3_psf, 2 for r_nopsf, 3 for r_psf
+psf_indices                       [1,3]              # 0 for w3_nopsf, 1 for w3_psf, 2 for w1_nopsf, 3 for w1_psf
 
 
 #NOTE: all folders above will appear in local_path once code runs successfully.
