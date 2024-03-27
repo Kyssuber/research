@@ -273,14 +273,29 @@ class catalogs():
         
         plt.subplots_adjust(wspace=0.3, hspace=0.4)
         plt.show()
-        
-        print('galaxies in W3 (free) plot with <0.1 CRE and <6 CN:')
+    
         if self.fixedbapa:
             compact_vfids = comp_w3[(comp_w3['CRE']<0.1)&(comp_w3['CN']<6)&(comp_w3['CNumerical_Error'])&(comp_w3['CRE']!=0)]['VFID']
+            largen_vfids = comp_w3[(comp_w3['CN']>6)]['VFID']
         if not self.fixedbapa:
             compact_vfids = subsample_w3[(subsample_w3['CRE']<0.1)&(subsample_w3['CN']<6)& (subsample_w3['CNumerical_Error'])&(subsample_w3['CRE']!=0)]['VFID']
+            largen_vfids = subsample_w3[(subsample_w3['CN']>6)]['VFID']
         
-        print(list(n for n in compact_vfids))
+        print('galaxies in W3 (free) plot with <0.1 CRE and <6 CN:')
+        print(list(vfidc for vfidc in compact_vfids))
+        print()
+        print('galaxies in W3 (free) plot with >6 CN:')
+        print(list(vfidn for vfidn in largen_vfids))
                 
 if __name__=='__main__':
-    print('''USAGE: ''')
+    print('''USAGE: 
+                --- cat=catalogs(fixedbapa=False)  --> fixedbapa dictates whether the catalogs
+                          entered are with BA, PA that were held fixed or freely iterated over
+                --- cat.fixedfree_comp() --> comparison of W3 CRE vs CN and W1 CRE vs. CN for 
+                    both the fixed and free cases; assumes user has both sets of catalogs!
+                --- cat.rbandcomp() --> compares W1, W3 CRE, CN, CPA, and CAR with r-band 
+                    counterparts; also calculates fraction of r-band errors relative to subsample.
+                --- cat.comp_oldnew(zoom=False) --> 2x2 panel figure comparing old/new CRE and CN
+                    for W3 and W1. zoom=True recreates these panels, but with a magnification
+                    on the locus about the 1-to-1 line.
+    ''')

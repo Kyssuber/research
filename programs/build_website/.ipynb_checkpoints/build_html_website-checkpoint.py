@@ -576,7 +576,7 @@ class GalPage():
                 needed_params = [param_row['VFID'],param_row['CXC'],param_row['CXC_ERR'],param_row['CYC'],
                             param_row['CYC_ERR'],param_row['CMAG'],param_row['CMAG_ERR'],param_row['CRE'],
                              param_row['CRE_ERR'],param_row['CN'],param_row['CN_ERR'],param_row['CAR'],
-                            param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
+                     param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
             
             self.page_params.append(needed_params)
             
@@ -601,7 +601,7 @@ class GalPage():
                         needed_params_ext = [self.VFID_ext,param_row['CXC'],param_row['CXC_ERR'],param_row['CYC'],
                             param_row['CYC_ERR'],param_row['CMAG'],param_row['CMAG_ERR'],param_row['CRE'],
                              param_row['CRE_ERR'],param_row['CN'],param_row['CN_ERR'],param_row['CAR'],
-                            param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
+                       param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
                     
                     single_extparams.append(needed_params_ext)
 
@@ -675,11 +675,11 @@ class GalPage():
                                 item = single_param_ext[p].data
                                 item = item[0]             #silly new index conventions smh
                                 html.write(f'<td>{item}</td> \n')
-                            if num==self.ncomp-1:
-                                #still silly new index conventionsssss.
-                                num_err = single_param_ext[-1].data
-                                num_err = num_err[0]
-                                html.write(f'<td>{num_err}</td></tr> \n')   #error flag
+
+                            #still silly new index conventionsssss.
+                            num_err = single_param_ext[-1].data
+                            num_err = num_err[0]
+                            html.write(f'<td>{num_err}</td></tr> \n')   #error flag
 
                     #I want a table for every nopsf/psf pair, so the table will finish if index is psf w3 or psf w1 (OR neither, in the case that I don't include any no-psf bands...). I would attempt to account for the case where I am only including nopsf tables, but I do not anticipate this condition being met. Ever.
                     if (index==1)|(index==3)|(index==np.max(self.psf_indices)):
