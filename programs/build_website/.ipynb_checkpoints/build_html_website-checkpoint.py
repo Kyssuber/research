@@ -198,8 +198,10 @@ class HomePage():
 
         for i in range(len(self.cutcat)):
             
+            param_index = np.where(self.w3_params['VFID'] == self.cutcat[i]['VFID'])[0][0]
+            
             #if galfit ran successfully (regardless of numerical errors)...
-            if (self.w1_params['CXC'][i]>0):
+            if (self.w1_params['CXC'][param_index]>0):
 
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
                 single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, 
@@ -699,30 +701,35 @@ if __name__ == '__main__':
     
     print("""USAGE:
     ---Running this program automatically initiates the HomePage class (hp)
-    ---if the -test arg is False, then replace single_galpage with hp in order to generate all images and such:
-            --hp.html_setup() --> create .html homepages for all galaxies in the VF subsample; also initiates GalPage 
-            class(single_galpage) for every galaxy in a loop, creating all relevant folders and files.
+    ---if the -test arg is False, then replace single_galpage with hp in order to generate
+        all images and html files:
+            --hp.html_setup() --> create .html homepages for all galaxies in the 
+                VF subsample; also initiates GalPage class(single_galpage) for 
+                every galaxy in a loop, creating all relevant folders and files.
             --hp.create_LS_figures()
-            --hp.create_galfit_mosaics(psf_index) --> (w3, nopsf), 1 (w3, psf), 2 (w1, nopsf), 3 (w1, psf)
-    ---If the -test arg is True, then the user is wanting to test the GalPage class (this is a stategic idea, 
-            since this class contains the bulk of the functions required for the script to run successfully). 
-            In this case, the script automatically defines a single galpage class (single_galpage; 
-            uses index 0 for a random test galaxy), with which the user can test the following methods:
+            --hp.create_galfit_mosaics(psf_index) --> 0 (w3, nopsf)  1 (w3, psf) 
+                                                      2 (w1, nopsf)  3 (w1, psf)
+    ---If the -test arg is True, then the user is wanting to test the GalPage 
+        class (this is a stategic idea, since this class contains the bulk of 
+        the functions required for the script to run successfully). In this case, the
+        script automatically defines a single galpage class (single_galpage; uses index 0 
+        for a random test galaxy), with which the user can test the following methods:
             --single_galpage.compile_LS_cutouts()
             --single_galpage.create_LS_mosaics()
             --single_galpage.create_model_mosaics_names()
-            --single_galpage.create_model_mosaics(psf_index) --> 0 (w3, nopsf), 1 (w3, psf), 2 (w1, nopsf), 3 (w1, psf)
+            --single_galpage.create_model_mosaics(psf_index) --> 0 (w3, nopsf)  1 (w3, psf)
+                                                                 2 (w1, nopsf)  3 (w1, psf)
             --single_galpage.tabulate_parameters()
             --single_galpage.WRITETHEGALPAGE()
             
-            **NOTE** Surprise, surprise, the Macbook does not enjoy generating four .PNG images for 600+ galaxy mosaics. 
-            I 'decomposed' create_model_mosaics() and added a psf_index variable to help avoid memory fragmentation...
-            
-            
+            **NOTE** 
+            Problem: Surprise, surprise, the Macbook does not enjoy generating 
+                four .PNG images for 600+ galaxy mosaics. 
+            Solution: I 'decomposed' create_model_mosaics() and added a psf_index 
+                variable to help avoid memory fragmentation...           
     """)
     print('-----------------------------------------------------')
-    print()
-    
+
     if '-h' in sys.argv or '--help' in sys.argv:
         print("Usage: %s [-param_file (name of parameter file, no single or double quotation marks)] [-html (True or False; indicates whether user is wanting to either test the GalPage class (True) or just generate galhtml files (False)]")
         sys.exit(1)
