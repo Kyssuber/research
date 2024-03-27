@@ -11,35 +11,43 @@ homedir = os.getenv("HOME")
 #create functions for plotting purposes
 #etc.
 
-class catalogs:
+class catalogs():
 
-    def __init__(self):
+    def __init__(self, fixedbapa=False):
+        
+        self.fixedbapa=fixedbapa
         
         #magphys table
         self.magphys = Table.read(homedir+'/Desktop/v2-20220820/vf_v2_magphys_legacyExt_final.fits')
 
         #catalog with WISESize flags
         self.vf = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_v2.fits')
+        
+        if not self.fixedbapa:
+            self.w1_new = Table.read(homedir+'/Desktop/galfit_files/galfit_W1_03112024.fits')
+            self.w3_new = Table.read(homedir+'/Desktop/galfit_files/galfit_W3_03112024.fits')
+            
+            self.w1_new_fixed = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W1-fixBA.fits')
+            self.w3_new_fixed = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W3-fixBA.fits')
+        
+        if self.fixedbapa:
+            self.w1_new = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W1-fixBA.fits')
+            self.w3_new = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W3-fixBA.fits')
 
-        self.w1_new = Table.read(homedir+'/Desktop/galfit_files/galfit_W1_03112024.fits')
-        self.w3_new = Table.read(homedir+'/Desktop/galfit_files/galfit_W3_03112024.fits')
+            self.w1_new_free = Table.read(homedir+'/Desktop/galfit_files/galfit_W1_03112024.fits')
+            self.w3_new_free = Table.read(homedir+'/Desktop/galfit_files/galfit_W3_03112024.fits')
 
         self.w1_old = Table.read(homedir+'/Desktop/galfit_files/galfit_W1_2023.fits')
         self.w3_old = Table.read(homedir+'/Desktop/galfit_files/galfit_W3_2023.fits')
         
         self.r_new = Table.read(homedir+'/Desktop/galfit_files/galfit_r_03112024.fits')
         
-        #self.phot = Table.read(homedir+'/Desktop/v2-20220820/virgofilaments-v3b-legacyphot.fits')
-        
-        #self.w1_new = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W1-fixBA.fits')
-        #self.w3_new = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W3-fixBA.fits')
-        
         self.cutcats()
         
     def cutcats(self):
         #I can apply t-type, SNR
-        snr_flag = self.vf['SNRflag']
-        t_flag = self.vf['t_flag']
+        self.snr_flag = self.vf['SNRflag']
+        self.t_flag = self.vf['t_flag']
 
         #certain GALFIT cuts (must NOT have n>6 and NOT have zeros in rows and NOT have a numerical error)
         n_flag = (self.w3_new['CN']<6) & (self.w1_new['CN']<6)
@@ -47,10 +55,9 @@ class catalogs:
         numerical_flag = ~(self.w1_new['CNumerical_Error']) & ~(self.w3_new['CNumerical_Error'])
 
         #magphys flags (including quality flags from various sources)
-        mag_flag = (self.magphys['magphysFlag']) & (self.magphys['logSFR_med']>-1.398) & (self.magphys['logMstar_med']>8.26) & ((self.magphys['logSFR_med']-self.magphys['logMstar_med'])>-11.5)
+        self.mag_flag = (self.vf['SFRflag']) & (self.vf['massflag']) & (self.vf['sSFR_flag'])
 
-
-        all_flags = snr_flag & t_flag & n_flag & fail_flag & numerical_flag & mag_flag
+        all_flags = self.snr_flag & self.t_flag & n_flag & fail_flag & numerical_flag & self.mag_flag
 
         self.vfcut = self.vf[all_flags]
         self.w1_oldcut = self.w1_old[all_flags]
@@ -62,10 +69,15 @@ class catalogs:
         self.magphys_cut = self.magphys[all_flags]
 
         print('Final subsample size (inc. SNR, t-type, magphys, and W1+W3 galfit flags):',len(self.vfcut))
-        print('magflag+SNR+t-type only:',len(self.vf[snr_flag&t_flag&mag_flag])) 
-                
-        print('')
-        print('for full catalog (galfit errors only):')
+        print('magflag+SNR+t-type only:',len(self.vf[self.snr_flag&self.t_flag&self.mag_flag])) 
+        
+        print()
+        if self.fixedbapa:
+            self.fixedfree='Fixed BA, PA'
+        else:
+            self.fixedfree = 'Free BA, PA'
+            
+        print(f'for full catalog (galfit errors only) -- {self.fixedfree}:')
         print(f"fraction galaxies with w1 galfit errors (old): {np.sum(self.w1_old['CERROR']==1.)/len(self.vf):.03f}")
                 
         print(f"fraction galaxies with w1 galfit errors (new): {np.sum(self.w1_new['CNumerical_Error'])/len(self.vf):.03f}")
@@ -74,8 +86,8 @@ class catalogs:
         
         print(f"fraction galaxies with w3 galfit errors (new): {np.sum(self.w3_new['CNumerical_Error'])/len(self.vf):.03f}")
         
-        print('')
-        print('for subsample galaxies...(applying SNR flag and galfit error flag):')
+        print()
+        print(f'for subsample galaxies (applying SNR flag and galfit error flag) -- {self.fixedfree}:')
         
         num_snr_w1old_flag = (self.w1_old['CERROR']==1.) & (self.vf['SNRflag'])
         num_snr_w3old_flag = (self.w3_old['CERROR']==1.) & (self.vf['SNRflag'])
@@ -87,30 +99,20 @@ class catalogs:
         print(f'fraction galaxies with w3 galfit errors (old): {np.sum(num_snr_w3old_flag)/len(self.vf):.03f}')
         print(f'fraction galaxies with w3 galfit errors (new): {np.sum(num_snr_w3new_flag)/len(self.vf):.03f}')
         
-        '''
-        galfit_W1 = self.w3_new
-        print("W1 results:")
-        print("------------")
-        W1galfitflag = galfit_W1['MAG'] > 0
-        nflag = galfit_W1['Numerical_Error']
-        cnflag = galfit_W1['CNumerical_Error']
-        print(f"percent success w/out convolution: {np.sum(W1galfitflag & ~nflag)/len(galfit_W1):.03f}")
-        print(f"percent success with convolution: {np.sum(W1galfitflag & ~cnflag)/len(galfit_W1):.03f}")
-        '''
-        
     def comp_oldnew(self,zoom=False):
-
+        
         plt.figure(figsize=(9,7))
 
         plt.subplot(2,2,1)
         plt.scatter(self.w1_oldcut['CRE'], self.w1_oldcut['CRE']/self.w1_newcut['CRE'], c=self.magphys_cut['logMstar_med'])
+        
         plt.clim(7.5,10.5)
         plt.axhline(1,color='indigo',ls='dashed')
         plt.xscale('log')
         plt.yscale('log')
         plt.ylabel(r'Re$_{old}$/Re$_{new}$',fontsize=12)
         plt.xlabel(r'Re$_{old}$',fontsize=12)
-        plt.title('W1')
+        plt.title(f'W1 {self.fixedfree}')
 
         plt.subplot(2,2,2)
         plt.scatter(self.w3_oldcut['CRE'], self.w3_oldcut['CRE']/self.w3_newcut['CRE'], c=self.magphys_cut['logMstar_med'])
@@ -118,7 +120,7 @@ class catalogs:
         plt.axhline(1, color='indigo',ls='dashed')
         plt.xscale('log')
         plt.yscale('log')
-        plt.title('W3')
+        plt.title(f'W3 {self.fixedfree}')
         plt.ylabel(r'Re$_{old}$/Re$_{new}$',fontsize=12)
         plt.xlabel(r'Re$_{old}$',fontsize=12)
         plt.colorbar(label='log(Mstar)')
@@ -131,7 +133,7 @@ class catalogs:
         plt.yscale('log')
         plt.ylabel(r'n$_{old}$/n$_{new}$',fontsize=12)
         plt.xlabel(r'n$_{old}$',fontsize=12)
-        plt.title('W1')
+        plt.title(f'W1 {self.fixedfree}')
 
         plt.subplot(2,2,4)
         plt.scatter(self.w3_oldcut['CN'], self.w3_oldcut['CN']/self.w3_newcut['CN'], c=self.magphys_cut['logMstar_med'])
@@ -139,7 +141,7 @@ class catalogs:
         plt.axhline(1,color='indigo',ls='dashed')
         plt.xscale('log')
         plt.yscale('log')
-        plt.title('W3')
+        plt.title(f'W3 {self.fixedfree}')
         plt.ylabel(r'n$_{old}$/n$_{new}$',fontsize=12)
         plt.xlabel(r'n$_{old}$',fontsize=12)
         plt.colorbar(label='log(Mstar)')
@@ -156,14 +158,14 @@ class catalogs:
             plt.axhline(1,color='indigo',ls='dashed')
             plt.ylabel(r'Re$_{old}$/Re$_{new}$',fontsize=12)
             plt.xlabel(r'Re$_{old}$',fontsize=12)
-            plt.title('W1')
+            plt.title(f'W1 {self.fixedfree}')
             plt.ylim(0,2)
 
             plt.subplot(2,2,2)
             plt.scatter(self.w3_oldcut['CRE'], self.w3_oldcut['CRE']/self.w3_newcut['CRE'], c=self.magphys_cut['logMstar_med'])
             plt.clim(7.5,10.5)
             plt.axhline(1, color='indigo',ls='dashed')
-            plt.title('W3')
+            plt.title(f'W3 {self.fixedfree}')
             plt.ylabel(r'Re$_{old}$/Re$_{new}$',fontsize=12)
             plt.xlabel(r'Re$_{old}$',fontsize=12)
             plt.colorbar(label='log(Mstar)')
@@ -176,7 +178,7 @@ class catalogs:
             plt.axhline(1,color='indigo',ls='dashed')
             plt.ylabel(r'n$_{old}$/n$_{new}$',fontsize=12)
             plt.xlabel(r'n$_{old}$',fontsize=12)
-            plt.title('W1')
+            plt.title(f'W1 {self.fixedfree}')
             plt.ylim(0,2)
             plt.xlim(0,6)
 
@@ -184,7 +186,7 @@ class catalogs:
             plt.scatter(self.w3_oldcut['CN'], self.w3_oldcut['CN']/self.w3_newcut['CN'], c=self.magphys_cut['logMstar_med'])
             plt.clim(7.5,10.5)
             plt.axhline(1,color='indigo',ls='dashed')
-            plt.title('W3')
+            plt.title(f'W3 {self.fixedfree}')
             plt.ylabel(r'n$_{old}$/n$_{new}$',fontsize=12)
             plt.xlabel(r'n$_{old}$',fontsize=12)
             plt.colorbar(label='log(Mstar)')
@@ -210,8 +212,8 @@ class catalogs:
         plt.figure(figsize=(14,2.5))
         for n in range(len(rvals)):
             plt.subplot(1,4,n+1)
-            plt.scatter(rvals[n],w3vals[n],color='b',s=40,alpha=0.7,label='W3')
-            plt.scatter(rvals[n],w1vals[n],color='r',s=40,alpha=0.7,label='W1')
+            plt.scatter(rvals[n],w3vals[n],color='b',s=40,alpha=0.7,label='W3  {self.fixedfree}')
+            plt.scatter(rvals[n],w1vals[n],color='r',s=40,alpha=0.7,label='W1  {self.fixedfree}')
             plt.axline((0, 0), slope=1, color='indigo',ls='dashed')
             plt.xlabel(f'r-band {labels[n]}',fontsize=12)
             plt.ylabel(f'WISE {labels[n]}',fontsize=12)
@@ -224,6 +226,61 @@ class catalogs:
         plt.subplots_adjust(wspace=0.45)
         plt.show()
     
-    
+    def fixedfree_comp(self):
+        subsample_flag = self.vf['subsample_flag']  #includes t-type, SNR, SFR, sSFR, Mstar
+        agnflag = (self.vf['WISE_AGN_flag'][self.vf['subsample_flag']])|(self.vf['kauffman_AGN_flag'][self.vf['subsample_flag']])
+        
+        if self.fixedbapa:
+            
+            comp_w1 = self.w1_new_free[subsample_flag]
+            comp_w3 = self.w3_new_free[subsample_flag]
+            
+            titles = ['W3 CRE-CN Comparison (fixed PA, BA)','W3 CRE-CN Comparison (free PA, BA)',
+                      'W1 CRE-CN Comparison (fixed PA, BA)','W1 CRE-CN Comparison (free PA, BA)']
+        
+        if not self.fixedbapa:
+            
+            comp_w1 = self.w1_new_fixed[subsample_flag]
+            comp_w3 = self.w3_new_fixed[subsample_flag]
+            
+            titles = ['W3 CRE-CN Comparison (free PA, BA)','W3 CRE-CN Comparison (fixed PA, BA)',
+                      'W1 CRE-CN Comparison (free PA, BA)','W1 CRE-CN Comparison (fixed PA, BA)']
+        
+        subsample_w1 = self.w1_new[subsample_flag]
+        subsample_w3 = self.w3_new[subsample_flag]
+            
+        xvals = [subsample_w3['CN'],comp_w3['CN'],
+                 subsample_w1['CN'],comp_w1['CN']]
+        yvals = [subsample_w3['CRE'],comp_w3['CRE'],
+                 subsample_w1['CRE'],comp_w1['CRE']]
+        nerr_flag = [subsample_w3['CNumerical_Error'],comp_w3['CNumerical_Error'],
+                     subsample_w1['CNumerical_Error'],comp_w1['CNumerical_Error']]
+        
+        plt.figure(figsize=(9,7))
+        
+        for i in range(len(xvals)):
+            plt.subplot(2,2,i+1)
+            plt.scatter(xvals[i],yvals[i],color='black',label='Subsample',alpha=0.4,s=50)
+            plt.scatter(xvals[i][agnflag],yvals[i][agnflag],color='green',label='AGN Sources',s=200,facecolor='None',
+                       alpha=0.5)
+            plt.scatter(xvals[i][nerr_flag[i]],yvals[i][nerr_flag[i]],color='cyan',label='Numerical Errors',s=10)
+            plt.axvline(6,color='r',linestyle='--',alpha=0.4)
+            plt.yscale('log')
+            plt.ylabel(r'Sersic CRE [px]',fontsize=12)
+            plt.xlabel(r'Sersic CN',fontsize=12)
+            plt.title(titles[i],fontsize=12)
+            plt.legend(framealpha=0.2)
+        
+        plt.subplots_adjust(wspace=0.3, hspace=0.4)
+        plt.show()
+        
+        print('galaxies in W3 (free) plot with <0.1 CRE and <6 CN:')
+        if self.fixedbapa:
+            compact_vfids = comp_w3[(comp_w3['CRE']<0.1)&(comp_w3['CN']<6)&(comp_w3['CNumerical_Error'])&(comp_w3['CRE']!=0)]['VFID']
+        if not self.fixedbapa:
+            compact_vfids = subsample_w3[(subsample_w3['CRE']<0.1)&(subsample_w3['CN']<6)& (subsample_w3['CNumerical_Error'])&(subsample_w3['CRE']!=0)]['VFID']
+        
+        print(list(n for n in compact_vfids))
+                
 if __name__=='__main__':
     print('''USAGE: ''')

@@ -98,6 +98,9 @@ class HomePage():
             html.write('<table><tr><th>VFID</th><th>LS Cutout</th><th>Prefix</th><th>RA</th><th>DEC</th><th>log(Mstar) (best)</th><th>log(SFR) (best)</th><th>log(sSFR) (best)</th><th>AGN</th><th>Comments</th>\n')
             
             for i in range(len(self.cutcat)):
+                
+                param_index = np.where(self.w3_params['VFID'] == self.cutcat[i]['VFID'])[0][0]
+                
                 print_counter += 1   #add +1 to the counter
                 html.write('<tr><td>'+self.cutcat['VFID'][i]+'</td>\n')   #add index number
                 if os.path.isfile(self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg'):
@@ -106,7 +109,7 @@ class HomePage():
                     html.write('<td>No Image Available for this Galaxy</td>\n')
                 #if galfit did not run successfully on a (group) galaxy then all parameters will be zeros, and heaps of trouble in terms of generating the galaxy page arises. We disable the hyperlinks in these cases. Otherwise, 
                 
-                if self.w3_params['CXC'][i]>0:
+                if self.w3_params['CXC'][param_index]>0:
                     if (self.primaryGroup_flag[i])|(~self.group_flag[i]):   #only run this loop if galaxy is primary (or not part of a projected group)
        
                         #CREATE SINGLE GALPAGE using the GalPage class (see below)
@@ -169,10 +172,16 @@ class HomePage():
                     html.write('<td>--</td>\n')
                                 
                 #if the VFID (v2) is part of a group galaxy, then write in the Comments column that this particular galaxy is a member of a group. Else, keep blank (with a -----).
-                if (self.group_flag[i]) | ('GROUP' in self.group_names[i]):
+                if ((self.group_flag[i]) | ('GROUP' in self.group_names[i])) & (self.w3_params['CXC'][param_index]==0):
+                    html.write('<td>Group Galaxy; GALFIT Crashed</td>\n')
+                elif ~((self.group_flag[i]) | ('GROUP' in self.group_names[i])) & (self.w3_params['CXC'][param_index]==0):
+                    html.write('<td>GALFIT Crashed</td>\n')
+                elif ((self.group_flag[i]) | ('GROUP' in self.group_names[i])) & ~(self.w3_params['CXC'][param_index]==0):
                     html.write('<td>Group Galaxy</td>\n')
                 else:
                     html.write('<td>-----</td>\n')
+                
+                
                 
                 if print_counter == 20:
                     clear_output(wait=False)   #clear printed output
@@ -189,8 +198,10 @@ class HomePage():
 
         for i in range(len(self.cutcat)):
             
+            param_index = np.where(self.w3_params['VFID'] == self.cutcat[i]['VFID'])[0][0]
+            
             #if galfit ran successfully (regardless of numerical errors)...
-            if (self.w1_params['CXC'][i]>0):
+            if (self.w1_params['CXC'][param_index]>0):
 
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
                 single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, 
@@ -218,8 +229,11 @@ class HomePage():
                       3:'w1, conv'}
         
         for i in range(len(self.cutcat)):
+            
+            param_index = np.where(self.w3_params['VFID'] == self.cutcat[i]['VFID'])[0][0]
+            
             #if galfit ran successfully AND this galaxy is either a primary galaxy or not part of a Moustakas group
-            if (self.w3_params['CXC'][i]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
+            if (self.w3_params['CXC'][param_index]>0) & ((self.primaryGroup_flag[i])|(~self.group_flag[i])): 
                 
                 #I set test=True to avoid running the automatic execution of the function that creates galhtml pages
                 single_galaxy = GalPage(galaxy_index=i, psf_indices=self.indices, page_name=self.cutcat['VFID'][i]+'.html', 
