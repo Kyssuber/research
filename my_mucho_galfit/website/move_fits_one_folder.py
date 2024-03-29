@@ -113,7 +113,7 @@ def gather_w1_fits(catalog, host_folder_path_w1, target_folder, fix=False):
           for imout2 in out2_fits:
               os.system(f'cp {imout2} {target_folder}')
       except:
-          print(f'{VFIDs[i]} is a non-primary group galaxy.')
+          print(f'{dirnames[i]} is a non-primary group galaxy.')
 
 def gather_r_fits(catalog, host_folder_path_r, target_folder):
 
@@ -136,7 +136,7 @@ def gather_r_fits(catalog, host_folder_path_r, target_folder):
           for imout2 in out2_fits:
               os.system(f'cp {imout2} {target_folder}')
       except:
-          print(f'{VFIDs[i]} is a non-primary group galaxy.')
+          print(f'{dirnames[i]} is a non-primary group galaxy.')
 
 if __name__ == '__main__':
   
