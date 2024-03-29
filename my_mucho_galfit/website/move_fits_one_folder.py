@@ -57,7 +57,7 @@ def gather_w3_fits(catalog, cutouts_path, target_folder, fix=False):
             print('Moving '+VFIDs[i]+' output file, if any.')
             output_mosaics_w3 = glob.glob(galaxy_folder+'*W3-out2*')   #currently only want convolution case!
             if fix:
-                output_mosaics_w3 = glob.glob(galaxy_folder+'*-W1*out2.fits')   #fixed BA, PA is *-W1-fixBA-out2.fits
+                output_mosaics_w3 = glob.glob(galaxy_folder+'*W3*out2.fits')   #fixed BA, PA is *-W1-fixBA-out2.fits
 
             for im in output_mosaics_w3:   #if no images in output_mosaics, then none will be cp'd. if only one, then only one will be cp'd. usw.
                 print(im)
