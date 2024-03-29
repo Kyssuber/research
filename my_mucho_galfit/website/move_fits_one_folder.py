@@ -154,21 +154,21 @@ if __name__ == '__main__':
   except:
       print('Error: target directory already exists.')
 
-  gather_w3_fits(vf_host_folder_path, onefolder_path, fixed=True)
+  gather_w3_fits(vf, host_folder_path, onefolder_path, fix=True)
   grab_mask_images(vf, host_folder_path, onefolder_path)
-  gather_w1_fits(vf, host_folder_path, onefolder_path, fixed=True)
+  gather_w1_fits(vf, host_folder_path, onefolder_path, fix=True)
   gather_r_fits(vf, host_folder_path, onefolder_path)
   
     
   #print('''
-  #Move W3 images --> cutouts and out2 parameters...if fixed=True, will ALSO pull fixed PA, BA results
-  #gather_w3_fits(vf, host_folder_path, onefolder_path, fixed=False)
+  #Move W3 images --> cutouts and out2 parameters...if fix=True, will ALSO pull fixed PA, BA results
+  #gather_w3_fits(vf, host_folder_path, onefolder_path, fix=False)
   
   #Move W3 mask images (uncomment relevant lines for rband as well -- only need W3 masks if using W1 in place of rband)...
   #grab_mask_images(vf, host_folder_path, onefolder_path)
   
-  #Move W1 images --> cutouts and out2 parameters...if fixed=True, will ALSO pull fixed PA, BA results
-  #gather_w1_fits(vf, host_folder_path, onefolder_path, fixed=False)
+  #Move W1 images --> cutouts and out2 parameters...if fix=True, will ALSO pull fixed PA, BA results
+  #gather_w1_fits(vf, host_folder_path, onefolder_path, fix=False)
 
   #Move r-band images --> cutouts and out2 parameters...
   #gather_r_fits(vf, host_folder_path, onefolder_path)
