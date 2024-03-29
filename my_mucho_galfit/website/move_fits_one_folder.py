@@ -49,8 +49,10 @@ def gather_w3_fits(catalog, cutouts_path, target_folder, fix=False):
         galaxy_folder = cutouts_path+VFIDs[i]+'/'
         try:
             input_w3 = glob.glob(galaxy_folder+'*-custom-image-W3.fits')
-            print('Moving '+input_im)
-            os.system('cp '+input_im+' '+target_folder)
+
+            for input_im in input_w3:  
+                print('Moving '+input_im)
+                os.system('cp '+input_im+' '+target_folder)
     
             print('Moving '+VFIDs[i]+' output file, if any.')
             output_mosaics_w3 = glob.glob(galaxy_folder+'*W3-out2*')   #currently only want convolution case!
@@ -144,7 +146,7 @@ if __name__ == '__main__':
 
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
 
-  onefolder_path = '/mnt/astrophysics/kconger_wisesize/vf_html_w1_v2/all_input_fits/'
+  onefolder_path = '/mnt/astrophysics/kconger_wisesize/vf_html_w1_v3/all_input_fits/'
   
   print('Creating target directory '+onefolder_path)
   try:
@@ -152,20 +154,26 @@ if __name__ == '__main__':
   except:
       print('Error: target directory already exists.')
 
-  print('''
-  Move W3 images --> cutouts and out2 parameters...
-  gather_w3_fits(vf, host_folder_path, onefolder_path, fixed=True)
-  
-  Move W3 mask images (uncomment relevant lines for rband as well -- only need W3 masks if using W1 in place of rband)...
+  gather_w3_fits(vf_host_folder_path, onefolder_path, fixed=True)
   grab_mask_images(vf, host_folder_path, onefolder_path)
-  
-  Move W1 images --> cutouts and out2 parameters...
   gather_w1_fits(vf, host_folder_path, onefolder_path, fixed=True)
-
-  Move r-band images --> cutouts and out2 parameters...
   gather_r_fits(vf, host_folder_path, onefolder_path)
+  
+    
+  #print('''
+  #Move W3 images --> cutouts and out2 parameters...if fixed=True, will ALSO pull fixed PA, BA results
+  #gather_w3_fits(vf, host_folder_path, onefolder_path, fixed=False)
+  
+  #Move W3 mask images (uncomment relevant lines for rband as well -- only need W3 masks if using W1 in place of rband)...
+  #grab_mask_images(vf, host_folder_path, onefolder_path)
+  
+  #Move W1 images --> cutouts and out2 parameters...if fixed=True, will ALSO pull fixed PA, BA results
+  #gather_w1_fits(vf, host_folder_path, onefolder_path, fixed=False)
 
-  Note that vf, host_folder_path, and onefolder_path should already be defined. Type variables into terminal to print the results; if not desired, you may change these variables.
-  ''')
+  #Move r-band images --> cutouts and out2 parameters...
+  #gather_r_fits(vf, host_folder_path, onefolder_path)
+
+  #Note that vf, host_folder_path, and onefolder_path should already be defined. Type variables into terminal to print the results; if not desired, you may change these variables.
+  #''')
 
   os.system('cd /mnt/astrophysics/kconger_wisesize/github/research/my_mucho_galfit/website/')
