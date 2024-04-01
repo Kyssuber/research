@@ -51,13 +51,13 @@ class catalogs:
     def __init__(self,conv=False,MeanMedian='mean',MADmultiplier=5,cutAGN=False,W1=False):
         self.MADmultiplier = MADmultiplier
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
-        self.v2_main = Table.read(homedir+'/v2_snrcoadd.fits')
+        self.v2_main = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_v2.fits')  #has my flagshhhhhhhhh
         self.magphys = Table.read(path_to_dir+'/vf_v2_magphys_legacyExt_final.fits')
         self.z0mgs = Table.read(path_to_dir+'vf_v2_z0mgs.fits')
         self.HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
         self.hyp_tab = Table.read(path_to_dir+'vf_v2_hyperleda.fits')
-        self.sgaparams = Table.read(homedir+'/sgacut_SGAparams.fits')
-        self.sgaparams.sort('VFID_1')   #sort in ascending order all rows according to VFID
+        #self.sgaparams = Table.read(homedir+'/sgacut_SGAparams.fits')
+        #self.sgaparams.sort('VFID_1')   #sort in ascending order all rows according to VFID
         self.MeanMedian = MeanMedian  #whether I plot median or mean size ratios for the self.env_means() figure
         
         self.conv = conv
@@ -67,33 +67,24 @@ class catalogs:
         if self.cutAGN:
             print('AGN cut from sample.')
         
-        if not self.conv:
-            self.rdat = Table.read(homedir+'/output_params_r_nopsf.fits')
-            self.w3dat = Table.read(homedir+'/output_params_W3_nopsf.fits')
-            self.kimparams = Table.read(homedir+'/kimparams_nopsf.fits')   #my nopsf galfit parameters
-        if self.conv:
-            self.rdat = Table.read(homedir+'/output_params_r_psf.fits')
-            self.w3dat = Table.read(homedir+'/output_params_W3_psf.fits')
-            self.kimparams = Table.read(homedir+'/kimparams_psf.fits')   #my psf galfit parameters
         
-        if self.W1:
-            self.w1dat = Table.read(homedir+'/Desktop/v2-20220820/vf_v2_galfit_W1.fits')
+        self.rdat = Table.read(homedir+'/Desktop/galfit_files/galfit_r_03112024.fits')
+        #self.w3dat = Table.read(homedir+'/Desktop/galfit_files/galfit_W3_03112024.fits')
+        #self.w1dat = Table.read(homedir+'/Desktop/galfit_files/galfit_W1_03112024.fits')
         
-        self.roseparams = self.w3dat.copy()        
+        self.w3dat = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W3-fixBA.fits')
+        self.w1dat = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W1-fixBA.fits')
+        
+        
         self.cut_cats()
     
     def cut_cats(self):
-        subsample_flag_temp = self.v2_main['sgacut_flag']
+
         massflag = self.v2_main['massflag']
         ssfrflag = self.v2_main['sSFR_flag']
         sfrflag = self.v2_main['SFRflag']
         
-        
-        #unfortunately, re tables begin with a length of 702, necessitating a separate flag 
-        #(v2_main and the rest are length 6780)
-        flag_for_re = (self.v2_main.copy()[subsample_flag_temp]['massflag']) & (self.v2_main.copy()[subsample_flag_temp]['sSFR_flag']) & (self.v2_main.copy()[subsample_flag_temp]['SFRflag'])
-        
-        subsample_flag=subsample_flag_temp&massflag&ssfrflag&sfrflag
+        subsample_flag=self.v2_main['subsample_flag']
         
         self.v2_env = self.v2_env[subsample_flag]
         self.v2_maincut = self.v2_main[subsample_flag]
@@ -101,26 +92,23 @@ class catalogs:
         self.z0mgs = self.z0mgs[subsample_flag]
         self.HI_tab = self.HI_tab[subsample_flag]
         self.hyp_tab = self.hyp_tab[subsample_flag]
-        self.sgaparams = self.sgaparams[flag_for_re]   #also begins at length 702...
-        self.kimparams = self.kimparams[flag_for_re]   #and this.
-        self.roseparams = self.roseparams[flag_for_re] #AND THIS...stupid mass cut.
                 
         if self.W1:
             self.re_w1band = self.w1dat['CRE'][subsample_flag]
-        self.re_rband = self.rdat['re'][flag_for_re]
-        self.re_w3band = self.w3dat['re'][flag_for_re]
+        self.re_rband = self.rdat['CRE'][subsample_flag]
+        self.re_w3band = self.w3dat['CRE'][subsample_flag]
 
-        self.PA_rband = self.rdat['PA'][flag_for_re]
-        self.PA_w3band = self.w3dat['PA'][flag_for_re]
+        self.PA_rband = self.rdat['CPA'][subsample_flag]
+        self.PA_w3band = self.w3dat['CPA'][subsample_flag]
 
-        self.BA_rband = self.rdat['BA'][flag_for_re]
-        self.BA_w3band = self.w3dat['BA'][flag_for_re]
+        self.BA_rband = self.rdat['CAR'][subsample_flag]
+        self.BA_w3band = self.w3dat['CAR'][subsample_flag]
 
         fail_flag = (self.re_rband == 0.0) | (self.re_w3band == 0.0)
         r_flag = (self.re_rband == 0.0)
         w3_flag = (self.re_w3band == 0.0)
-        err_flag = (self.rdat['err_flag'][flag_for_re]==1) | (self.w3dat['err_flag'][flag_for_re]==1)
-        sersic_flag = (self.rdat['nsersic'][flag_for_re]>6) | (self.w3dat['nsersic'][flag_for_re]>6) #unphysical
+        err_flag = (self.rdat['CNumerical_Error'][subsample_flag]) | (self.w3dat['CNumerical_Error'][subsample_flag])
+        sersic_flag = (self.rdat['CN'][subsample_flag]>6) | (self.w3dat['CN'][subsample_flag]>6) #unphysical
         
         nsersic_fails = len(self.re_w3band[sersic_flag])
 
@@ -128,34 +116,28 @@ class catalogs:
         n_fails_w3 = len(self.re_w3band[w3_flag])
         
         if self.W1: 
-            fail_flag = (self.re_w1band == 0.0) | (self.re_w3band == 0.0)
-            w1_flag = (self.re_w1band == 0)
-            err_flag = (self.w1dat['CERROR'][subsample_flag]==1) | (self.w3dat['err_flag'][flag_for_re]==1) | (self.w1dat['CRE'][subsample_flag]==0) | (np.isnan(self.w1dat['CRE'][subsample_flag]))
-            sersic_flag = (self.w1dat['CN'][subsample_flag]>6) | (self.w3dat['nsersic'][flag_for_re]>6) #unphysical 
+            fail_flag = (self.re_w1band == 0.0) | (self.re_w3band == 0.0)  #no entries; galfit failed.
+            w1_flag = (self.re_w1band == 0)  #no w1 entries; galfit failed.
+            err_flag = (self.w1dat['CNumerical_Error'][subsample_flag]) | (self.w3dat['CNumerical_Error'][subsample_flag]) | (self.w1dat['CRE'][subsample_flag]==0) | (self.w3dat['CRE'][subsample_flag]==0) #ALL ERRORS
+            #err_flag = (self.w1dat['CRE'][subsample_flag]==0) | (self.w3dat['CRE'][subsample_flag]==0)
+            
+            sersic_flag = (self.w1dat['CN'][subsample_flag]>6) | (self.w3dat['CN'][subsample_flag]>6) #unphysical 
             
             n_fails_w1 = len(self.re_w1band[w1_flag])
             nsersic_fails = len(self.re_w3band[sersic_flag])
             
-        self.cut_flags = (~fail_flag)&(~err_flag)&(~sersic_flag)
+        self.cut_flags = (~fail_flag)&(~err_flag)&(~sersic_flag)   #only keep galaxies that are NOT errors or failures. only winners in this house.
         
         #apply optional AGN cut
         if self.cutAGN:
-            #WISE color magnitudes
-            wise_mag_cut=Table.read(homedir+'/Desktop/v2-20220820/vf_v2_unwise.fits')[subsample_flag]
-            #spectral line strengths
-            bpt_lines_cut=Table.read(homedir+'/Desktop/v2-20220820/vf_v2_nsa_v0.fits')[subsample_flag]
-            wise_agn = (wise_mag_cut['w1_mag'] - wise_mag_cut['w2_mag']>0.65) & (wise_mag_cut['w2_mag']-wise_mag_cut['w3_mag']<4.0)
-            agn_kauffman = (np.log10(bpt_lines_cut['O3FLUX']/bpt_lines_cut['HBFLUX']) > (.61/(np.log10(bpt_lines_cut['N2FLUX']/bpt_lines_cut['HAFLUX']-.05))+1.3)) | (np.log10(bpt_lines_cut['N2FLUX']/bpt_lines_cut['HAFLUX']) > 0.)
-        
-            self.wise_agn_flag = np.asarray(wise_agn)
-            self.agn_kauffman_flag = np.asarray(agn_kauffman)
-            AGN_flags = (self.wise_agn_flag)|(self.agn_kauffman_flag)
+
+            AGN_flags = (self.v2_maincut['WISE_AGN_flag'])|(self.v2_maincut['kauffman_AGN_flag'])
             
-            print(f'# WISE AGN in VF subsample: {len(self.v2_maincut[self.wise_agn_flag])}')
-            print(f'# BPT AGN in VF subsample: {len(self.v2_maincut[self.agn_kauffman_flag])}')
+            print(f'fraction AGN in VF subsample (before filtering out GALFIT errors): {np.round(len(self.v2_maincut[AGN_flags])/len(self.v2_maincut),3)}')
 
             self.cut_flags = (~AGN_flags) & (~fail_flag) & (~err_flag) & (~sersic_flag)
-            print(f'Number of galaxies flagged with AGN and a GALFIT error: {len(self.v2_env[(AGN_flags) & (err_flag)])}')
+            print(f'Number of galaxies flagged with AGN *AND* a GALFIT error: {len(self.v2_env[(AGN_flags) & (err_flag)])}')
+            print()
         
         self.re_rband_cut = self.re_rband[self.cut_flags]
         self.re_w3band_cut = self.re_w3band[self.cut_flags]
@@ -175,13 +157,6 @@ class catalogs:
         self.z0mgscut = self.z0mgs[self.cut_flags]
         self.HI_tab_cut = self.HI_tab[self.cut_flags]
         self.hyp_tab_cut = self.hyp_tab[self.cut_flags]
-        self.sgaparams_cut = self.sgaparams[self.cut_flags]
-        
-        self.kimparams_cut = self.kimparams[self.cut_flags]
-        self.roseparams_cut = self.roseparams[self.cut_flags]
-        
-        #ratio of Rose's w3 effective radius to my own...both cases are without convolution.
-        self.comp_ratios = self.roseparams_cut['re']/self.kimparams_cut['re']
         
         #define env flags
         self.clusflag = self.v2_envcut['cluster_member']
@@ -189,18 +164,15 @@ class catalogs:
         self.pgflag = self.v2_envcut['poor_group_memb']
         self.filflag = self.v2_envcut['filament_member']
         self.fieldflag = self.v2_envcut['pure_field']
-
-        n_tot = len(self.re_rband)     #should be the same for both r-band and w3
         
         if self.W1:
             print(f'No GALFIT data for {n_fails_w3} w3 galaxies, {n_fails_w1} w1 galaxies, and {n_fails_r} r galaxies.')
         if not self.W1:
             print(f'No GALFIT data for {n_fails_w3} w3 galaxies and {n_fails_r} r galaxies.')
-        print(f'Total number of galaxies with GALFIT errors or error flags: {int(np.sum(np.ones(len(err_flag))*err_flag))}')
+        print(f'Total number of galaxies with GALFIT errors or error flags: {np.sum(np.ones(len(err_flag))*err_flag)}')
         print(f'Total number of galaxies with nser>6: {nsersic_fails}')
-
-        print(f'Total number of subsample galaxies before running GALFIT: {n_tot}')
-        print(f'Total number of subsample galaxies after running GALFIT: {len(self.re_w3band_cut)}')
+        print()
+        print(f'Total number of subsample galaxies remaining: {len(self.re_w3band_cut)}')
 
         self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
         self.PArats = self.PA_w3band_cut/self.PA_rband_cut          
@@ -335,7 +307,7 @@ class catalogs:
         #also looks for whether trends exist between size ratio and Sérsic index or T-type
         #ttype_dict = {'Sa':1,'Sab':2,'Sb':3,'Sbc':4,'Sc':5,'Scd':6,'Sd':7,'Sdm':8,'Sm':9,'Ir':10}
         
-        nser = self.rdat['nsersic'][self.cut_flags]
+        nser = self.rdat['CN'][self.cut_flags]
         
         y2 = [self.sizerats, self.sizerats[(nser<4)]]
         x2 = [self.hyp_tab_cut['t'], nser[(nser<4)]]
@@ -377,7 +349,7 @@ class catalogs:
         #remove entries where there is no magphys data available for that galaxy
         err_flag = (self.magphys['magphysFlag'])
         
-        logmass_cut = logmass[self.v2_main['sgacut_flag'] & (err_flag)]        
+        logmass_cut = logmass[self.v2_main['SNRflag'] & self.v2_main['t_flag'] & (err_flag)]        
         logmass = logmass[err_flag]
         if mass_match:
             self.mass_matching()
@@ -405,8 +377,7 @@ class catalogs:
     
     def sfrmstar_magphys(self, show_HI=False, show_D25=False, show_sizerat=True, savefig=False):
 
-        v2_main = Table.read(homedir+'/v2_snrcoadd.fits')
-        magphys = Table.read(path_to_dir+'vf_v2_magphys_07-Jul-2022.fits')
+        magphys = Table.read(path_to_dir+'vf_v2_magphys_legacyExt_final.fits')
         HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
         hyp_tab = Table.read(path_to_dir+'vf_v2_hyperleda.fits')
         
@@ -429,11 +400,13 @@ class catalogs:
         err_flag = (magphys['magphysFlag'])
         err_flag_cut = (self.magphyscut['magphysFlag'])
         
-        MHI_to_Mstar_cut = MHI_to_Mstar[(v2_main['sgacut_flag']) & (err_flag)]
-        logsfr_cut = logsfr[(v2_main['sgacut_flag']) & (err_flag)]
-        logmass_cut = logmass[(v2_main['sgacut_flag']) & (err_flag)]
+        logmass_cut = logmass[self.v2_main['SNRflag'] & self.v2_main['t_flag'] & (err_flag)]  
         
-        d25_cut = d25[(v2_main['sgacut_flag']) & (err_flag)]
+        MHI_to_Mstar_cut = MHI_to_Mstar[self.v2_main['SNRflag'] & self.v2_main['t_flag'] & (err_flag)]
+        logsfr_cut = logsfr[self.v2_main['SNRflag'] & self.v2_main['t_flag'] & (err_flag)]
+        logmass_cut = logmass[self.v2_main['SNRflag'] & self.v2_main['t_flag'] & (err_flag)]
+        
+        d25_cut = d25[self.v2_main['SNRflag'] & self.v2_main['t_flag'] & (err_flag)]
         
         logsfr = logsfr[err_flag]
         logmass = logmass[err_flag]
@@ -786,11 +759,7 @@ class catalogs:
             #plt.yscale('log')
             #plt.ylim(0,2)    
             
-            print(len(self.sizerats[err_flag_cut & (np.abs(dist<0.5))]))
-            
-            
-            
-            
+            print(len(self.sizerats[err_flag_cut & (np.abs(dist<0.5))]))            
             
         if not self.W1:
             plt.ylabel(r'Size Ratio ($R_{12}/R_{r}$)',fontsize=17)
@@ -838,7 +807,7 @@ class catalogs:
         
         plt.show()
 
-    def env_means_comp(self, mass_match=False, trimOutliers=False, errtype='bootstrap', savefig=False):    
+    def env_means_comp(self, mass_match=False, errtype='bootstrap', savefig=False):    
         index = np.arange(1,6,1)
         env_names = ['Cluster','Rich \n Group','Poor \n Group','Filament','Field']
         
@@ -851,22 +820,12 @@ class catalogs:
                   len(self.v2_envcut[self.filflag])*ntot_wise/len(self.v2_envcut), 
                   len(self.v2_envcut[self.fieldflag])*ntot_wise/len(self.v2_envcut)])
         
-        #will generate the self.outlier_flag variable needed to, well, trim the outliers.
-        if trimOutliers==True:
-            self.compareKim(savefig=False)
-            ratios = self.sizerats[self.outlier_flag]
-            clusflag = self.clusflag.copy()[self.outlier_flag]
-            rgflag = self.rgflag.copy()[self.outlier_flag]
-            pgflag = self.pgflag.copy()[self.outlier_flag]
-            filflag = self.filflag.copy()[self.outlier_flag]
-            fieldflag = self.fieldflag.copy()[self.outlier_flag]
-        else:
-            ratios = self.sizerats
-            clusflag = self.clusflag.copy()
-            rgflag = self.rgflag.copy()
-            pgflag = self.pgflag.copy()
-            filflag = self.filflag.copy()
-            fieldflag = self.fieldflag.copy()
+        ratios = self.sizerats
+        clusflag = self.clusflag.copy()
+        rgflag = self.rgflag.copy()
+        pgflag = self.pgflag.copy()
+        filflag = self.filflag.copy()
+        fieldflag = self.fieldflag.copy()
         
         re_data = [ratios[clusflag],ratios[rgflag],ratios[pgflag],
                    ratios[filflag],ratios[fieldflag]]
@@ -941,21 +900,12 @@ class catalogs:
         env_names = ['Cluster','Rich \n Group','Poor \n Group','Filament','Field']
         
         #will generate the self.outlier_flag variable needed to, well, trim the outliers.
-        if trimOutliers==True:
-            self.compareKim(savefig=False)
-            ratios = self.sizerats[self.outlier_flag]
-            clusflag = self.clusflag.copy()[self.outlier_flag]
-            rgflag = self.rgflag.copy()[self.outlier_flag]
-            pgflag = self.pgflag.copy()[self.outlier_flag]
-            filflag = self.filflag.copy()[self.outlier_flag]
-            fieldflag = self.fieldflag.copy()[self.outlier_flag]
-        else:
-            ratios = self.sizerats
-            clusflag = self.clusflag.copy()
-            rgflag = self.rgflag.copy()
-            pgflag = self.pgflag.copy()
-            filflag = self.filflag.copy()
-            fieldflag = self.fieldflag.copy()
+        ratios = self.sizerats
+        clusflag = self.clusflag.copy()
+        rgflag = self.rgflag.copy()
+        pgflag = self.pgflag.copy()
+        filflag = self.filflag.copy()
+        fieldflag = self.fieldflag.copy()
         
         re_data = [ratios[clusflag],ratios[rgflag],ratios[pgflag],
                    ratios[filflag],ratios[fieldflag]]
@@ -1246,6 +1196,7 @@ class catalogs:
             print(names[n])
             print('%.5f'%(kstest(np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1]))[1]))
     
+    '''
     def compareSGA(self,savefig=False):
         
         r50_sga_r = self.sgaparams_cut['r50 (rband)']  #arcsec
@@ -1284,94 +1235,8 @@ class catalogs:
             plt.savefig(homedir+'/Desktop/SGA_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
         
         plt.show()
+    '''
     
-    def comparePSF(self,savefig=False):
-        
-        if self.conv==False:
-            self.rdat_comp = Table.read(homedir+'/output_params_r_psf.fits')
-            self.w3dat_comp = Table.read(homedir+'/output_params_W3_psf.fits')
-            xlabels = ['psf Re (px)','psf Re (px)']
-            ylabels = ['nopsf Re (px)','nopsf Re (px)']
-        if self.conv==True:
-            self.rdat_comp = Table.read(homedir+'/output_params_r_nopsf.fits')
-            self.w3dat_comp = Table.read(homedir+'/output_params_W3_nopsf.fits')
-            xlabels = ['nopsf Re (px)','nopsf Re (px)']
-            ylabels = ['psf Re (px)','psf Re (px)']
-        
-        titles = ['w3 Re Comparison','r-band Re Comparison']
-                        
-        rdat_comp = self.rdat_comp[self.cut_flags]
-        w3dat_comp = self.w3dat_comp[self.cut_flags]
-                
-        err_flag_comp_r = (rdat_comp['err_flag']==1)
-        err_flag_comp_w3 = (w3dat_comp['err_flag']==1)
-        err_flag_comp = err_flag_comp_r | err_flag_comp_w3
-        
-        re_rband_comp = rdat_comp['re'][~err_flag_comp]
-        re_w3band_comp = w3dat_comp['re'][~err_flag_comp]
-        re_rband = self.re_rband_cut.copy()[~err_flag_comp]
-        re_w3band = self.re_w3band_cut.copy()[~err_flag_comp]
-        
-        re_data_init = [re_w3band*2.75,re_rband*0.262]
-        re_data_comp = [re_w3band_comp*2.75,re_rband_comp*0.262]
-                
-        plt.figure(figsize=(14,6))
-        for panel in range(2):
-            ax = plt.subplot(1,2,panel+1)
-            plt.scatter(re_data_comp[panel], re_data_init[panel], color='crimson', alpha=0.5)
-            plt.title(titles[panel],fontsize=16)
-            ax.set_xlabel(xlabels[panel],fontsize=16)
-            ax.set_ylabel(ylabels[panel],fontsize=16)
-            ax.axline((0, 0), slope=1, label='1-to-1',color='black')
-            
-            slope, intercept, r_value, p_value, std_err = stats.linregress(re_data_comp[panel], re_data_init[panel])
-            # Create empty plot with blank marker containing the extra label
-            plt.plot([], [], ' ', label=f'Slope (linregress) {round(slope,3)}')
-            
-            plt.xscale('log')
-            plt.yscale('log')
-            plt.legend(fontsize=14)
- 
-        if savefig==True:
-            plt.savefig(homedir+'/Desktop/PSF_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
-        
-        plt.show()
-    
-    def compareKim(self, savefig=False):
-        
-        lower_bound = np.median(self.comp_ratios) - MAD(self.comp_ratios)*int(self.MADmultiplier)
-        upper_bound = np.median(self.comp_ratios) + MAD(self.comp_ratios)*int(self.MADmultiplier)
-        self.outlier_flag = (self.comp_ratios > lower_bound)&(self.comp_ratios < upper_bound)
-        
-        plt.figure(figsize=(8,6))
-        plt.scatter(self.kimparams_cut['re'][self.outlier_flag],
-                    self.roseparams_cut['re'][self.outlier_flag],alpha=0.2,color='crimson',
-                    label='Points within +/- MAD*{}'.format(self.MADmultiplier))
-        plt.scatter(self.kimparams_cut['re'][~self.outlier_flag],
-                    self.roseparams_cut['re'][~self.outlier_flag],alpha=0.2,color='black',s=20,label='All Points')
-
-        xline=np.linspace(np.min(self.kimparams_cut['re']),np.max(self.kimparams_cut['re']),100)
-        plt.plot(xline,xline,color='black')
-        
-        plt.xscale('log')
-        plt.yscale('log')
-        plt.legend(fontsize=14,loc='upper left')
-        
-        plt.xlabel('Kim w3 (px)',fontsize=18)
-        plt.ylabel('Rose w3 (px) ',fontsize=18)
-        if self.conv==True:
-            plt.title('Re Comparison (PSF)',fontsize=20)
-        if self.conv==False:
-            plt.title('Re Comparison (noPSF)',fontsize=20)
-        
-        print('List of Galaxy Outliers')
-        print(self.kimparams_cut['VFID'][~self.outlier_flag])
-        
-        if savefig==True:
-            plt.savefig(homedir+'/Desktop/Re_comparison_Kim.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
-        
-        plt.show()    
-
     def wisesize_mass(self, nbins=5, savefig=False):
 
         self.data = [self.sizerats[(self.clusflag) | (self.rgflag)], 
@@ -1498,9 +1363,6 @@ if __name__ == '__main__':
         will compare MAGPHYS stellar masses with z0mgs values if True
     cat.mass_hist_oneplot(fullsample=False,savefig=False) --> generate same MAGPHYS mass histograms 
         but as a single plot; fullsample=True will use all VFS galaxies.
-    cat.compareSGA(savefig=False) --> compares Rose's GALFIT r-band Re values with SGA's non-parametric r50
-    cat.comparePSF(savefig=False) --> plots noPSF vs. PSF Re values for w3, r-band (one subplot per band)
-    cat.compareKim(savefig=False) --> compares my noPSF w3-band Re values with Rose's noPSF values
     cat.wisesize_mass(nbins=3,savefig=False) --> creates median/mean size ratios vs. mass bin plot for two
         environment classifications: low-density (PG, filament, field) and high-density (cluster, RG).
     """)
