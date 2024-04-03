@@ -10,13 +10,20 @@ fits_folder                       all_input_fits                  # name of fold
 gal_mosaic_folder                 galfit_mosaics_png              # name of folder containing .png galfit mosaics
 LS_cutout_folder                  LS_cutouts_png                  # name of folder that WILL contain LS cutouts
 path_to_params                    param_tables                    # name of folder containing galfit output parameter tables
+
 path_to_galhtml                   galhtml_files                   # name of folder containing each galpage html file
 website_title                     GALFIT_Data_for_Virgowise_VFS_Galaxies   #self-explanatory...add _ in place of space; will correct itself.
 home_color                        hsla(255, 99, 71, 0.5)          # color of homepage background --> sehr wichtig
 
 #--------------------------------------------------- Parameters ----------------------------------------------------
 
-psf_indices                       [1,3]              # 0 for w3_nopsf, 1 for w3_psf, 2 for w1_nopsf, 3 for w1_psf
+psf_indices                   [0,1,2,3,4]  # 0 for w3_psf_fixed, 1 for w3_psf, 2 for w1_psf_fixed, 3 for w1_psf, 4 for r-band
+
+w1_paramname                  galfit_W1_03112024.fits         # name of w1 param file
+w1_paramname_fixed            vf_v2_galfit_W1-fixBA.fits      # name of w1_fixed param file
+w3_paramname                  galfit_W3_03112024.fits         # name of w3 param file
+w3_paramname_fixed            vf_v2_galfit_W3-fixBA.fits      # name of w3_fixed param file
+r_paramname                   galfit_r_03112024.fits          # name of r-band param file
 
 
 #NOTE: all folders above will appear in local_path once code runs successfully.

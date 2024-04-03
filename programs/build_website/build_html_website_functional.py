@@ -279,7 +279,7 @@ class GalPage():
     def __init__(self,galaxy_index=None, psf_indices=[0,1,2,3,4], page_name=None, catalog=None, 
                  local_path=None, path_to_galhtml=None, LS_cutout_folder=None, LS_mosaic_folder=None, 
                  fits_folder=None, gal_mosaic_folder=None, w3_params=None, w1_params=None, r_params=None, 
-                 w1_params_fixed=None, w3_params_fixed=None,homepage_name=None,test=False):
+                 w1_params_fixed=None, w3_params_fixed=None,test=False):
         
         self.galaxy_index = int(galaxy_index)
         self.psf_indices = psf_indices
@@ -325,6 +325,22 @@ class GalPage():
         path_to_r = glob.glob(self.fits_folder+self.objname+'-custom-image-r.fits')[0]
         path_to_w1 = glob.glob(self.fits_folder+self.objname+'-custom-image-W1.fits')[0]
         
+        '''
+        try:
+            path_to_w1 = glob.glob(self.fits_folder+self.objname+'-custom-image-W1.fits')[0]
+            self.w1_im, self.w1_header = fits.getdata(path_to_w1, header=True)
+        except:
+            print(self.objname, self.fits_folder+self.objname+'-W1-out1.fits', self.fits_folder+self.cutcat['objname'][self.galaxy_index]+'-W1-out1.fits')
+            if os.path.exists(self.fits_folder+self.objname+'-W1-out1.fits'):
+                path_to_w1 = glob.glob(self.fits_folder+self.objname+'-W1-out1.fits')[0]
+            else:
+                path_to_w1 = glob.glob(self.fits_folder+self.cutcat['objname'][self.galaxy_index]+'-W1-out1.fits')[0]
+            self.w1_im, self.w1_header = fits.getdata(path_to_w1, 2, header=True)
+        #for WHATEVER reason, some moustakas groups do not have the _GROUP extension in their filename. wtf.
+        #so I pull the input image used for GALFIT, which seems to have the same dimensions as w3. for now.
+        #who knows what the future will hold? I sure as hell do not.
+        '''
+        
         self.w1_im, self.w1_header = fits.getdata(path_to_w1, header=True)
         self.wise_im, self.wise_header = fits.getdata(path_to_w3, header=True)
         self.r_im, self.r_header = fits.getdata(path_to_r, header=True)
@@ -339,13 +355,11 @@ class GalPage():
             self.w3mask_path = glob.glob(self.fits_folder+self.objname+'-custom-image-wise-mask.fits')[0]
             self.w3_mask = fits.getdata(self.w3mask_path)
             self.w1_mask = self.w3_mask.copy()   #pixelscales are the same so masks will be also
-            self.r_mask, footprint = reproject_interp((self.w3_mask, self.wise_header), self.r_header)
             
             #define boolean masks for image scaling purposes (so those darn bright stars do not dictate the norm vmin, vmax)
             #when multiplied by image, only the unmasked object (only -- and all of -- the central galaxy, ideally) remains
             self.w3_mask_bool = ~(self.w3_mask>0)
             self.w1_mask_bool = ~(self.w1_mask>0)
-            self.r_mask_bool = ~(self.r_mask>0)
             
         except:
             print(self.objname+' has no mask images.')
@@ -511,7 +525,6 @@ class GalPage():
             bool_mask = bool_masks[1]
         if psf_index==4:       #rband is index=4
             images = [self.r_im,self.models[psf_index],self.residuals[psf_index],self.residuals[psf_index]]
-            bool_mask = bool_masks[2]
         titles = ['Image','Model','Residual (img stretch)','Residual (hard stretch)']
         
         if images[1] is not None:   #if model not None, then galfit ran correctly
@@ -590,10 +603,17 @@ class GalPage():
             param_row=params[params['VFID']==self.VFID]   #find the correct parameter row corresponding to the primary galaxy VFID
             #new naming conventions...yay.
             
-            needed_params = [param_row['VFID'],param_row['CXC'],param_row['CXC_ERR'],param_row['CYC'],
+            if (index==0)|(index==2):
+                needed_params = [param_row['VFID'],param_row['XC'],param_row['XC_ERR'],param_row['YC'],
+                            param_row['YC_ERR'],param_row['MAG'],param_row['MAG_ERR'],param_row['RE'],
+                             param_row['RE_ERR'],param_row['N'],param_row['N_ERR'],param_row['AR'],
+                            param_row['AR_ERR'],param_row['PA'],param_row['PA_ERR'],param_row['Numerical_Error']]
+            
+            if (index==1)|(index==3):
+                needed_params = [param_row['VFID'],param_row['CXC'],param_row['CXC_ERR'],param_row['CYC'],
                             param_row['CYC_ERR'],param_row['CMAG'],param_row['CMAG_ERR'],param_row['CRE'],
                              param_row['CRE_ERR'],param_row['CN'],param_row['CN_ERR'],param_row['CAR'],
-            param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
+                     param_row['CAR_ERR'],param_row['CPA'],param_row['CPA_ERR'],param_row['CNumerical_Error']]
             
             self.page_params.append(needed_params)
             
@@ -700,13 +720,10 @@ class GalPage():
                             html.write(f'<td>{num_err}</td></tr> \n')   #error flag
 
                     #I want a table for every nopsf/psf pair, so the table will finish if index is psf w3 or psf w1 (OR neither, in the case that I don't include any no-psf bands...). I would attempt to account for the case where I am only including nopsf tables, but I do not anticipate this condition being met. Ever.
-                    
-                    #if (index==1)|(index==3)|(index==np.max(self.psf_indices)):
-                    #    html.write('</tr></table> \n')
-                    #    html.write('<br /><br />\n')
-                    html.write('</tr></table> \n')
-                    html.write('<br /><br />\n')
+                    if (index==1)|(index==3)|(index==np.max(self.psf_indices)):
+                        html.write('</tr></table> \n')
             
+                        html.write('<br /><br />\n')
             html.write(f'<a href={self.homepage_name}>Return to Homepage</a></br /> \n')
            
             if i != len(self.cutcat)-1:
@@ -825,7 +842,8 @@ if __name__ == '__main__':
     w1_params_fixed = param_dict['w1_paramname_fixed']
     w3_params_fixed = param_dict['w3_paramname_fixed']
     r_params = param_dict['r_paramname']
-  
+    
+    
     
     if test=='False':
         hp = HomePage(homepage_name=homepage_name, website_title=website_title, home_color=home_color, catalog=catalog, 
