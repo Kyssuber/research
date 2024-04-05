@@ -192,9 +192,9 @@ class catalogs:
         n_dex = 0.3
         
         n_to_draw = [int(round(len(self.v2_envcut[self.fieldflag])/len(self.v2_envcut[self.clusflag]),0)),
-                     int(round(len(self.v2_envcut[self.rgflag])/len(self.v2_envcut[self.clusflag]),0)),
+                     int(round(len(self.v2_envcut[self.filflag])/len(self.v2_envcut[self.clusflag]),0)),
                      int(round(len(self.v2_envcut[self.pgflag])/len(self.v2_envcut[self.clusflag]),0)),
-                     int(round(len(self.v2_envcut[self.filflag])/len(self.v2_envcut[self.clusflag]),0))]
+                     int(round(len(self.v2_envcut[self.rgflag])/len(self.v2_envcut[self.clusflag]),0))]
         
         #remove entries where there is no magphys data available for that galaxy    
         err_flag_cut = self.magphyscut['magphysFlag']
@@ -219,7 +219,7 @@ class catalogs:
             fil_pool = m_fil[(m_fil['logMstar_med'] < (m_clus['logMstar_med'][index]+n_dex)) & (m_fil['logMstar_med'] > (m_clus['logMstar_med'][index]-n_dex))]
             
             #the 'pools' of galaxies from which the mass-matched samples will be drawn
-            pools = [field_pool, rg_pool, pg_pool, fil_pool]
+            pools = [field_pool, fil_pool, pg_pool, rg_pool]
             
             for env in range(4):
                 if n_to_draw[env] <= len(pools[env]):
@@ -897,7 +897,7 @@ class catalogs:
         
     def env_means(self, mass_match=False, trimOutliers=False, errtype='bootstrap', savefig=False):    
         index = np.arange(1,6,1)
-        env_names = ['Cluster','Rich \n Group','Poor \n Group','Filament','Field']
+        env_names = ['Cluster','Filament','Rich \n Group','Poor \n Group','Field']
         
         #will generate the self.outlier_flag variable needed to, well, trim the outliers.
         ratios = self.sizerats
@@ -907,8 +907,8 @@ class catalogs:
         filflag = self.filflag.copy()
         fieldflag = self.fieldflag.copy()
         
-        re_data = [ratios[clusflag],ratios[rgflag],ratios[pgflag],
-                   ratios[filflag],ratios[fieldflag]]
+        re_data = [ratios[clusflag],ratios[filflag],ratios[rgflag],ratios[pgflag],
+                   ratios[fieldflag]]
         
         #create 100 iterations of size ratio v. environment bin; plot median and STD, 
         #compare with non-mass matching result.
@@ -921,8 +921,8 @@ class catalogs:
             err_all = [[],[],[],[],[]]
             for n in range(500):
                 self.mass_matching()    #field rich group poor group filament
-                re_data = [ratios[clusflag], np.asarray(self.matched_sizes[1]), np.asarray(self.matched_sizes[2]), 
-                           np.asarray(self.matched_sizes[3]), np.asarray(self.matched_sizes[0])]
+                re_data = [ratios[clusflag], np.asarray(self.matched_sizes[3]), np.asarray(self.matched_sizes[2]), 
+                           np.asarray(self.matched_sizes[1]), np.asarray(self.matched_sizes[0])]
                 for i in range(len(re_data)):
                     meds[i].append(np.median(re_data[i]))
 
@@ -957,10 +957,12 @@ class catalogs:
             plt.show()
 
             #now re-define ra_data in order to plot 'just one' of the mass-matching iterations
-            re_data = [ratios[clusflag], np.asarray(self.matched_sizes[1]), np.asarray(self.matched_sizes[2]), 
-                           np.asarray(self.matched_sizes[3]), np.asarray(self.matched_sizes[0])]
+            re_data = [ratios[clusflag], np.asarray(self.matched_sizes[3]), np.asarray(self.matched_sizes[2]), 
+                           np.asarray(self.matched_sizes[1]), np.asarray(self.matched_sizes[0])]
 
         central_pts = []
+        low_25 = []   #25% lowest value in bin
+        high_75 = []  #75% highest value in bin
         
         err = []
         err_upper_bootstrap = []
@@ -970,10 +972,16 @@ class catalogs:
             if self.MeanMedian=='mean':
                 central_pts.append(np.mean(i))
                 lower_err, upper_err = get_bootstrap_confint(i,bootfunc=np.mean,nboot=200)
+                reordered_i = np.sort(i)
+                low_25.append(reordered_i[int((len(i)-1)*0.25)])
+                high_75.append(reordered_i[int((len(i)-1)*0.75)])
 
             if self.MeanMedian=='median':
                 central_pts.append(np.median(i))
                 lower_err, upper_err = get_bootstrap_confint(i,bootfunc=np.median,nboot=200)
+                reordered_i = np.sort(i)
+                low_25.append(reordered_i[int((len(i)-1)*0.25)])
+                high_75.append(reordered_i[int((len(i)-1)*0.75)])
             
             err.append(np.std(i)/np.sqrt(len(i)))
             err_upper_bootstrap.append(upper_err)
@@ -982,6 +990,11 @@ class catalogs:
         err_color = 'orangered'
         plt.figure(figsize=(10,6))
         plt.scatter(index,central_pts,color='blue',s=50,zorder=2,edgecolors='black',label=self.MeanMedian)
+        
+        plt.scatter(index,low_25,color='green',s=30,edgecolors='black',label='25% value')
+        plt.plot(index,low_25,color='green',alpha=0.3,ls='--')
+        plt.scatter(index,high_75,color='green',s=30,edgecolors='black',label='75% value')
+        plt.plot(index,high_75,color='green',alpha=0.3,ls='--')
        
         if errtype!='bootstrap':
             plt.errorbar(index,central_pts,yerr=err,fmt='None',color=err_color,zorder=1)
@@ -1098,11 +1111,11 @@ class catalogs:
             fieldflag = v2_env['pure_field']
             magphys_mass = self.magphys['logMstar_med']
             err_flag = (self.magphys['magphysFlag'])
-            magphys_env_mass = [magphys_mass[clusflag&err_flag&(magphys_mass>8.02)], 
-                                magphys_mass[rgflag&err_flag&(magphys_mass>8.02)],
-                                magphys_mass[pgflag&err_flag&(magphys_mass>8.02)], 
-                                magphys_mass[filflag&err_flag&(magphys_mass>8.02)],
-                                magphys_mass[fieldflag&err_flag&(magphys_mass>8.02)]]
+            magphys_env_mass = [magphys_mass[clusflag&err_flag&(magphys_mass>8.25)], 
+                                magphys_mass[rgflag&err_flag&(magphys_mass>8.25)],
+                                magphys_mass[pgflag&err_flag&(magphys_mass>8.25)], 
+                                magphys_mass[filflag&err_flag&(magphys_mass>8.25)],
+                                magphys_mass[fieldflag&err_flag&(magphys_mass>8.25)]]
                                 
         
         env_names = ['cluster','rich group','poor group','filament','field']
@@ -1130,6 +1143,57 @@ class catalogs:
                 
         if savefig==True:
             plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=100)
+        
+        plt.show()
+    
+    def ndensity_hist_oneplot(self, fullsample=False, savefig=False):
+        
+        ndensity = self.v2_envcut['n5th']
+            
+        ndensity_env = [ndensity[self.clusflag],ndensity[self.rgflag], ndensity[self.pgflag],
+                        ndensity[self.filflag],ndensity[self.fieldflag]]
+        
+        if fullsample:
+            path_to_dir = homedir+'/Desktop/v2-20220820/'
+            v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
+            clusflag = v2_env['cluster_member']
+            rgflag = v2_env['rich_group_memb']
+            pgflag = v2_env['poor_group_memb']
+            filflag = v2_env['filament_member']
+            fieldflag = v2_env['pure_field']
+            magphys_mass = self.magphys['logMstar_med']
+            ndensity = v2_env['n5th']
+            ndensity_env = [ndensity[clusflag&(magphys_mass>8.25)], 
+                                ndensity[rgflag&(magphys_mass>8.25)],
+                                ndensity[pgflag&(magphys_mass>8.25)], 
+                                ndensity[filflag&(magphys_mass>8.25)],
+                                ndensity[fieldflag&(magphys_mass>8.25)]]                                
+        
+        env_names = ['cluster','rich group','poor group','filament','field']
+        mybins=np.linspace(np.min(ndensity),21,12000)
+        
+        fig = plt.figure(figsize=(8,6))
+        
+        for i in range(5):
+            plt.hist(ndensity_env[i],bins=mybins,cumulative=True,density=True,linewidth=2,
+                     alpha=0.6,histtype='step',label=env_names[i]+f' ({len(ndensity_env[i])})')
+
+            plt.xlabel(r'Volume Density',fontsize=22)
+            plt.xticks(fontsize=15)
+            plt.yticks(fontsize=15)
+        plt.xlim(0,20.)
+        plt.legend(loc='lower right',fontsize=14)
+        
+        print('K-S p-value (> 0.003 (3sigma), "same distribution"):')
+        pairs = list(combinations(ndensity_env,2))
+        names = list(combinations(env_names,2))
+        for n in range(len(pairs)):
+            pair = pairs[n]
+            print(names[n])
+            print('%.5f'%(kstest(np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1]))[1]))
+                
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/ndensity_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=100)
         
         plt.show()
     
@@ -1363,6 +1427,8 @@ if __name__ == '__main__':
         will compare MAGPHYS stellar masses with z0mgs values if True
     cat.mass_hist_oneplot(fullsample=False,savefig=False) --> generate same MAGPHYS mass histograms 
         but as a single plot; fullsample=True will use all VFS galaxies.
+    cat.ndensity_hist_oneplot(fullsample=False, savefig=False) --> same as above, but with volume
+        density (unsure of the units presently).
     cat.wisesize_mass(nbins=3,savefig=False) --> creates median/mean size ratios vs. mass bin plot for two
         environment classifications: low-density (PG, filament, field) and high-density (cluster, RG).
     """)
