@@ -19,6 +19,7 @@ from scipy.stats import binned_statistic
 from scipy.stats import spearmanr
 from scipy.stats import linregress
 from scipy.stats import ttest_1samp
+from scipy.special import gamma, gammainc, gammaincinv
 from matplotlib import ticker
 
 import os
@@ -45,6 +46,35 @@ def get_bootstrap_confint(d,bootfunc=np.median,nboot=100):
     # like err_lower = actual_median - bootsamp[ilower]
     # and err_upper = bootsamp[iupper] - actual_median
     return bootsamp[ilower],bootsamp[iupper]
+
+#need to calculate L50
+def L(r,re,n):
+    I_e = 1     #just a brightness normalization term; set equal to 1.
+    b_n = gammaincinv(2*n, 0.5)
+    r_ratio = r/re
+    constant = 2*np.pi*n*(re**2)/b_n**(2*n)
+    gamma_term = gammainc(2*n,b_n*(r_ratio**(1/n)))               #note that scipy.special.gammainc is NORMALIZED. 
+                                                                  #need to multiple gamma_term * gamma(2*n) in cases
+                                                                  #where I'm not calculating an L ratio or I care
+                                                                  #about units, etc. 
+    return constant*I_e*np.exp(b_n)*gamma_term
+
+#need to calculate r90 using L50, so isolate r from L equation above...as Dr. Tosun would exclaim, "this is a nice problem." It was not a nice problem.
+def r(L,re,n):
+    I_e = 1
+    b_n = gammaincinv(2*n,0.5)          #also approximated by 1.999 * n-0.327
+    const_numer = 2*np.pi*n*(re**2)*I_e*np.exp(b_n)
+    const_denom = b_n**(2*n)
+    constant = const_numer/const_denom
+    frac = L/constant     #oddly enough, this fraction is 0.90 for L90 and 0.50 for L50...I guess constant = Lmax
+    gamma_term = gammaincinv(2*n, L/constant)   #gamma(2*n) corrects the normalization
+    
+    exp_term = (gamma_term/b_n)**n
+    
+    return re*exp_term
+
+def calculate_r90(re, n):
+    return r(1.8*L(re,re,n),re,n)
 
 class catalogs:
     
@@ -95,8 +125,14 @@ class catalogs:
                 
         if self.W1:
             self.re_w1band = self.w1dat['CRE'][subsample_flag]
+            self.n_w1band = self.w1dat['CN'][subsample_flag]
+        
+        self.n_rband = self.rdat['CN'][subsample_flag]
         self.re_rband = self.rdat['CRE'][subsample_flag]
+        
+        self.n_w3band = self.w3dat['CN'][subsample_flag]
         self.re_w3band = self.w3dat['CRE'][subsample_flag]
+        
 
         self.PA_rband = self.rdat['CPA'][subsample_flag]
         self.PA_w3band = self.w3dat['CPA'][subsample_flag]
@@ -104,9 +140,9 @@ class catalogs:
         self.BA_rband = self.rdat['CAR'][subsample_flag]
         self.BA_w3band = self.w3dat['CAR'][subsample_flag]
 
-        fail_flag = (self.re_rband == 0.0) | (self.re_w3band == 0.0)
-        r_flag = (self.re_rband == 0.0)
-        w3_flag = (self.re_w3band == 0.0)
+        fail_flag = (self.rdat['CXC'][subsample_flag] == 0.0) | (self.w3dat['CXC'][subsample_flag] == 0.0)
+        r_flag = (self.rdat['CXC'][subsample_flag] == 0.0)
+        w3_flag = (self.w3dat['CXC'][subsample_flag] == 0.0)
         err_flag = (self.rdat['CNumerical_Error'][subsample_flag]) | (self.w3dat['CNumerical_Error'][subsample_flag])
         sersic_flag = (self.rdat['CN'][subsample_flag]>6) | (self.w3dat['CN'][subsample_flag]>6) #unphysical
         
@@ -116,10 +152,9 @@ class catalogs:
         n_fails_w3 = len(self.re_w3band[w3_flag])
         
         if self.W1: 
-            fail_flag = (self.re_w1band == 0.0) | (self.re_w3band == 0.0)  #no entries; galfit failed.
-            w1_flag = (self.re_w1band == 0)  #no w1 entries; galfit failed.
-            err_flag = (self.w1dat['CNumerical_Error'][subsample_flag]) | (self.w3dat['CNumerical_Error'][subsample_flag]) | (self.w1dat['CRE'][subsample_flag]==0) | (self.w3dat['CRE'][subsample_flag]==0) #ALL ERRORS
-            #err_flag = (self.w1dat['CRE'][subsample_flag]==0) | (self.w3dat['CRE'][subsample_flag]==0)
+            fail_flag = (self.w1dat['CXC'][subsample_flag] == 0.0) | (self.w3dat['CXC'][subsample_flag] == 0.0)  #no entries; galfit failed.
+            w1_flag = (self.w1dat['CXC'][subsample_flag] == 0)  #no w1 entries; galfit failed.
+            err_flag = (self.w1dat['CNumerical_Error'][subsample_flag]) | (self.w3dat['CNumerical_Error'][subsample_flag]) | (self.w1dat['CXC'][subsample_flag]==0.0) | (self.w3dat['CXC'][subsample_flag]==0.0) #ALL ERRORS
             
             sersic_flag = (self.w1dat['CN'][subsample_flag]>6) | (self.w3dat['CN'][subsample_flag]>6) #unphysical 
             
@@ -143,7 +178,11 @@ class catalogs:
         self.re_w3band_cut = self.re_w3band[self.cut_flags]
         if self.W1:
             self.re_w1band_cut = self.re_w1band[self.cut_flags]
+            self.n_w1band_cut = self.n_w1band[self.cut_flags]
 
+        self.n_rband_cut = self.n_rband[self.cut_flags]
+        self.n_w3band_cut = self.n_w3band[self.cut_flags]
+            
         self.PA_rband_cut = self.PA_rband[self.cut_flags]
         self.PA_w3band_cut = self.PA_w3band[self.cut_flags]
 
@@ -174,11 +213,13 @@ class catalogs:
         print()
         print(f'Total number of subsample galaxies remaining: {len(self.re_w3band_cut)}')
 
-        self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
-        self.PArats = self.PA_w3band_cut/self.PA_rband_cut          
+                 
         
         if self.W1:
             self.sizerats = (self.re_w3band_cut*2.75)/(self.re_w1band_cut*2.75)
+        else:
+            self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
+            self.PArats = self.PA_w3band_cut/self.PA_rband_cut 
         
     def mass_matching(self):
         
@@ -895,7 +936,7 @@ class catalogs:
             
         plt.show()
         
-    def env_means(self, mass_match=False, trimOutliers=False, errtype='bootstrap', savefig=False):    
+    def env_means(self, mass_match=False, trimOutliers=False, errtype='bootstrap', r90=False, savefig=False):    
         index = np.arange(1,6,1)
         env_names = ['Cluster','Filament','Rich \n Group','Poor \n Group','Field']
         
@@ -907,8 +948,19 @@ class catalogs:
         filflag = self.filflag.copy()
         fieldflag = self.fieldflag.copy()
         
+        #if r90, then change ratio type accordingly. all else should be the same.
+        if r90:
+            ratios = np.zeros(len(self.sizerats))
+            for i in range(len(self.sizerats)):
+                ratios[i] = calculate_r90(self.re_w3band_cut[i],self.n_w3band_cut[i])/calculate_r90(self.re_w1band_cut[i],self.n_w1band_cut[i])
+        
         re_data = [ratios[clusflag],ratios[filflag],ratios[rgflag],ratios[pgflag],
                    ratios[fieldflag]]
+        
+        for i in range(len(ratios)):
+            if (ratios[i]==0) | (ratios[i]==np.nan):
+                print(ratios[i],self.re_w3band_cut[i],self.re_w1band_cut[i],calculate_r90(self.re_w3band_cut[i],self.n_w3band_cut[i]),
+                     calculate_r90(self.re_w1band_cut[i],self.n_w1band_cut[i]))
         
         #create 100 iterations of size ratio v. environment bin; plot median and STD, 
         #compare with non-mass matching result.
@@ -1018,10 +1070,13 @@ class catalogs:
         plt.ylabel(r'R$_{12}$/R$_r$',fontsize=20)
     
         if self.W1:
-            plt.ylabel(r'R$_{12}$/R$_{3.4}$',fontsize=20)
+            plt.ylabel(r'R50$_{12}$ / R50$_{3.4}$',fontsize=20)
+            if r90:
+                plt.ylabel(r'R90$_{12}$ / R90$_{3.4}$',fontsize=20)
         else:
-            plt.ylabel(r'R$_{12}$/R$_r$',fontsize=20)
-            plt.ylim(0.6,.85)
+            plt.ylabel(r'R50$_{12}$ / R50$_r$',fontsize=20)
+            if r90:
+                plt.ylabel(r'R90$_{12}$ / R90$_r$',fontsize=20)
         
         #plt.legend(fontsize=15)
         
@@ -1417,11 +1472,12 @@ if __name__ == '__main__':
         colored according to normalized HI mass in the case where showHI=True.
     cat.hist_dist_rats(savefig=False) --> size ratio distributions for each of the five defined 
         environment bins (plt.subplots with one column, five rows). Rainbow colors, very aesthestic.
-    cat.env_means(mass_match=False, trimOutliers=False, errtype='bootstrap', W1=False, savefig=False) --> 
-        plots either mean or median size ratio (w3/r or W3/W1) in each environment bin; trimOutliers 
-        will output an additional plot which compares my no PSF parameters to Rose's parameters, 
-        allowing the user to visualize which points are omitted in the trimmed env_means plot; errtype 
-        either 'bootstrap' or 'std_err.'
+    cat.env_means(mass_match=False, trimOutliers=False, errtype='bootstrap', W1=False, 
+                  r90=False, savefig=False) --> plots either mean or median size ratio (w3/r or W3/W1) 
+                  in each environment bin; trimOutliers will output an additional plot which compares my 
+                  no PSF parameters to Rose's parameters, allowing the user to visualize which points are 
+                  omitted in the trimmed env_means plot; errtype either 'bootstrap' or 'std_err;' r90
+                  simply switches r50 data for, well, r90.
     cat.env_means_comp(savefig=True) --> same as above, but with projected WISESize uncertainties
     cat.mass_hist(z0mgs_comp=True,savefig=False) --> generate mass histogram subplots per environment bin; 
         will compare MAGPHYS stellar masses with z0mgs values if True
