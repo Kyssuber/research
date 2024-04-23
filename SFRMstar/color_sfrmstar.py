@@ -132,9 +132,9 @@ class altvals():
         zsaturation = (self.phot_maskbit & 2**4) == 2**4
 
         self.sat_flags = (gsaturation | rsaturation | zsaturation)
-        self.medium_flag = (self.phot_maskbit & 2**11) == 2**11
         self.wisestar_flag = (self.phot_maskbit & 2**8) == 2**8
-
+        self.medium_flag = (self.phot_maskbit & 2**11) == 2**11
+        
         fitflags = (self.sat_flags | self.medium_flag | self.wisestar_flag)  #flag galaxies which are either saturated, treated as a point source, or have a prominent W1 foreground star.
 
         #finding quantitative relationships and parameter uncertainties, but only for unflagged galaxies!
@@ -211,9 +211,7 @@ class altvals():
                 
             except:
                 pass
-                
-                
-        #then create table mask? use bool flag (self.out_tab==0.)
+
 
 if __name__ == '__main__': 
     
