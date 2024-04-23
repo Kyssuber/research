@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import argsort
 from matplotlib import pyplot as plt
 from astropy.table import Table
 import os
@@ -34,7 +35,8 @@ class altvals():
         #for whatever reason, the vf output table is not entirely row-matched to the phot table. as such, the magphys output table will also not be entirely row-matched. I use np.argsort to correct this problem.
         
         ##I sort photometry tables in the same fashion...just to be absolutely certain of consistency. magphys and vf SHOULD be row-matched by virtue of their being part of the VF catalogs.
-        ind = np.argsort(self.vf)
+        #organizing in this way row-matches to vf and magphys, since their VFIDs ARE in ascending order.
+        ind = np.argsort(self.phot_names_all)
         self.phot_names_all = self.phot_names_all[ind]
         self.phot_all = self.phot_all[ind]
         self.phot_maskbit_all = self.phot_maskbit_all[ind]
@@ -129,11 +131,11 @@ class altvals():
         rsaturation = (self.phot_maskbit & 2**3) == 2**3
         zsaturation = (self.phot_maskbit & 2**4) == 2**4
 
-        sat_flags = (gsaturation | rsaturation | zsaturation)
-        medium_flag = (self.phot_maskbit & 2**11) == 2**11
-        wisestar_flag = (self.phot_maskbit & 2**8) == 2**8
+        self.sat_flags = (gsaturation | rsaturation | zsaturation)
+        self.medium_flag = (self.phot_maskbit & 2**11) == 2**11
+        self.wisestar_flag = (self.phot_maskbit & 2**8) == 2**8
 
-        fitflags = (sat_flags | medium_flag | wisestar_flag)  #flag galaxies which are either saturated, treated as a point source, or have a prominent W1 foreground star.
+        fitflags = (self.sat_flags | self.medium_flag | self.wisestar_flag)  #flag galaxies which are either saturated, treated as a point source, or have a prominent W1 foreground star.
 
         #finding quantitative relationships and parameter uncertainties, but only for unflagged galaxies!
         p_sfr, cov_sfr = np.polyfit(self.magphys['logSFR_med'][~fitflags & (self.magphys['logMstar_med']>6.)],
@@ -174,8 +176,9 @@ class altvals():
         
         columns = names=['VFID', 'logMstar_C12', 'logSFR_color', 'MAGPHYS_logMstar_med', 'alt_logMstar_med', 
                          'alt_logMstar_med_err', 'MAGPHYS_logSFR_med', 'alt_logSFR_med', 'alt_logSFR_med_err',
-                          'magphys_flag', 'good_phot_flag']
-        dtype=['S8',float,float,float,float,float,float,float,float,bool,bool]
+                          'magphys_flag', 'unsaturated_flag', 'nowisestar_flag', 'nomedstar_flag', 'good_phot_flag']
+        
+        dtype=['S8',float,float,float,float,float,float,float,float,bool,bool,bool,bool,bool]
         
         #create empty table
         self.out_tab = Table(np.zeros((len(self.vf_all),len(columns))),dtype=dtype,names=columns)
@@ -195,13 +198,17 @@ class altvals():
         #then, assign appropriate values...
         for i in range(len(self.vf)):
             try:
-                index = np.where(self.out_tab['VFID'] == self.phot_names[i])[0][0]
+                index = np.where(self.out_tab['VFID'] == self.vf['VFID'][i])[0][0]
                 self.out_tab['logMstar_C12'][index] = self.logMstar_C12[i]
                 self.out_tab['logSFR_color'][index] = self.logSFR_color[i]
                 self.out_tab['alt_logMstar_med'][index] = self.magphys_mstar_alt[i]
                 self.out_tab['alt_logMstar_med_err'][index] = self.magphys_mstar_alt_err[i]
                 self.out_tab['alt_logSFR_med'][index] = self.magphys_sfr_alt[i]
                 self.out_tab['alt_logSFR_med_err'][index] = self.magphys_sfr_alt_err[i]
+                self.out_tab['unsaturated_flag'][index] = ~self.sat_flags[i]
+                self.out_tab['nowisestar_flag'][index] = ~self.medium_flag[i]
+                self.out_tab['nomedstar_flag'][index] = ~self.wisestar_flag[i]
+                
             except:
                 pass
                 
@@ -217,7 +224,5 @@ if __name__ == '__main__':
     phot_table.output_altmagphys_table()
     
     print()
-    print()
-    print(f'Table written to {homedir}/Desktop/vf-altphot.fits')
-    print(phot_table.out_tab)
     phot_table.out_tab.write(homedir+'/Desktop/vf-altphot.fits',overwrite=True)
+    print(f'Table written to {homedir}/Desktop/vf-altphot.fits')
