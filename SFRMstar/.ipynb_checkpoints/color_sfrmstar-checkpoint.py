@@ -34,7 +34,7 @@ class altvals():
 
         #for whatever reason, the vf output table is not entirely row-matched to the phot table. as such, the magphys output table will also not be entirely row-matched. I use np.argsort to correct this problem.
         
-        ##I sort photometry tables in the same fashion...just to be absolutely certain of consistency. magphys and vf SHOULD be row-matched by virtue of their being part of the VF catalogs.
+        #I sort photometry tables in the same fashion...just to be absolutely certain of consistency. magphys and vf SHOULD be row-matched by virtue of their being part of the VF catalogs.
         #organizing in this way row-matches to vf and magphys, since their VFIDs ARE in ascending order.
         ind = np.argsort(self.phot_names_all)
         self.phot_names_all = self.phot_names_all[ind]
@@ -138,34 +138,40 @@ class altvals():
         fitflags = (self.sat_flags | self.medium_flag | self.wisestar_flag)  #flag galaxies which are either saturated, treated as a point source, or have a prominent W1 foreground star.
 
         #finding quantitative relationships and parameter uncertainties, but only for unflagged galaxies!
-        p_sfr, cov_sfr = np.polyfit(self.magphys['logSFR_med'][~fitflags & (self.magphys['logMstar_med']>6.)],
-                                    (self.logSFR_color[~fitflags & (self.magphys['logMstar_med']>6.)]),1,cov=True)
+        p_sfr, cov_sfr = np.polyfit(self.logSFR_color[~fitflags & (self.magphys['logMstar_med']>8.)],
+                                    (self.magphys['logSFR_med'][~fitflags & (self.magphys['logMstar_med']>8.)]),
+                                    1,cov=True)
 
-        p_mstar, cov_mstar = np.polyfit(self.magphys['logMstar_med'][~fitflags & (self.magphys['logMstar_med']>6.)],
-                                        self.logMstar_C12[~fitflags & (self.magphys['logMstar_med']>6.)],1,cov=True)
+        p_mstar, cov_mstar = np.polyfit(self.logMstar_C12[~fitflags & (self.magphys['logMstar_med']>8.)],
+                                        self.magphys['logMstar_med'][~fitflags & (self.magphys['logMstar_med']>8.)],
+                                        1,cov=True)
         
         self.m_mass = p_mstar[0]
         self.m_mass_err = np.sqrt(cov_mstar[0][0])
         self.b_mass = p_mstar[1]
         self.b_mass_err = np.sqrt(cov_mstar[1][1])
+        
         self.m_sfr = p_sfr[0]
         self.m_sfr_err = np.sqrt(cov_sfr[0][0])
         self.b_sfr = p_sfr[1]
         self.b_sfr_err = np.sqrt(cov_sfr[1][1])
         
-        print('CurveFit Parameters log(Mstar_color) = mlog(Mstar_MAGPHYS) + b')
+        print('CurveFit Parameters log(Mstar_MAGPHYS) = mlog(Mstar_color) + b')
         print(f'm={np.round(self.m_mass,3)} +/- {np.round(self.m_mass_err,3)}, b={np.round(self.b_mass,3)} +/- {np.round(self.b_mass_err,3)}')
         print()
-        print('CurveFit Parameters log(SFR_color) = mlog(SFR_MAGPHYS) + b')
+        print('CurveFit Parameters log(SFR_MAGPHYS) = mlog(SFR_color) + b')
         print(f'm={np.round(self.m_sfr,3)} +/- {np.round(self.m_sfr_err,3)}, b={np.round(self.b_sfr,3)} +/- {np.round(self.b_sfr_err,3)}')
 
     def output_altmagphys_table(self):
 
-        self.magphys_mstar_alt = (self.logMstar_C12 - self.b_mass)/self.m_mass  #alternative magphys values
-        self.magphys_sfr_alt = (self.logSFR_color - self.b_sfr)/self.m_sfr      #alternative magphys SFR values
+        self.magphys_mstar_alt = self.m_mass * self.logMstar_C12 + self.b_mass  #alternative magphys values
+        self.magphys_sfr_alt = self.m_sfr * self.logSFR_color + self.b_sfr        #alternative magphys SFR values
         
-        self.magphys_mstar_alt_err = np.sqrt((self.m_mass_err*self.logMstar_C12/self.m_mass)**2 + (np.sqrt(self.m_mass_err**2 + self.b_mass_err**2)*self.b_sfr/self.m_sfr)**2)
-        self.magphys_sfr_alt_err = np.sqrt((self.m_sfr_err*self.logSFR_color/self.m_sfr)**2 + (np.sqrt(self.m_sfr_err**2 + self.b_sfr_err**2)*self.b_sfr/self.m_sfr)**2)
+        #self.magphys_mstar_alt_err = np.sqrt((self.m_mass_err*self.logMstar_C12)**2 + (self.b_mass_err)**2) 
+        #self.magphys_sfr_alt_err = np.sqrt((self.m_sfr_err*self.logSFR_color)**2 + (self.b_sfr_err)**2)
+        
+        #keeping this around in case I try x = (y-b)/m again...
+        #self.magphys_sfr_alt_err = np.sqrt((self.m_sfr_err*self.logSFR_color/self.m_sfr)**2 + (np.sqrt(self.m_sfr_err**2 + self.b_sfr_err**2)*self.b_sfr/self.m_sfr)**2)   
         
         good_phot_flag = np.zeros(len(self.vf_all),dtype=bool)
         
@@ -175,8 +181,8 @@ class altvals():
             #(self.vf is so trimmed that only the good phot VFID matches are present)
         
         columns = names=['VFID', 'logMstar_C12', 'logSFR_color', 'MAGPHYS_logMstar_med', 'alt_logMstar_med', 
-                         'alt_logMstar_med_err', 'MAGPHYS_logSFR_med', 'alt_logSFR_med', 'alt_logSFR_med_err',
-                          'magphys_flag', 'unsaturated_flag', 'nowisestar_flag', 'nomedstar_flag', 'good_phot_flag']
+                         'MAGPHYS_logSFR_med', 'alt_logSFR_med', 'combined_logMstar_med', 'combined_logSFR_med', 
+                         'magphys_flag', 'unsaturated_flag', 'nowisestar_flag', 'nomedstar_flag', 'good_phot_flag']
         
         dtype=['S8',float,float,float,float,float,float,float,float,bool,bool,bool,bool,bool]
         
@@ -197,22 +203,55 @@ class altvals():
         #for every entry in trimmed phot catalog, find index of out_tab at which VFID = phot_names
         #then, assign appropriate values...
         for i in range(len(self.vf)):
-            try:
-                index = np.where(self.out_tab['VFID'] == self.vf['VFID'][i])[0][0]
-                self.out_tab['logMstar_C12'][index] = self.logMstar_C12[i]
-                self.out_tab['logSFR_color'][index] = self.logSFR_color[i]
-                self.out_tab['alt_logMstar_med'][index] = self.magphys_mstar_alt[i]
-                self.out_tab['alt_logMstar_med_err'][index] = self.magphys_mstar_alt_err[i]
-                self.out_tab['alt_logSFR_med'][index] = self.magphys_sfr_alt[i]
-                self.out_tab['alt_logSFR_med_err'][index] = self.magphys_sfr_alt_err[i]
-                self.out_tab['unsaturated_flag'][index] = ~self.sat_flags[i]
-                self.out_tab['nowisestar_flag'][index] = ~self.medium_flag[i]
-                self.out_tab['nomedstar_flag'][index] = ~self.wisestar_flag[i]
-                
+            
+            #try:
+            index = np.where(self.out_tab['VFID'] == self.vf['VFID'][i])[0][0]
+            self.out_tab['logMstar_C12'][index] = self.logMstar_C12[i]
+            self.out_tab['logSFR_color'][index] = self.logSFR_color[i]
+            self.out_tab['alt_logMstar_med'][index] = self.magphys_mstar_alt[i]
+            self.out_tab['alt_logSFR_med'][index] = self.magphys_sfr_alt[i]
+            self.out_tab['unsaturated_flag'][index] = ~self.sat_flags[i]
+            self.out_tab['nowisestar_flag'][index] = ~self.medium_flag[i]
+            self.out_tab['nomedstar_flag'][index] = ~self.wisestar_flag[i]
+
+            maskbit_flag = (self.out_tab[index]['unsaturated_flag']) & (self.out_tab[index]['nowisestar_flag']) & (self.out_tab[index]['nomedstar_flag'])
+
+            #if magphys output is good and image is not maskbit-flagged, place magphys sfr, mstar in cell
+            if (self.out_tab[index]['magphys_flag']) & (maskbit_flag): 
+                self.out_tab[index]['combined_logMstar_med'] = self.out_tab[index]['MAGPHYS_logMstar_med']
+                self.out_tab[index]['combined_logSFR_med'] = self.out_tab[index]['MAGPHYS_logSFR_med']
+
+            #if the image has good photometry and is flagged as being saturated, etc., use alt sfr, mstar value
+            elif (~maskbit_flag) & (self.out_tab[index]['good_phot_flag']):
+                self.out_tab[index]['combined_logMstar_med'] = self.out_tab[index]['alt_logMstar_med']
+                self.out_tab[index]['combined_logSFR_med'] = self.out_tab[index]['alt_logSFR_med']
+
+            #otherwise...just default to the MAGPHYS outputs.
+            else:
+                self.out_tab[index]['combined_logMstar_med'] = self.out_tab[index]['MAGPHYS_logMstar_med']
+                self.out_tab[index]['combined_logSFR_med'] = self.out_tab[index]['MAGPHYS_logSFR_med']
+            '''
             except:
-                pass
+                #default to magphys outputs and skip the rest.
+                index = np.where(self.out_tab['VFID'] == self.vf['VFID'][i])[0][0]
+                self.out_tab[index]['combined_logMstar_med'][index] = self.out_tab[index]['MAGPHYS_logMstar_med']
+                self.out_tab[index]['combined_logSFR_med'][index] = self.out_tab[index]['MAGPHYS_logSFR_med']
 
+            mstar_arr = self.out_tab['alt_logMstar_med'].copy()
+            sfr_arr = self.out_tab['alt_logSFR_med'].copy()
+            
+            mag_mstar_arr = self.out_tab['MAGPHYS_logMstar_med'].copy()
+            mag_sfr_arr = self.out_tab['MAGPHYS_logSFR_med'].copy()
+            
+            ind_1 = np.nonzero(mag_mstar_arr)
+            ind_2 = np.nonzero(mag_sfr_arr)
 
+            mstar_arr[ind_1] = mag_mstar_arr[ind_1]
+            sfr_arr[ind_2] = mag_sfr_arr[ind_2]
+
+            self.out_tab['combined_logMstar_med'] = mstar_arr
+            self.out_tab['combined_logSFR_med'] = sfr_arr
+            '''
 if __name__ == '__main__': 
     
     phot_table = altvals()
