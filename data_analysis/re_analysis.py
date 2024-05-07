@@ -792,7 +792,7 @@ class catalogs:
         if self.W1:
             plt.ylabel(r'Size Ratio ($R_{12}/R_{3.4}$)',fontsize=17)
             #plt.yscale('log')
-            #plt.ylim(0,2)    
+            plt.ylim(0,2)    
             
             print(f'# galaxies within 0.5 dex of MS: {len(self.sizerats[err_flag_cut & (np.abs(dist<0.5))])}')            
             
