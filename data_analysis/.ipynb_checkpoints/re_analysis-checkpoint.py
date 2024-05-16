@@ -166,6 +166,7 @@ class catalogs:
             AGN_flags = (self.v2_maincut['WISE_AGN_flag'])|(self.v2_maincut['kauffman_AGN_flag'])
             
             print(f'fraction AGN in VF subsample (before filtering out GALFIT errors): {np.round(len(self.v2_maincut[AGN_flags])/len(self.v2_maincut),3)}')
+            print(f'This fracion is calculated from {len(self.v2_maincut[AGN_flags])}/{len(self.v2_maincut)}')
 
             self.cut_flags = (~AGN_flags) & (~fail_flag) & (~err_flag) & (~sersic_flag)
             print(f'Number of galaxies flagged with AGN *AND* a GALFIT error: {len(self.v2_env[(AGN_flags) & (err_flag)])}')
@@ -687,21 +688,22 @@ class catalogs:
         
         filgroupflag = ((envflags['rich_group_memb'])|(envflags['poor_group_memb'])|(envflags['filament_member']))
         
-        fig2 = plt.figure(figsize=(38,28))
-        plt.subplots_adjust(hspace=.15,wspace=.2)
+        fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(34,24))
+        plt.subplots_adjust(hspace=.05,wspace=.05)
         
-        for n in range(1,10):
-            ax = fig2.add_subplot(3,3,n)
+        for n, ax in enumerate(axes.flat):      #j==index, i==value          
+            n = n+1
+
             #color-code by log(sSFR)
             if n<4:
-                plt.scatter(r_arcsec[mass_bins[n-1]&envflags['cluster_member']],
+                im = ax.scatter(r_arcsec[mass_bins[n-1]&envflags['cluster_member']],
                             w3_arcsec[mass_bins[n-1]&envflags['cluster_member']],edgecolors='black',
                         c=(logsfr[mass_bins[n-1]&envflags['cluster_member']]-logmass[mass_bins[n-1]&envflags['cluster_member']]),s=100,cmap='plasma')
                 
                 print('std for cluster:',np.std(w3_arcsec[mass_bins[n-1]&envflags['cluster_member']]/r_arcsec[mass_bins[n-1]&envflags['cluster_member']]))
             
             elif (n>=4) & (n<=6):
-                plt.scatter(r_arcsec[mass_bins[n-1]&filgroupflag],w3_arcsec[mass_bins[n-1]&filgroupflag],
+                im = ax.scatter(r_arcsec[mass_bins[n-1]&filgroupflag],w3_arcsec[mass_bins[n-1]&filgroupflag],
                             edgecolors='black',s=100,
                             c=(logsfr[mass_bins[n-1]&filgroupflag]-logmass[mass_bins[n-1]&filgroupflag]),
                             cmap='plasma')        
@@ -709,44 +711,47 @@ class catalogs:
                 print('std for filament/groups:',np.std(w3_arcsec[mass_bins[n-1]&filgroupflag]/r_arcsec[mass_bins[n-1]&filgroupflag]))
                 
             else:
-                plt.scatter(r_arcsec[mass_bins[n-1]&envflags['pure_field']],
+                im = ax.scatter(r_arcsec[mass_bins[n-1]&envflags['pure_field']],
                             w3_arcsec[mass_bins[n-1]&envflags['pure_field']],edgecolors='black',
                         c=(logsfr[mass_bins[n-1]&envflags['pure_field']]-logmass[mass_bins[n-1]&envflags['pure_field']]),s=100,cmap='plasma')
 
                 print('std for field:', np.std(w3_arcsec[mass_bins[n-1]&envflags['pure_field']]/r_arcsec[mass_bins[n-1]&envflags['pure_field']]))
-
-            plt.axline((0, 0), slope=1, color='indigo')
             
-            cb = plt.colorbar()
-            if n in [3,6,9]:
-                cb.set_label(label=r'log(sSFR)',size=30)
-            plt.clim(-11,-9)
-            cb.ax.tick_params(labelsize=25)
-            #tick information from 
-            #https://stackoverflow.com/questions/22012096/how-to-set-number-of-ticks-in-plt-colorbar
-            tick_locator = ticker.MaxNLocator(nbins=5)
-            cb.locator = tick_locator
-            cb.update_ticks()
-            plt.xlim(2, 2e2)
-            plt.ylim(1, 130)
+            im.set_clim(-11,-9)
             
-            plt.xscale('log')
-            plt.yscale('log')
+            ax.axline((0, 0), slope=1, color='indigo')
+            
+            ax.set_xlim(2, 2e2)
+            ax.set_ylim(1, 130)
+            
+            ax.set_xscale('log')
+            ax.set_yscale('log')
             if n in [1,2,3]:
-                plt.title(titles[n-1],fontsize=35,pad=20)
+                ax.set_title(titles[n-1],fontsize=35,pad=20)
             if n in [7,8,9]:
                 if not self.W1:
-                    plt.xlabel(r'R$_{r}$ (arcsec)',fontsize=30)
+                    ax.set_xlabel(r'R$_{r}$ (arcsec)',fontsize=30)
                 else:
-                    plt.xlabel(r'R$_{3.4}$ (arcsec)',fontsize=30)
+                    ax.set_xlabel(r'R$_{3.4}$ (arcsec)',fontsize=30)
             if n in [1,4,7]:
-                plt.ylabel(r'R$_{12}$ (arcsec)',fontsize=30)
-        
+                ax.set_ylabel(r'R$_{12}$ (arcsec)',fontsize=30)
+            
+            ax.set_xticks([])
+            ax.set_yticks([])
             plt.xticks(fontsize=25)
             plt.yticks(fontsize=25)
             
             plt.text(.05, .95, labels[n-1], ha='left', va='top',transform=ax.transAxes,fontsize=35)
-             
+        
+        cb = fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.02, aspect=30)
+        cb.set_label(label=r'log(sSFR)',size=30)
+        cb.ax.tick_params(labelsize=25)
+        #tick information from 
+        #https://stackoverflow.com/questions/22012096/how-to-set-number-of-ticks-in-plt-colorbar
+        tick_locator = ticker.MaxNLocator(nbins=5)
+        cb.locator = tick_locator
+        cb.update_ticks()
+        
         if savefig==True:
             plt.savefig(homedir+'/Desktop/r12_rstar_all.png', dpi=100, bbox_inches='tight', pad_inches=0.2)
         
@@ -836,6 +841,13 @@ class catalogs:
         plt.xlim(-0.5,4.5)
         plt.ylim(0,200)
         plt.grid(color='purple',alpha=0.2)
+        
+        print('Fractional Breakdown:')
+        print(f'Cluster: {round(len(self.v2_envcut[self.clusflag])/len(self.v2_envcut)*100,1)}%')
+        print(f'Rich Group: {round(len(self.v2_envcut[self.rgflag])/len(self.v2_envcut)*100,1)}%')
+        print(f'Poor Group: {round(len(self.v2_envcut[self.pgflag])/len(self.v2_envcut)*100,1)}%')
+        print(f'Filament: {round(len(self.v2_envcut[self.filflag])/len(self.v2_envcut)*100,1)}%')
+        print(f'Field: {round(len(self.v2_envcut[self.fieldflag])/len(self.v2_envcut)*100,1)}%')
 
         if savefig==True:
             plt.savefig(homedir+'/Desktop/envbins.png', dpi=100)
@@ -1087,24 +1099,25 @@ class catalogs:
         print(t_stat,p_val)
         
     
-    def mass_hist(self, z0mgs_comp=False, savefig=False):
+    def sfr_hist(self, z0mgs_comp=False, savefig=False):
         
-        z0mgs_mass = self.z0mgscut['logmass']
-        magphys_mass = self.magphyscut['logMstar_med']
+        z0mgs_sfr = self.z0mgscut['logsfr']
+        magphys_sfr = self.altmagphys_cut['combined_logSFR_med']
         
         #remove entries where there is no magphys data available for that galaxy
-        err_flag = (self.magphyscut['magphysFlag'])
+        err_flag = (self.altmagphys_cut['magphys_flag']) & (magphys_sfr!=0)  #ALSO INCLUDE != 0 values. 
     
-        z0mgs_env_mass = [z0mgs_mass[self.clusflag&err_flag], z0mgs_mass[self.rgflag&err_flag], 
-                          z0mgs_mass[self.pgflag&err_flag], 
-                          z0mgs_mass[self.filflag&err_flag], z0mgs_mass[self.fieldflag&err_flag]]
-        magphys_env_mass = [magphys_mass[self.clusflag&err_flag], magphys_mass[self.rgflag&err_flag], 
-                            magphys_mass[self.pgflag&err_flag], 
-                            magphys_mass[self.filflag&err_flag], magphys_mass[self.fieldflag&err_flag]]
+        z0mgs_env_sfr = [z0mgs_sfr[self.clusflag&err_flag], z0mgs_sfr[self.rgflag&err_flag], 
+                          z0mgs_sfr[self.pgflag&err_flag], 
+                          z0mgs_sfr[self.filflag&err_flag], z0mgs_sfr[self.fieldflag&err_flag]]
+        magphys_env_sfr = [magphys_sfr[self.clusflag&err_flag], magphys_sfr[self.rgflag&err_flag], 
+                            magphys_sfr[self.pgflag&err_flag], 
+                            magphys_sfr[self.filflag&err_flag], magphys_sfr[self.fieldflag&err_flag]]
 
         env_names = ['Cluster','Rich Group','Poor Group','Filament','Field']
 
-        mybins=np.linspace(7.5,11.5,1000)
+        mybins=np.linspace(np.min(magphys_sfr),np.max(magphys_sfr),1000)
+        #mybins=1000
         
         fig = plt.figure(figsize=(11,8))
         plt.subplots_adjust(hspace=.4,wspace=.3)
@@ -1116,18 +1129,18 @@ class catalogs:
             if i == 5:
                 ax.set_position([0.55,0.125,0.228,0.3])
             
-            plt.hist(magphys_env_mass[i-1],bins=mybins,alpha=0.8,cumulative=True,density=True,
+            plt.hist(magphys_env_sfr[i-1],bins=mybins,alpha=0.8,cumulative=True,density=True,
                      histtype='step',label='Magphys')
             
             if z0mgs_comp==True:
-                plt.hist(z0mgs_env_mass[i-1],bins=mybins,alpha=0.8,cumulative=True,density=True,
+                plt.hist(z0mgs_env_sfr[i-1],bins=mybins,alpha=0.8,cumulative=True,density=True,
                          histtype='step',label='z0mgs')
             
             if (i == 1)&(z0mgs_comp==True):
                 plt.legend(fontsize=13,loc='upper left')
-            plt.xlabel(r'log(M*/$M_\odot$)',fontsize=22)
-            plt.xlim(7.5,11.5)
-            plt.title(env_names[i-1],fontsize=22)
+            plt.xlabel(r'log(SFR/[$M_\odot$ yr$^{-1}$])',fontsize=16)
+            plt.xlim(-1.4,0.85)
+            plt.title(env_names[i-1],fontsize=16)
             
             plt.xticks(fontsize=15)
             plt.yticks(fontsize=15)
@@ -1135,13 +1148,21 @@ class catalogs:
         print('K-S p-value (> 0.003 (3sigma), "same distribution"):')
         for n in range(len(env_names)):
             print(env_names[n])
-            #print('%.5f'%(kstest(z0mgs_env_mass[n],magphys_env_mass[n])[1]))
+            print('%.5f'%(kstest(z0mgs_env_sfr[n],magphys_env_sfr[n])[1]))
         
         if savefig==True:
-            plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=100)
+            plt.savefig(homedir+'/Desktop/sfr_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=100)
         
         plt.show()
- 
+        
+        fig2 = plt.figure(figsize=(6,4))
+        plt.scatter(magphys_sfr,z0mgs_sfr,s=10)
+        plt.axline((0, 0), slope=1, color='indigo')
+        plt.xlabel('[MAGPHYS logSFR]',fontsize=12)
+        plt.ylabel('[MAGPHYS logSFR] / [z0MGS logSFR]',fontsize=12) 
+        #plt.ylim(-5,5)
+        plt.show()
+        
     def mass_hist_oneplot(self, savefig=False):
         
         #magphys_mass = self.magphyscut['logMstar_med']
@@ -1463,8 +1484,8 @@ if __name__ == '__main__':
                   omitted in the trimmed env_means plot; errtype either 'bootstrap' or 'std_err;' r90
                   simply switches r50 data for, well, r90.
     cat.env_means_comp(savefig=True) --> same as above, but with projected WISESize uncertainties
-    cat.mass_hist(z0mgs_comp=True,savefig=False) --> generate mass histogram subplots per environment bin; 
-        will compare MAGPHYS stellar masses with z0mgs values if True
+    cat.sfr_hist(z0mgs_comp=True,savefig=False) --> generate sfr histogram subplots per environment bin; 
+        will compare MAGPHYS SFRs with z0mgs values if True
     cat.mass_hist_oneplot(savefig=False) --> generate same MAGPHYS mass histograms 
         but as a single plot; fullsample=True will use all VFS galaxies.
     cat.ndensity_hist_oneplot(fullsample=False, savefig=False) --> same as above, but with volume
