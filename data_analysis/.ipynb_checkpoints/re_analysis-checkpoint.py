@@ -19,6 +19,7 @@ from scipy.stats import binned_statistic
 from scipy.stats import spearmanr
 from scipy.stats import linregress
 from scipy.stats import ttest_1samp
+from scipy.stats import mannwhitneyu
 from scipy.special import gamma, gammainc, gammaincinv
 from matplotlib import ticker
 
@@ -757,6 +758,122 @@ class catalogs:
         
         plt.show()
         
+    def r12_vs_rstar_v2(self, savefig=False):
+        
+        logsfr = self.altmagphys_cut['combined_logSFR_med']
+        logmass = self.altmagphys_cut['combined_logMstar_med']
+        
+        #remove entries where there is no magphys data available for that galaxy
+        err_flag = (self.altmagphys_cut['magphys_flag']) & (logmass!=0.)
+        
+        logsfr = logsfr[err_flag]
+        logmass = logmass[err_flag]
+        envflags = self.v2_envcut[err_flag]
+
+        w3_arcsec = self.re_w3band_cut[err_flag]*2.75
+        r_arcsec = self.re_w1band_cut[err_flag]*2.75
+                        
+        #take upper left panel of mstar figure and create one row of three panels, separated according to different mass bins; color-code by sSFR. this plot will be generated regardless of whether the user selects mstar or sfr.
+        
+        logsfr = logsfr[logmass>=8.26]
+        r_arcsec = r_arcsec[logmass>=8.26]
+        w3_arcsec = w3_arcsec[logmass>=8.26]
+        envflags = envflags[logmass>=8.26]
+        logmass = logmass[logmass>=8.26]
+                        
+        mass_bin1 = (logmass < 9.5)
+        mass_bin2 = (logmass > 9.5)
+        
+        x = [r_arcsec[mass_bin1&envflags['cluster_member']], r_arcsec[mass_bin1&envflags['rich_group_memb']],
+            r_arcsec[mass_bin1&envflags['poor_group_memb']], r_arcsec[mass_bin1&envflags['filament_member']],
+            r_arcsec[mass_bin1&envflags['pure_field']], r_arcsec[mass_bin2&envflags['cluster_member']],
+            r_arcsec[mass_bin2&envflags['rich_group_memb']], r_arcsec[mass_bin2&envflags['poor_group_memb']],
+            r_arcsec[mass_bin2&envflags['filament_member']], r_arcsec[mass_bin2&envflags['pure_field']]]
+        
+        y = [w3_arcsec[mass_bin1&envflags['cluster_member']], w3_arcsec[mass_bin1&envflags['rich_group_memb']],
+            w3_arcsec[mass_bin1&envflags['poor_group_memb']], w3_arcsec[mass_bin1&envflags['filament_member']], 
+            w3_arcsec[mass_bin1&envflags['pure_field']], w3_arcsec[mass_bin2&envflags['cluster_member']],
+            w3_arcsec[mass_bin2&envflags['rich_group_memb']], w3_arcsec[mass_bin2&envflags['poor_group_memb']], 
+            w3_arcsec[mass_bin2&envflags['filament_member']], w3_arcsec[mass_bin2&envflags['pure_field']]]
+        
+        cs = [logsfr[mass_bin1&envflags['cluster_member']]-logmass[mass_bin1&envflags['cluster_member']], 
+              logsfr[mass_bin1&envflags['rich_group_memb']]-logmass[mass_bin1&envflags['rich_group_memb']], 
+              logsfr[mass_bin1&envflags['poor_group_memb']]-logmass[mass_bin1&envflags['poor_group_memb']], 
+              logsfr[mass_bin1&envflags['filament_member']]-logmass[mass_bin1&envflags['filament_member']], 
+              logsfr[mass_bin1&envflags['pure_field']]-logmass[mass_bin1&envflags['pure_field']], 
+              logsfr[mass_bin2&envflags['cluster_member']]-logmass[mass_bin2&envflags['cluster_member']], 
+              logsfr[mass_bin2&envflags['rich_group_memb']]-logmass[mass_bin2&envflags['rich_group_memb']], 
+              logsfr[mass_bin2&envflags['poor_group_memb']]-logmass[mass_bin2&envflags['poor_group_memb']], 
+              logsfr[mass_bin2&envflags['filament_member']]-logmass[mass_bin2&envflags['filament_member']], 
+              logsfr[mass_bin2&envflags['pure_field']]-logmass[mass_bin2&envflags['pure_field']]]
+
+        titles = ['Cluster', 'Rich Group', 'Poor Group', 'Filament', 'Field', 'Cluster', 'Rich Group', 'Poor Group', 'Filament', 'Field']
+                
+        fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(30,10))
+        plt.subplots_adjust(hspace=0.,wspace=0.)
+        
+        for n, ax in enumerate(axes.flat):      #j==index, i==value          
+            n = n+1   
+            #color-code by log(sSFR)
+            im = ax.scatter(x[n-1], y[n-1], edgecolors='black', c=cs[n-1], s=100, cmap='plasma')
+            
+            if n in [1,2,3,4,5]:
+                print(f'std for {titles[n-1]} (logmass < 9.5):',np.std(y[n-1]/x[n-1]))
+            else:
+                print(f'std for {titles[n-1]} (logmass > 9.5):',np.std(y[n-1]/x[n-1]))
+            
+            im.set_clim(-11,-9)
+            
+            ax.axline((0, 0), slope=1, color='indigo')
+            
+            ax.set_xlim(2, 2e2)
+            ax.set_ylim(1, 130)
+            
+            ax.set_xscale('log')
+            ax.set_yscale('log')
+            
+            if n in [1,2,3,4,5]:
+                ax.set_title(titles[n-1],fontsize=25,pad=10)
+                plt.text(.05, .95, str(np.round(np.min(logmass),1))+r'<log(M$_*$)<9.5', ha='left', va='top', 
+                         transform=ax.transAxes, fontsize=16)
+            else:
+                ax.set_xlabel(r'R$_{3.4}$ (arcsec)',fontsize=20)
+                plt.text(.05, .95, r'9.5<log(M$_*$)<'+str(np.round(np.max(logmass),1)), ha='left', 
+                         va='top', transform=ax.transAxes, fontsize=16)
+                
+            if n in [1,6]:   #leftmost column
+                ax.set_ylabel(r'R$_{12}$ (arcsec)',fontsize=20)
+                ax.tick_params(axis='both', labelsize=15)
+                if n==1:
+                    ax.tick_params(labelbottom=False,labelright=False,labeltop=False)
+                    
+            elif n in [7,8,9,10]:   #all of bottom row
+                ax.tick_params(axis='x',labelsize=15)
+                ax.tick_params(labelleft=False)
+  
+            else:   #rest of top row
+                ax.tick_params(labelbottom=False,labelleft=False)
+            
+            #add tick marks to top, right of each panel
+            ax2 = ax.secondary_xaxis('top')
+            ax2.tick_params(labeltop=False)
+            ax3 = ax.secondary_yaxis('right')
+            ax3.tick_params(labelright=False)
+        
+        #add colorbar spanning entire height of subplot figure
+        cb = fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.02, aspect=30)
+        cb.set_label(label=r'log(sSFR)',size=30)
+        cb.ax.tick_params(labelsize=25)
+        #tick info from https://stackoverflow.com/questions/22012096/how-to-set-number-of-ticks-in-plt-colorbar
+        tick_locator = ticker.MaxNLocator(nbins=5)
+        cb.locator = tick_locator
+        cb.update_ticks()
+        
+        if savefig==True:
+            plt.savefig(homedir+'/Desktop/r12_rstar_all.png', dpi=100, bbox_inches='tight', pad_inches=0.2)
+        
+        plt.show()
+        
     def ratio_MS(self, showHI=False, savefig=False):
         
         m = 0.77
@@ -848,6 +965,8 @@ class catalogs:
         print(f'Poor Group: {round(len(self.v2_envcut[self.pgflag])/len(self.v2_envcut)*100,1)}%')
         print(f'Filament: {round(len(self.v2_envcut[self.filflag])/len(self.v2_envcut)*100,1)}%')
         print(f'Field: {round(len(self.v2_envcut[self.fieldflag])/len(self.v2_envcut)*100,1)}%')
+        print(f'RG+Filament: {round(len(self.v2_envcut[self.rgflag&self.filflag])/len(self.v2_envcut)*100,1)}%')
+        print(f'PG+Filament: {round(len(self.v2_envcut[self.pgflag&self.filflag])/len(self.v2_envcut)*100,1)}%')
 
         if savefig==True:
             plt.savefig(homedir+'/Desktop/envbins.png', dpi=100)
@@ -1319,7 +1438,16 @@ class catalogs:
             pair = pairs[n]
             print(names[n])
             print('%.5f'%(kstest(np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1]))[1]))
-    
+        
+        print()
+        print('Mann-Whitney U (null hypothesis: the distribution underlying x is same as the distribution underlying y): ')
+        pairs = list(combinations(re_data,2))
+        names = list(combinations(labels,2))
+        for n in range(len(pairs)):
+            pair = pairs[n]
+            print(names[n])
+            print('%.5f'%(mannwhitneyu(np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1]))[1]))
+        
     '''
     def compareSGA(self,savefig=False):
         
@@ -1469,9 +1597,10 @@ if __name__ == '__main__':
         SFR v. Mstar plot, color-coded according to either available HI gas mass, D25 (Hyperleda), 
         or GALFIT size ratios. SFR and Mstar values from MAGPHYS.
     cat.sfrmstar_z0mgs(show_HI=False,show_sizerat=True,savefig=False) --> same as above, but with z0mgs.
-    cat.r12_vs_rstar(sfr_mstar='sfr', savefig=False) --> plots R_12 vs. R_r effective radii for the full
-        subsample as well as according to each environment bin (six total panels). User can dictate
-        the colorbar, namely whether data are colored according to SFR or to Mstar (both from MAGPHYS)
+    cat.r12_vs_rstar(savefig=False) --> plots R_12 vs. R_r effective radii for the full
+        subsample as well as according to each environment bin (six total panels).
+    cat.r12_vs_rstar_v2(savefig=False) --> plots R_12 vs. R_r effective radii for the full
+        subsample as well as according to each environment bin (5 env columns, 2 mass ranges). 
     cat.envbins(savefig=False) --> plots number of subsample galaxies in each environment bin
     cat.ratio_MS(showHI=False,savefig=False) --> plots size ratios as a function of MS distance, 
         colored according to normalized HI mass in the case where showHI=True.
