@@ -20,6 +20,8 @@ from scipy.stats import spearmanr
 from scipy.stats import linregress
 from scipy.stats import ttest_1samp
 from scipy.stats import mannwhitneyu
+from scipy.stats import anderson_ksamp
+from scipy.stats import PermutationMethod
 from scipy.special import gamma, gammainc, gammaincinv
 from matplotlib import ticker
 
@@ -54,10 +56,10 @@ def L(r,re,n):
     b_n = gammaincinv(2*n, 0.5)
     r_ratio = r/re
     constant = 2*np.pi*n*(re**2)/b_n**(2*n)
-    gamma_term = gammainc(2*n,b_n*(r_ratio**(1/n)))               #note that scipy.special.gammainc is NORMALIZED. 
-                                                                  #need to multiple gamma_term * gamma(2*n) in cases
-                                                                  #where I'm not calculating an L ratio or I care
-                                                                  #about units, etc. 
+    gamma_term = gammainc(2*n,b_n*(r_ratio**(1/n))) #note that scipy.special.gammainc is NORMALIZED. 
+                                                    #need to multiple gamma_term * gamma(2*n) in cases
+                                                    #where I'm not calculating an L ratio or I care
+                                                    #about units, etc. 
     return constant*I_e*np.exp(b_n)*gamma_term
 
 #need to calculate r90 using L50, so isolate r from L equation above...as Dr. Tosun would exclaim, "this is a nice problem." It was not a nice problem.
@@ -82,7 +84,7 @@ class catalogs:
     def __init__(self,conv=False,MeanMedian='mean',MADmultiplier=5,cutAGN=False,W1=False):
         self.MADmultiplier = MADmultiplier
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
-        self.v2_main = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_v2.fits')  #has my flagshhhhhhhhh
+        self.v2_main = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_v2.fits')  #has my flagshh
         self.magphys = Table.read(path_to_dir+'/vf_v2_magphys_legacyExt_mergedNS.fits')
         self.z0mgs = Table.read(path_to_dir+'vf_v2_z0mgs.fits')
         self.HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
@@ -416,38 +418,22 @@ class catalogs:
     
     def sfrmstar_magphys(self, show_HI=False, show_D25=False, show_sizerat=True, savefig=False):
 
-        HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
-        hyp_tab = Table.read(path_to_dir+'vf_v2_hyperleda.fits')
         sizerats_all = (self.w3dat['CRE']*2.75)/(self.w1dat['CRE']*2.75)
         
-#############################################################
-        #prepare D25 data for colorbar
-        d25 = 10**(hyp_tab['logd25'])
-                
-        #prepare MHI_to_Mstar data for colorbar
-        MHI_to_Mstar = HI_tab['MHI']/(10**self.magphys['logMstar_med'])
-        
-        for n in range(len(MHI_to_Mstar)):
-            if HI_tab['MHI'].mask[n]:     #if value is masked, set to be -999
-                MHI_to_Mstar[n] = -999
-            else:
-                MHI_to_Mstar[n] = MHI_to_Mstar[n] if ((np.log(HI_tab['MHI'][n])>0) & (MHI_to_Mstar[n]<10) & (MHI_to_Mstar[n]!=1)) else -999
-#############################################################
-        
         subsample_cut = (self.v2_main['SNRflag']) & (self.v2_main['t_flag'])
-    
+        
         logsfr = self.altmagphys['combined_logSFR_med']
         logmass = self.altmagphys['combined_logMstar_med']
-        
-        #remove entries where there is no magphys data available for that galaxy. this includes values == 0.
-        err_flag = (self.altmagphys['magphys_flag']) & (self.altmagphys['combined_logMstar_med']!=0)
-        err_flag_cut = (self.altmagphys_cut['magphys_flag']) & (self.altmagphys_cut['combined_logMstar_med']!=0)
 
-#############################################################
-        MHI_to_Mstar_cut = MHI_to_Mstar[subsample_cut & (err_flag)]
-        d25_cut = d25[subsample_cut & (err_flag)]
-#############################################################
-        
+        #remove entries where there is no magphys data available for that galaxy. this includes values == 0.
+        ######boss also requested removal of SFR==0 galaxies, which will eliminate that horizontal stripe.
+        err_flag = (self.altmagphys['magphys_flag']) &  (self.altmagphys['combined_logSFR_med']!=0.)
+        err_flag_cut = (self.altmagphys_cut['magphys_flag']) & (self.altmagphys_cut['combined_logSFR_med']!=0.)
+     
+        #if self.cutAGN:
+        #    AGN_flags = (self.v2_main['WISE_AGN_flag']) | (self.v2_main['kauffman_AGN_flag'])
+        #    err_flag = (self.altmagphys['magphys_flag']) & (self.altmagphys['combined_logSFR_med']!=0.) & (~AGN_flags)
+    
         logmass_cut = logmass[subsample_cut & err_flag]  
         logsfr_cut = logsfr[subsample_cut & err_flag]
 
@@ -459,6 +445,18 @@ class catalogs:
         
 #############################################################
         if show_HI:
+            HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
+        
+            #prepare MHI_to_Mstar data for colorbar
+            MHI_to_Mstar = HI_tab['MHI']/(10**self.magphys['logMstar_med'])
+
+            for n in range(len(MHI_to_Mstar)):
+                if HI_tab['MHI'].mask[n]:     #if value is masked, set to be -999
+                    MHI_to_Mstar[n] = -999
+                else:
+                    MHI_to_Mstar[n] = MHI_to_Mstar[n] if ((np.log(HI_tab['MHI'][n])>0) & (MHI_to_Mstar[n]<10) & (MHI_to_Mstar[n]!=1)) else -999
+        
+            MHI_to_Mstar_cut = MHI_to_Mstar[subsample_cut & (err_flag)]
             plt.scatter(logmass_cut,logsfr_cut,marker='^',color='red',s=30,alpha=0.3,label='VF subsample')
             plt.scatter(logmass_cut[(MHI_to_Mstar_cut>-999)],logsfr_cut[(MHI_to_Mstar_cut>-999)],
                     c=MHI_to_Mstar_cut[(MHI_to_Mstar_cut>-999)], cmap='viridis', s=60, alpha=0.9,
@@ -468,6 +466,10 @@ class catalogs:
             plt.clim(0,1)
            
         if show_D25:
+            hyp_tab = Table.read(path_to_dir+'vf_v2_hyperleda.fits')
+            #prepare D25 data for colorbar
+            d25 = 10**(hyp_tab['logd25'])       
+            d25_cut = d25[subsample_cut & (err_flag)]
             plt.scatter(logmass_cut,logsfr_cut, c=d25_cut, cmap='viridis', s=60, 
                         alpha=0.6, label='VF Subsample')
             cb = plt.colorbar()
@@ -508,12 +510,9 @@ class catalogs:
         plt.axhline(-1.318,color='blue',linestyle='-.',alpha=0.5,label='log(SFR)>-1.32 limit',zorder=3)
         plt.axvline(8.26,color='green',linestyle='--',alpha=0.5,label=r'log(M$_*$)>8.26 limit',zorder=3)
         
-        plt.scatter(logmass_cut[((logsfr_cut-logmass_cut)<-11.5)], logsfr_cut[((logsfr_cut-logmass_cut)<-11.5)],
-                   color='crimson',facecolor='None',s=100,zorder=3)
-        plt.scatter(logmass_cut[((logsfr_cut)<-1.318)], logsfr_cut[((logsfr_cut)<-1.318)],
-                   color='crimson',facecolor='None',s=100,zorder=3)
-        plt.scatter(logmass_cut[((logmass_cut)<8.26)], logsfr_cut[((logmass_cut)<8.26)],
-                   color='crimson',facecolor='None',s=100,zorder=3)
+        #plt.scatter(logmass_cut[((logsfr_cut-logmass_cut)<-11.5)], logsfr_cut[((logsfr_cut-logmass_cut)<-11.5)] color='crimson', facecolor='None',s=100,zorder=3)
+        #plt.scatter(logmass_cut[((logsfr_cut)<-1.318)], logsfr_cut[((logsfr_cut)<-1.318)], color='crimson', facecolor='None',s=100,zorder=3)
+        #plt.scatter(logmass_cut[((logmass_cut)<8.26)], logsfr_cut[((logmass_cut)<8.26)], color='crimson', facecolor='None',s=100,zorder=3)
     
         print()
         print(f'ngal below Mstar limit: {len(logsfr_cut[((logmass_cut)<8.26)])}')
@@ -862,7 +861,7 @@ class catalogs:
         
         #add colorbar spanning entire height of subplot figure
         cb = fig.colorbar(im, ax=axes.ravel().tolist(), pad=0.02, aspect=30)
-        cb.set_label(label=r'log(sSFR)',size=30)
+        cb.set_label(label=r'log(sSFR/yr$^{-1}$)',size=30)
         cb.ax.tick_params(labelsize=25)
         #tick info from https://stackoverflow.com/questions/22012096/how-to-set-number-of-ticks-in-plt-colorbar
         tick_locator = ticker.MaxNLocator(nbins=5)
@@ -874,7 +873,7 @@ class catalogs:
         
         plt.show()
         
-    def ratio_MS(self, showHI=False, savefig=False):
+    def ratio_MS(self, savefig=False):
         
         m = 0.77
         b = -8.03
@@ -900,35 +899,55 @@ class catalogs:
         t1=self.re_w1band_cut[err_flag_cut]
         t2=self.v2_envcut[err_flag_cut]
         
-        if showHI:
-            MHI_to_Mstar = self.HI_tab_cut['MHI']/(10**self.altmagphys_cut['combined_logMstar_med'])
-            MHI_to_Mstar_cut = MHI_to_Mstar[err_flag_cut]
-            plt.scatter(dist,self.sizerats[err_flag_cut],color='gray',s=10,alpha=0.3)   #all points
-            plt.scatter(dist,self.sizerats[err_flag_cut],c=MHI_to_Mstar_cut)   #will only plot points with MHI data
-            plt.colorbar().set_label(label='MHI_to_Mstar',size=15)
-            plt.clim(0,1)
-        if not showHI:
-            plt.scatter(dist,self.sizerats[err_flag_cut],color='blue',s=40,alpha=0.7)   #all points
-                
+        plt.scatter(dist,self.sizerats[err_flag_cut],color='blue',s=40,alpha=0.7)   #all points
         plt.xlabel(r'Distance from Main Sequence Line',fontsize=17)
+        
         if self.W1:
             plt.ylabel(r'Size Ratio ($R_{12}/R_{3.4}$)',fontsize=17)
             #plt.yscale('log')
             plt.ylim(0,2)    
             
-            print(f'# galaxies within 0.5 dex of MS: {len(self.sizerats[err_flag_cut & (np.abs(dist<0.5))])}')            
-            
+            print(f'# galaxies within 0.5 dex of MS: {len(self.sizerats[err_flag_cut & (np.abs(dist<0.5))])}')              
         if not self.W1:
             plt.ylabel(r'Size Ratio ($R_{12}/R_{r}$)',fontsize=17)
-            plt.ylim(0, 1.75)   #artificially trim outliers with size ratios>5 (there is indeed one with ratio~100)
-        
+            plt.ylim(0, 1.75)   #artificially trim outliers with size ratios>5 
+
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
-        
+
         res = spearmanr(dist,self.sizerats[err_flag_cut])
-        
+
         print('np.polyfit m,b:',np.polyfit(dist,self.sizerats[err_flag_cut],1))
         print('spearmanr:',res)
+        
+        self.clusflag = self.v2_envcut['cluster_member']
+        self.rgflag = self.v2_envcut['rich_group_memb']
+        self.pgflag = self.v2_envcut['poor_group_memb']
+        self.filflag = self.v2_envcut['filament_member']
+        self.fieldflag = self.v2_envcut['pure_field']
+        
+        #######Testing whether an environment correlation exists#######
+        
+        distclus = ((m*logmass[err_flag_cut&self.clusflag]) + (-1*logsfr[err_flag_cut&self.clusflag]) + b) / (np.sqrt((m)**2 + (1)**2))
+        distrg = ((m*logmass[err_flag_cut&self.rgflag]) + (-1*logsfr[err_flag_cut&self.rgflag]) + b) / (np.sqrt((m)**2 + (1)**2))
+        distpg = ((m*logmass[err_flag_cut&self.pgflag]) + (-1*logsfr[err_flag_cut&self.pgflag]) + b) / (np.sqrt((m)**2 + (1)**2))
+        distfil = ((m*logmass[err_flag_cut&self.filflag]) + (-1*logsfr[err_flag_cut&self.filflag]) + b) / (np.sqrt((m)**2 + (1)**2))
+        distfield = ((m*logmass[err_flag_cut&self.fieldflag]) + (-1*logsfr[err_flag_cut&self.fieldflag]) + b) / (np.sqrt((m)**2 + (1)**2))
+        
+        
+        resclus = spearmanr(distclus,self.sizerats[err_flag_cut&self.clusflag])
+        resrg = spearmanr(distrg,self.sizerats[err_flag_cut&self.rgflag])
+        respg = spearmanr(distpg,self.sizerats[err_flag_cut&self.pgflag])
+        resfil = spearmanr(distfil,self.sizerats[err_flag_cut&self.filflag])
+        resfield = spearmanr(distfield,self.sizerats[err_flag_cut&self.fieldflag])
+        
+        print()
+        print('cluster spearmanr:',resclus)
+        print('rich group spearmanr:',resrg)
+        print('poor group spearmanr:',respg)
+        print('filament spearmanr:',resfil)
+        print('field spearmanr:',resfield)
+        ###############################################################
         
         if savefig==True:
             plt.savefig(homedir+'/Desktop/MS_dist.png', dpi=100, bbox_inches='tight', pad_inches=0.2)
@@ -1063,7 +1082,7 @@ class catalogs:
         
     def env_means(self, mass_match=False, trimOutliers=False, errtype='bootstrap', r90=False, savefig=False):    
         index = np.arange(1,6,1)
-        env_names = ['Cluster','Filament','Rich \n Group','Poor \n Group','Field']
+        env_names = ['Cluster','Rich \n Group','Poor \n Group','Filament','Field']
         
         #will generate the self.outlier_flag variable needed to, well, trim the outliers.
         ratios = self.sizerats
@@ -1079,7 +1098,7 @@ class catalogs:
             for i in range(len(self.sizerats)):
                 ratios[i] = calculate_r90(self.re_w3band_cut[i],self.n_w3band_cut[i])/calculate_r90(self.re_w1band_cut[i],self.n_w1band_cut[i])
         
-        re_data = [ratios[clusflag],ratios[filflag],ratios[rgflag],ratios[pgflag],
+        re_data = [ratios[clusflag],ratios[rgflag],ratios[pgflag],ratios[filflag],
                    ratios[fieldflag]]
         
         for i in range(len(ratios)):
@@ -1319,7 +1338,8 @@ class catalogs:
             pair = pairs[n]
             print(names[n])
             print('%.5f'%(kstest(np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1]))[1]))
-                
+         
+        plt.ylabel('Total Fraction of Galaxies',fontsize=22)
         if savefig==True:
             plt.savefig(homedir+'/Desktop/mass_hist.png',bbox_inches='tight', pad_inches=0.2, dpi=100)
         
@@ -1429,11 +1449,12 @@ class catalogs:
 
         plt.show()
         
-        #ks-test statistics
+        #test statistics
         
-        print('K-S p-value (> 0.003 (3sigma), "same distribution"):')
         pairs = list(combinations(re_data,2))
         names = list(combinations(labels,2))
+        
+        print('K-S p-value (> 0.003 (3sigma), "same distribution"):')
         for n in range(len(pairs)):
             pair = pairs[n]
             print(names[n])
@@ -1441,53 +1462,19 @@ class catalogs:
         
         print()
         print('Mann-Whitney U (null hypothesis: the distribution underlying x is same as the distribution underlying y): ')
-        pairs = list(combinations(re_data,2))
-        names = list(combinations(labels,2))
         for n in range(len(pairs)):
             pair = pairs[n]
             print(names[n])
             print('%.5f'%(mannwhitneyu(np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1]))[1]))
         
-    '''
-    def compareSGA(self,savefig=False):
-        
-        r50_sga_r = self.sgaparams_cut['r50 (rband)']  #arcsec
-        r50_gal_r = self.re_rband_cut.copy()*0.262 #arcsec
-        
-        plt.figure(figsize=(8,6))
-        plt.scatter(r50_sga_r,r50_sga_r/r50_gal_r,color='crimson',edgecolors='black',alpha=0.4)
-        
-        plt.xlabel(r'r50$_{SGA}$',fontsize=18)
-        plt.ylabel(r'r50$_{SGA}$/r50$_{GALFIT}$',fontsize=18)
-        if self.conv==True:
-            plt.title('r-band r50 Comparison (PSF)',fontsize=20)
-        if self.conv==False:
-            plt.title('r-band r50 comparison (noPSF)',fontsize=20)
-        
-        m, b = np.polyfit(r50_sga_r,r50_sga_r/r50_gal_r,1)
-#        slope, intercept, r_value, p_value, std_err = stats.linregress(r50_sga_r,r50_gal_r)
-        # Create empty plot with blank marker containing the extra label
-        
-        plt.axhline(1,color='black',label='1-to-1')
-        
-        plt.plot([np.min(r50_sga_r),np.max(r50_sga_r)], [np.min(m*r50_sga_r+b),np.max(m*r50_sga_r+b)], color='crimson', alpha=0.5,
-                 label=f'Best-fit slope (np.polyfit) {round(m,3)}')
-                
-        plt.legend(fontsize=16)
-                
-        plt.xscale('log')
-        #plt.yscale('log')
-        #plt.xlim(0,100)
-        #plt.ylim(0,2)
-        
-        plt.xticks(fontsize=15)
-        plt.yticks(fontsize=15)
-        
-        if savefig==True:
-            plt.savefig(homedir+'/Desktop/SGA_r50_comparison.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
-        
-        plt.show()
-    '''
+        print()
+        print('Anderson-Darling (tests the null hypothesis that a sample is drawn from a population that follows a particular distribution): ')
+        method = PermutationMethod(n_resamples=9999)
+        for n in range(len(pairs)):
+            pair = pairs[n]
+            print(names[n])
+            print(anderson_ksamp([np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1])],method=method))
+            #print('%.5f'%(anderson_ksamp([np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1])])[1]))
     
     def wisesize_mass(self, nbins=5, savefig=False):
 
@@ -1606,6 +1593,7 @@ if __name__ == '__main__':
         colored according to normalized HI mass in the case where showHI=True.
     cat.hist_dist_rats(savefig=False) --> size ratio distributions for each of the five defined 
         environment bins (plt.subplots with one column, five rows). Rainbow colors, very aesthestic.
+        Outputs a lot of statistical data, very fun.
     cat.env_means(mass_match=False, trimOutliers=False, errtype='bootstrap', W1=False, 
                   r90=False, savefig=False) --> plots either mean or median size ratio (w3/r or W3/W1) 
                   in each environment bin; trimOutliers will output an additional plot which compares my 
