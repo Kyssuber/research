@@ -30,7 +30,7 @@ homedir = os.getenv("HOME")
 path_to_dir = homedir+'/Desktop/v2-20220820/'
 
 #bootstrap function courtesy of Rose Finn; 
-def get_bootstrap_confint(d,bootfunc=np.median,nboot=100):
+def get_bootstrap_confint(d,bootfunc=np.median,nboot=1000):
     # use astropy.stats bootstrap function
     # it will create nboot resamplings of the data
     # and calculate the bootfunc of each resample.
@@ -430,8 +430,8 @@ class catalogs:
         err_flag = (self.altmagphys['magphys_flag']) &  (self.altmagphys['combined_logSFR_med']!=0.)
         err_flag_cut = (self.altmagphys_cut['magphys_flag']) & (self.altmagphys_cut['combined_logSFR_med']!=0.)
      
-        #if self.cutAGN:
-        #    AGN_flags = (self.v2_main['WISE_AGN_flag']) | (self.v2_main['kauffman_AGN_flag'])
+        if self.cutAGN:
+            AGN_flags = (self.v2_main[err_flag]['WISE_AGN_flag']) | (self.v2_main[err_flag]['kauffman_AGN_flag'])
         #    err_flag = (self.altmagphys['magphys_flag']) & (self.altmagphys['combined_logSFR_med']!=0.) & (~AGN_flags)
     
         logmass_cut = logmass[subsample_cut & err_flag]  
@@ -442,6 +442,16 @@ class catalogs:
 
         plt.figure(figsize=(10,6))
         plt.scatter(logmass,logsfr,color='gray',s=3,alpha=0.05)
+        
+        err_flag_all = (self.w1dat['CNumerical_Error'][err_flag]) | (self.w3dat['CNumerical_Error'][err_flag]) | (self.w1dat['CXC'][err_flag]==0.0) | (self.w3dat['CXC'][err_flag]==0.0) #ALL ERRORS
+        
+        #plt.scatter(logmass[err_flag_all],logsfr[err_flag_all],color='red',s=3,alpha=1)
+        #plt.scatter(logmass[AGN_flags],logsfr[AGN_flags],color='blue',s=2,alpha=1)
+        #plt.scatter(logmass[~self.v2_main['t_flag'][err_flag]],logsfr[~self.v2_main['t_flag'][err_flag]],
+        #           color='green',s=2,alpha=1)
+        #plt.scatter(logmass[~self.v2_main['SNRflag'][err_flag]],logsfr[~self.v2_main['SNRflag'][err_flag]],
+        #           color='orange',s=2,alpha=1,facecolor='None')
+        
         
 #############################################################
         if show_HI:
@@ -507,11 +517,11 @@ class catalogs:
         
         plt.plot([xplot[0],np.max(xplot)], [-11.5+xplot[0],-11.5+np.max(xplot)], color='red', linestyle=':', alpha=0.5, label='log(sSFR)>-11.5 limit',zorder=3)
         
-        plt.axhline(-1.318,color='blue',linestyle='-.',alpha=0.5,label='log(SFR)>-1.32 limit',zorder=3)
+        plt.axhline(-1.014,color='blue',linestyle='-.',alpha=0.5,label='log(SFR)>-1.01 limit',zorder=3)
         plt.axvline(8.26,color='green',linestyle='--',alpha=0.5,label=r'log(M$_*$)>8.26 limit',zorder=3)
         
-        #plt.scatter(logmass_cut[((logsfr_cut-logmass_cut)<-11.5)], logsfr_cut[((logsfr_cut-logmass_cut)<-11.5)] color='crimson', facecolor='None',s=100,zorder=3)
-        #plt.scatter(logmass_cut[((logsfr_cut)<-1.318)], logsfr_cut[((logsfr_cut)<-1.318)], color='crimson', facecolor='None',s=100,zorder=3)
+        #plt.scatter(logmass_cut[((logsfr_cut-logmass_cut)<-11.5)], logsfr_cut[((logsfr_cut-logmass_cut)<-11.5)], color='crimson', facecolor='None',s=100,zorder=3)
+        #plt.scatter(logmass_cut[((logsfr_cut)<-1.014)], logsfr_cut[((logsfr_cut)<-1.318)], color='crimson', facecolor='None',s=100,zorder=3)
         #plt.scatter(logmass_cut[((logmass_cut)<8.26)], logsfr_cut[((logmass_cut)<8.26)], color='crimson', facecolor='None',s=100,zorder=3)
     
         print()
