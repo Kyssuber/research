@@ -44,7 +44,7 @@ class catalogs:
     def __init__(self,MeanMedian='mean',cutAGN=False,W1=False):
         path_to_dir = homedir+'/Desktop/v2-20220820/'
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
-        self.v2_main = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_v2.fits')
+        self.v2_main = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_photSNR.fits')
         self.magphys = Table.read(homedir+'/Desktop/galfit_files/vf-altphot.fits')
         
         self.MeanMedian = MeanMedian  #whether I plot median or mean size ratios for the self.env_means() figure
@@ -155,11 +155,14 @@ class catalogs:
         virial_5flag = (dist>virial_radius)&(dist<=five_vir)
         
         self.data_core = self.sizerats[(self.v2_envcut['cluster_member']) | (virial_1flag)]
+        #self.data_core = self.sizerats[(self.v2_envcut['cluster_member'])]
         self.data_fall = self.sizerats[(virial_5flag) & (~self.v2_envcut['cluster_member'])]
         
         self.data = [self.data_core, self.data_fall]
         self.mass_data = [self.magphyscut['combined_logMstar_med'][self.v2_envcut['cluster_member'] | (virial_1flag)],
                           self.magphyscut['combined_logMstar_med'][virial_5flag & (~self.v2_envcut['cluster_member'])]]
+       # self.mass_data = [self.magphyscut['combined_logMstar_med'][self.v2_envcut['cluster_member']],
+       #                   self.magphyscut['combined_logMstar_med'][virial_5flag & (~self.v2_envcut['cluster_member'])]]
         
     def LCS_hist(self, ReDisk='Re', savefig=False):
         

@@ -84,7 +84,7 @@ class catalogs:
     def __init__(self,conv=False,MeanMedian='mean',MADmultiplier=5,cutAGN=False,W1=False):
         self.MADmultiplier = MADmultiplier
         self.v2_env = Table.read(path_to_dir+'vf_v2_environment.fits')
-        self.v2_main = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_v2.fits')  #has my flagshh
+        self.v2_main = Table.read(homedir+'/Desktop/galfit_files/VF_WISESIZE_photSNR.fits')  #has my flagshh
         self.magphys = Table.read(path_to_dir+'/vf_v2_magphys_legacyExt_mergedNS.fits')
         self.z0mgs = Table.read(path_to_dir+'vf_v2_z0mgs.fits')
         self.HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
@@ -108,7 +108,6 @@ class catalogs:
         
         self.w3dat = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W3-fixBA.fits')
         self.w1dat = Table.read(homedir+'/Desktop/galfit_files/vf_v2_galfit_W1-fixBA.fits')
-        
         
         self.cut_cats()
     
@@ -220,6 +219,15 @@ class catalogs:
         else:
             self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
             self.PArats = self.PA_w3band_cut/self.PA_rband_cut 
+    
+        print()
+        print('Environment Fractional Decomposition:')
+        print(f'Cluster: {len(self.sizerats[self.clusflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.clusflag])*100/len(self.sizerats),2)}%)')
+        print(f'RG: {len(self.sizerats[self.rgflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.rgflag])*100/len(self.sizerats),2)}%)')
+        print(f'PG: {len(self.sizerats[self.pgflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.pgflag])*100/len(self.sizerats),2)}%)')
+        print(f'Filament: {len(self.sizerats[self.filflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.filflag])*100/len(self.sizerats),2)}%)')
+        print(f'Field: {len(self.sizerats[self.fieldflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.fieldflag])*100/len(self.sizerats),2)}%)')
+        print()
         
     def mass_matching(self):
         
@@ -885,8 +893,8 @@ class catalogs:
         
     def ratio_MS(self, savefig=False):
         
-        m = 0.77
-        b = -8.03
+        m = 0.8
+        b = -8.32
                 
         logsfr = self.altmagphys_cut['combined_logSFR_med']
         logmass = self.altmagphys_cut['combined_logMstar_med']
@@ -915,12 +923,12 @@ class catalogs:
         if self.W1:
             plt.ylabel(r'Size Ratio ($R_{12}/R_{3.4}$)',fontsize=17)
             #plt.yscale('log')
-            plt.ylim(0,2)    
+            plt.ylim(0,2.03)    
             
             print(f'# galaxies within 0.5 dex of MS: {len(self.sizerats[err_flag_cut & (np.abs(dist<0.5))])}')              
         if not self.W1:
             plt.ylabel(r'Size Ratio ($R_{12}/R_{r}$)',fontsize=17)
-            plt.ylim(0, 1.75)   #artificially trim outliers with size ratios>5 
+            plt.ylim(0, 1.80)   #artificially trim outliers with size ratios>5 
 
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
@@ -957,6 +965,10 @@ class catalogs:
         print('poor group spearmanr:',respg)
         print('filament spearmanr:',resfil)
         print('field spearmanr:',resfield)
+        print()
+        print(f'ngal with size ratio > 1.5: {len(self.sizerats[self.sizerats>1.5])}')
+        print(f'ngal with size ratio > 2.: {len(self.sizerats[self.sizerats>2.])}')
+        print(f'ngal underneath horizontal line: {len(self.sizerats[self.sizerats<1.])}')
         ###############################################################
         
         if savefig==True:
@@ -985,7 +997,7 @@ class catalogs:
         xTickMarks= ['Cluster','Rich \n Group','Poor \n Group','Filament','Field']
         plt.xticks(ind, xTickMarks, rotation=10, fontsize=18)
         plt.xlim(-0.5,4.5)
-        plt.ylim(0,200)
+        plt.ylim(0,)
         plt.grid(color='purple',alpha=0.2)
         
         print('Fractional Breakdown:')
@@ -1210,6 +1222,7 @@ class catalogs:
         ymax = np.ones(50)*(central_pts[-1] + err[-1])
         ymin = np.ones(50)*(central_pts[-1] - err[-1])
         
+        
         if errtype=='bootstrap':
             for n in range(5):
                 plt.plot([index[n],index[n]], [err_lower_bootstrap[n],err_upper_bootstrap[n]],color='blue',zorder=1)
@@ -1217,20 +1230,23 @@ class catalogs:
             ymin = np.ones(50)*(err_lower_bootstrap[-1])
         
         plt.fill_between(xfield,ymax,ymin,color=err_color,alpha=.1)
+        #plt.ylim(0.4,1.5)
         
-        plt.xticks(index, env_names, rotation=10, fontsize=20)
-        plt.tick_params(axis='both', which='major', labelsize=15)
+        plt.xticks(index, env_names, rotation=10, fontsize=22)
+        plt.tick_params(axis='both', which='major', labelsize=35)
+        plt.locator_params(axis='y', nbins=4)
         plt.grid(alpha=0.2)
-        plt.ylabel(r'R$_{12}$/R$_r$',fontsize=20)
+        plt.xticks([])
+        #plt.ylabel(r'R$_{12}$/R$_r$',fontsize=24)
     
         if self.W1:
-            plt.ylabel(r'R$_{12}$ / R$_{3.4}$',fontsize=20)
+            #plt.ylabel(r'R$_{12}$ / R$_{3.4}$',fontsize=24)
             if r90:
-                plt.ylabel(r'R90$_{12}$ / R90$_{3.4}$',fontsize=20)
+                plt.ylabel(r'R90$_{12}$ / R90$_{3.4}$',fontsize=24)
         else:
-            plt.ylabel(r'R50$_{12}$ / R50$_r$',fontsize=20)
+            plt.ylabel(r'R50$_{12}$ / R50$_r$',fontsize=24)
             if r90:
-                plt.ylabel(r'R90$_{12}$ / R90$_r$',fontsize=20)
+                plt.ylabel(r'R90$_{12}$ / R90$_r$',fontsize=24)
         
         #plt.legend(fontsize=15)
         

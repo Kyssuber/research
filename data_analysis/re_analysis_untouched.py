@@ -219,15 +219,6 @@ class catalogs:
         else:
             self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
             self.PArats = self.PA_w3band_cut/self.PA_rband_cut 
-    
-        print()
-        print('Environment Fractional Decomposition:')
-        print(f'Cluster: {len(self.sizerats[self.clusflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.clusflag])*100/len(self.sizerats),2)}%)')
-        print(f'RG: {len(self.sizerats[self.rgflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.rgflag])*100/len(self.sizerats),2)}%)')
-        print(f'PG: {len(self.sizerats[self.pgflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.pgflag])*100/len(self.sizerats),2)}%)')
-        print(f'Filament: {len(self.sizerats[self.filflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.filflag])*100/len(self.sizerats),2)}%)')
-        print(f'Field: {len(self.sizerats[self.fieldflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.fieldflag])*100/len(self.sizerats),2)}%)')
-        print()
         
     def mass_matching(self):
         
@@ -1232,21 +1223,19 @@ class catalogs:
         plt.fill_between(xfield,ymax,ymin,color=err_color,alpha=.1)
         #plt.ylim(0.4,1.5)
         
-        plt.xticks(index, env_names, rotation=10, fontsize=22)
-        plt.tick_params(axis='both', which='major', labelsize=35)
-        plt.locator_params(axis='y', nbins=4)
+        plt.xticks(index, env_names, rotation=10, fontsize=20)
+        plt.tick_params(axis='both', which='major', labelsize=15)
         plt.grid(alpha=0.2)
-        plt.xticks([])
-        #plt.ylabel(r'R$_{12}$/R$_r$',fontsize=24)
+        plt.ylabel(r'R$_{12}$/R$_r$',fontsize=20)
     
         if self.W1:
-            #plt.ylabel(r'R$_{12}$ / R$_{3.4}$',fontsize=24)
+            plt.ylabel(r'R$_{12}$ / R$_{3.4}$',fontsize=20)
             if r90:
-                plt.ylabel(r'R90$_{12}$ / R90$_{3.4}$',fontsize=24)
+                plt.ylabel(r'R90$_{12}$ / R90$_{3.4}$',fontsize=20)
         else:
-            plt.ylabel(r'R50$_{12}$ / R50$_r$',fontsize=24)
+            plt.ylabel(r'R50$_{12}$ / R50$_r$',fontsize=20)
             if r90:
-                plt.ylabel(r'R90$_{12}$ / R90$_r$',fontsize=24)
+                plt.ylabel(r'R90$_{12}$ / R90$_r$',fontsize=20)
         
         #plt.legend(fontsize=15)
         
