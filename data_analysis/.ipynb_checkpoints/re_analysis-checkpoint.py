@@ -90,6 +90,7 @@ class catalogs:
         self.HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
         self.hyp_tab = Table.read(path_to_dir+'vf_v2_hyperleda.fits')
         self.altmagphys = Table.read(homedir+'/Desktop/galfit_files/vf-altphot.fits')
+        self.altfil = Table.read(homedir+'/Desktop/vf_disperse_filaments.fits')
         #self.sgaparams = Table.read(homedir+'/sgacut_SGAparams.fits')
         #self.sgaparams.sort('VFID_1')   #sort in ascending order all rows according to VFID
         self.MeanMedian = MeanMedian  #whether I plot median or mean size ratios for the self.env_means() figure
@@ -122,6 +123,7 @@ class catalogs:
         self.HI_tab = self.HI_tab[subsample_flag]
         self.hyp_tab = self.hyp_tab[subsample_flag]
         self.altmagphys_cut = self.altmagphys[subsample_flag]
+        self.altfil_cut = self.altfil[subsample_flag]
                 
         if self.W1:
             self.re_w1band = self.w1dat['CRE'][subsample_flag]
@@ -197,13 +199,16 @@ class catalogs:
         self.HI_tab_cut = self.HI_tab[self.cut_flags]
         self.hyp_tab_cut = self.hyp_tab[self.cut_flags]
         self.altmagphys_cut = self.altmagphys_cut[self.cut_flags]
+        self.altfil_cut = self.altfil_cut[self.cut_flags]
         
         #define env flags
         self.clusflag = self.v2_envcut['cluster_member']
         self.rgflag = self.v2_envcut['rich_group_memb']
         self.pgflag = self.v2_envcut['poor_group_memb']
-        self.filflag = self.v2_envcut['filament_member']
-        self.fieldflag = self.v2_envcut['pure_field']
+        #self.filflag = self.v2_envcut['filament_member']
+        #self.fieldflag = self.v2_envcut['pure_field']
+        self.filflag = self.altfil_cut['Filament_Memb_Disperse']
+        self.fieldflag = (~self.filflag) & (~self.clusflag) & (~self.rgflag) & (~self.pgflag)
         
         if self.W1:
             print(f'No GALFIT data for {n_fails_w3} w3 galaxies, {n_fails_w1} w1 galaxies, and {n_fails_r} r galaxies.')
