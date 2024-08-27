@@ -118,15 +118,18 @@ def gather_w1_fits(catalog, host_folder_path_w1, target_folder, fix=False):
 def gather_r_fits(catalog, host_folder_path_r, target_folder):
 
     dirnames = catalog['VFID']   #all directory names are simply the VFIDs
+    RAs = catalog["RA"]
+    objname = catalog["group_name"]
     for n in range(len(dirnames)):
-
       try:
           os.chdir(host_folder_path+dirnames[n])   #cd to correct directory
           print(dirnames[n])
           cutout_fits = glob.glob('*-custom-image-r.fits')   #FITS cutout of galaxy
+
           for im in cutout_fits:
               print(im)
               os.system(f'cp {im} {target_folder}')
+          
           #out1_fits = glob.glob('*-r-out1.fits')   #unconvolved model parameters
           out2_fits = glob.glob('*-r-out2.fits')   #convolved model parameters
          
@@ -136,14 +139,13 @@ def gather_r_fits(catalog, host_folder_path_r, target_folder):
           for imout2 in out2_fits:
               os.system(f'cp {imout2} {target_folder}')
       except:
-          print(f'{dirnames[n]} is a non-primary group galaxy.')
+          print(f'{dirnames[n]} is a non-primary group galaxy or r-band cutout is not in the indicated directory.')
 
 if __name__ == '__main__':
   
   homedir=os.getenv("HOME")
-  vf = Table.read(homedir+'/VF_WISESIZE_v2.fits')   #contains objnames, RAs, and VFIDs; subsample_flag
+  vf = Table.read(homedir+'/VF_WISESIZE_photSNR.fits')   #contains objnames, RAs, and VFIDs; subsample_flag
   vf = vf[vf['subsample_flag']]
-
   host_folder_path = '/mnt/astrophysics/muchogalfit-output/'
 
   onefolder_path = '/mnt/astrophysics/kconger_wisesize/vf_html_w1_v3/all_input_fits/'
@@ -154,9 +156,9 @@ if __name__ == '__main__':
   except:
       print('Error: target directory already exists.')
 
-  gather_w3_fits(vf, host_folder_path, onefolder_path, fix=True)
-  grab_mask_images(vf, host_folder_path, onefolder_path)
-  gather_w1_fits(vf, host_folder_path, onefolder_path, fix=True)
+  #gather_w3_fits(vf, host_folder_path, onefolder_path, fix=True)
+  #grab_mask_images(vf, host_folder_path, onefolder_path)
+  #gather_w1_fits(vf, host_folder_path, onefolder_path, fix=True)
   gather_r_fits(vf, host_folder_path, onefolder_path)
   
     
