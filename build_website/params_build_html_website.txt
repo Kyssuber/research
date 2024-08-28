@@ -1,6 +1,6 @@
 #--------------------------------------------------- File Names ----------------------------------------------------
 
-catalog                           Desktop/galfit_files/VF_WISESIZE_v2.fits   # path to main vf catalog
+catalog                           Desktop/galfit_files/VF_WISESIZE_photSNR.fits   # path to main vf catalog
 magphys                           Desktop/v2-20220820/vf_v2_magphys_legacyExt_final.fits   # location of magphys cat
 local_path                        /Users/k215c316/vf_html_w1_v2/  # path which will contain relevant folders/files
 homepage_name                     home_local.html                 # name of main html file

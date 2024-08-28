@@ -55,15 +55,11 @@ class HomePage():
         self.home_color = home_color
         
         self.path_to_params = path_to_params   #path to galfit output parameter files
-        self.LS_cutouts = LS_cutout_folder   #will contain the .png files of LS cutouts       
+        self.LS_cutouts = LS_cutout_folder   #will contain the .png files of LS cutouts  
 
         #if I am using the v2_snrcoadd.fits file, the length is 6780. current subsample size is 701.
-        if len(self.cat)>701:
-            self.cutcat = self.cat[self.cat['subsample_flag']]
-            self.magphys_cut = self.magphys[self.cat['subsample_flag']]
-        else:
-            self.cutcat = self.cat
-            self.magphys_cut = self.magphys[self.cat['subsample_flag']]
+        self.cutcat = self.cat[self.cat['subsample_flag']]
+        self.magphys_cut = self.magphys[self.cat['subsample_flag']]
         
         #define group columns
         group_flag_list = self.cutcat['ncomp']>1
@@ -105,10 +101,11 @@ class HomePage():
                 
                 print_counter += 1   #add +1 to the counter
                 html.write('<tr><td>'+self.cutcat['VFID'][i]+'</td>\n')   #add index number
-                if os.path.isfile(self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg'):
-                    html.write('<td><img src = "' + self.LS_cutouts + self.cutcat['VFID'][i] + '-LS.jpg' + '" height="40%" width = "40%"></img></td>\n')   #cutouts will have the name VFIDxxxx-LS.png, using the v2 IDs
-                else:
-                    html.write('<td>No Image Available for this Galaxy</td>\n')
+                
+                #cutouts will have the name VFIDxxxx-LS.png, using the v2 IDs
+                ls_filename_full = f'../LS_cutouts_png/{self.cutcat["VFID"][i]}-LS.jpg'
+                html.write(f'<td><img src = "{ls_filename_full}" alt="{self.cutcat["VFID"][i]}" height="40%" width="40%"></img></td>\n')
+
                 #if galfit did not run successfully on a (group) galaxy then all parameters will be zeros, and heaps of trouble in terms of generating the galaxy page arises. We disable the hyperlinks in these cases. Otherwise, 
                 
                 if self.w3_params['CXC'][param_index]>0:
@@ -136,7 +133,9 @@ class HomePage():
                         single_galpage.WRITETHEGALPAGE()
                         pagename = self.cutcat['VFID'][i]+'.html'
 
-                        html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+self.group_names[i]+'</a></td>\n')   #text hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        #html.write('<td><a href='+self.path_to_galhtml+pagename+'>'+self.group_names[i]+'</a></td>\n')   #text hyperlink to galaxy page VFIDxxxx.html (pagename)
+                        html.write(f'<td><a href={pagename}>{self.group_names[i]}</a></td>\n')
+                        
                 
                     #if neither primary or ncomp=1 galaxy, then determine which galaxy of group *is* the primary galaxy and hyperlink to that htmlpage 
                     else:
@@ -321,14 +320,29 @@ class GalPage():
         self.ncomp = len(np.where(self.cutcat['group_name']==self.cutcat['group_name'][self.galaxy_index])[0])
                         
         #need w3 header information and w3, w1 image data
-        path_to_w3 = glob.glob(self.fits_folder+self.objname+'-custom-image-W3.fits')[0]
-        path_to_r = glob.glob(self.fits_folder+self.objname+'-custom-image-r.fits')[0]
-        path_to_w1 = glob.glob(self.fits_folder+self.objname+'-custom-image-W1.fits')[0]
+        #I include the asterisk in case the file extension is .fits.fz
         
-        self.w1_im, self.w1_header = fits.getdata(path_to_w1, header=True)
-        self.wise_im, self.wise_header = fits.getdata(path_to_w3, header=True)
-        self.r_im, self.r_header = fits.getdata(path_to_r, header=True)
-          
+        print(f'Defining images for {self.VFID}')
+        #I am slowly phasing out the use of *custom-image* cutouts, now by necessity (some r-band images failed to be transferred to the correct directories in draco?!). they are already included in the GALFIT OUTPUTS, so why do I bother pulling the individual cutouts?! ... it's not as if I'm including the severe GALFIT hiccups in the website anyhow...right?
+        
+        try:
+            path_to_w3 = glob.glob(self.fits_folder+self.objname+'-custom-image-W3.fits*')[0]
+            self.wise_im, self.wise_header = fits.getdata(path_to_w3, header=True)
+        except:
+            self.wise_im, self.wise_header = fits.getdata(f'{self.fits_folder+self.objname}-W3-out2.fits',1,header=True)
+            
+        try:
+            path_to_r = glob.glob(self.fits_folder+self.objname+'-custom-image-r.fits*')[0]
+            self.r_im, self.r_header = fits.getdata(path_to_r, header=True)
+        except:
+            self.r_im, self.r_header = fits.getdata(f'{self.fits_folder+self.objname}-r-out2.fits',1,header=True)
+        
+        try:
+            path_to_w1 = glob.glob(self.fits_folder+self.objname+'-custom-image-W1.fits*')[0]
+            self.w1_im, self.w1_header = fits.getdata(path_to_w1, header=True)
+        except:
+            self.w1_im, self.w1_header = fits.getdata(f'{self.fits_folder+self.objname}-W1-out2.fits',1,header=True)
+            
         #WCS header information
         self.wcs_w3 = WCS(self.wise_header)
         self.wcs_r = WCS(self.r_header)
@@ -368,10 +382,8 @@ class GalPage():
         self.filename_LS = self.LS_cutouts+self.VFID+'-LS.jpg'
         
         image_url = f'https://www.legacysurvey.org/viewer/cutout.jpg?ra={self.RA}&dec={self.DEC}&layer=ls-dr9&size={imsize}&pixscale={1}'
-        if os.path.exists(self.filename_LS):
-            os.remove(self.filename_LS)
-            image = wget.download(image_url,out=self.filename_LS)
-        else:
+        if not os.path.exists(self.filename_LS):
+            #os.remove(self.filename_LS)
             image = wget.download(image_url,out=self.filename_LS)
     
     def create_LS_mosaics(self):
@@ -396,49 +408,49 @@ class GalPage():
                           np.zeros(self.w1_im.shape)+1, np.zeros(r_scaled.shape)+1, None, None]
             print(f'{self.VFID} has no mask images.')
         
-        plt.subplots(1,4,figsize=(14.5,6.5))
-        
-        for i,im in enumerate(images):
-            plt.xlabel('RA')
-            if (i==0)|(i==1)|(i==2):
-                if i==0:
-                    plt.subplot(1,len(images),i+1,projection = self.wcs_w3, aspect='auto')
-                    plt.tick_params(axis='x',top=False) 
-                    #plt.axis("off")   #note that keeping axis labels on this panel will cause ~1px offsets for the panels
-                if i==1:
-                    plt.subplot(1,len(images),i+1,projection = self.wcs_w1, aspect='auto')
-                    plt.axis("off")
-                if i==2:
-                    plt.subplot(1,len(images),i+1,projection=self.wcs_r,aspect='auto')
-                    plt.axis("off")
-                
-                norm = simple_norm(images[i]*bool_masks[i],stretch='asinh',max_percent=99.9)
-                plt.imshow(images[i],origin='lower',cmap='viridis',norm=norm)
-                
-                plt.ylabel('DEC')
-                ax = plt.gca()
-                ax.set_yticks([])
-            
-            if i==3:
-                plt.subplot(1,len(images),i+1, aspect='auto')
-                plt.imshow(images[i],origin='lower',cmap='viridis')
-                plt.axis("off")
-                        
-            if i==4:
-                plt.subplot(1,len(images),i+1, aspect='auto')
-                plt.imshow(mpimg.imread(images[i]),origin='lower')
-                plt.gca().invert_yaxis()
-                plt.axis("off")          
+        if not os.path.exists(self.LS_mosaics+self.VFID+'-LS-mosaic.png'):
 
-            plt.subplots_adjust(wspace=0,hspace=0)
-            plt.title(titles[i],fontsize=20)
-        
-        if os.path.exists(self.LS_mosaics+self.VFID+'-LS-mosaic.png'):
-            os.remove(self.LS_mosaics+self.VFID+'-LS-mosaic.png')
-            plt.savefig(self.LS_mosaics+self.VFID+'-LS-mosaic.png',bbox_inches = 'tight',pad_inches=0.2)
-        else:
+            plt.subplots(1,5,figsize=(14.5,6.5))
+
+            for i,im in enumerate(images):
+                plt.xlabel('RA')
+                if (i==0)|(i==1)|(i==2):
+                    if i==0:
+                        plt.subplot(1,len(images),i+1)#,projection = self.wcs_w3#, aspect='auto')
+                        plt.tick_params(axis='x',top=False) 
+                        plt.axis("off")   #note that keeping axis labels on this panel will cause ~1px offsets for the panels when also using projection!
+                    if i==1:
+                        plt.subplot(1,len(images),i+1)#,projection = self.wcs_w1, aspect='auto')
+                        plt.axis("off")
+                    if i==2:
+                        plt.subplot(1,len(images),i+1)#,projection=self.wcs_r,aspect='auto')
+                        plt.axis("off")
+
+                    norm = simple_norm(images[i]*bool_masks[i],stretch='asinh',max_percent=99.9)
+                    plt.imshow(images[i],origin='lower',cmap='viridis',norm=norm)
+
+                    plt.ylabel('DEC')
+                    ax = plt.gca()
+                    ax.set_yticks([])
+
+                if i==3:
+                    plt.subplot(1,len(images),i+1)#, aspect='auto')
+                    plt.imshow(images[i],origin='lower',cmap='viridis')
+                    plt.axis("off")
+
+                if i==4:
+                    plt.subplot(1,len(images),i+1)#, aspect='auto')
+                    plt.imshow(mpimg.imread(images[i]),origin='lower')
+                    plt.gca().invert_yaxis()
+                    plt.axis("off")          
+
+                plt.subplots_adjust(wspace=0,hspace=0)
+                plt.title(titles[i],fontsize=20)
+
+
             plt.savefig(self.LS_mosaics+self.VFID+'-LS-mosaic.png',bbox_inches='tight',pad_inches=0.2)
-        plt.close()
+
+            plt.close()
     
     def create_model_mosaics_names(self):
         
@@ -474,11 +486,17 @@ class GalPage():
                 self.psf_indices_galaxy.append(None)
         self.psf_indices_galaxy = np.asarray(self.psf_indices_galaxy)
         
-        self.pngnames = [self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w3-psf-fixBA.png',
+        self.pngnames_save = [self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w3-psf-fixBA.png',
                    self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w3-psf.png',
                    self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w1-psf-fixBA.png',
                    self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-w1-psf.png',
                    self.gal_mosaic_folder+self.VFID+'-'+'galfit-model-r-psf.png']
+        
+        self.pngnames = ['../galfit_mosaics_png/'+self.VFID+'-'+'galfit-model-w3-psf-fixBA.png',
+                   '../galfit_mosaics_png/'+self.VFID+'-'+'galfit-model-w3-psf.png',
+                   '../galfit_mosaics_png/'+self.VFID+'-'+'galfit-model-w1-psf-fixBA.png',
+                   '../galfit_mosaics_png/'+self.VFID+'-'+'galfit-model-w1-psf.png',
+                   '../galfit_mosaics_png/'+self.VFID+'-'+'galfit-model-r-psf.png']
         
         #self.create_model_mosaics(index): index=0 is w3_psf_fixBA, 1 is w3_psf, 2 is w1_psf_fixBA, 3 is w1_psf, 4 is r_psf
 
@@ -568,7 +586,7 @@ class GalPage():
                 plt.axis('off')
             plt.title(titles[i],fontsize=16)
         
-        plt.savefig(self.pngnames[psf_index],bbox_inches='tight', pad_inches=0.2)   #dpi=200
+        plt.savefig(self.pngnames_save[psf_index],bbox_inches='tight', pad_inches=0.2)   #dpi=200
         plt.close()    
         
     
@@ -633,7 +651,7 @@ class GalPage():
                             3:'W1 (Convolution)',
                             4:'r-band (Convolution)'}
         
-        LS_path = self.LS_mosaics+self.VFID+'-LS-mosaic.png'
+        LS_path = '../LS_mosaics_png/'+self.VFID+'-LS-mosaic.png'
 
         with open(self.gal_htmlpath,'w') as html:
                         
@@ -651,13 +669,15 @@ class GalPage():
             html.write(f'<a href={self.homepage_name}>Return to Homepage</a></br /> \n')
                         
             #the embedded if, else statements help reduce the number of instances where clicking "Next Galaxy" or "Previous Galaxy" result in html error message pages. note it does not eliminate the problem - think of these lines as scotch tape rather than duct tape.
-            if i != len(self.cutcat)-1:
-                html.write('<a href='+str(self.cutcat['VFID'][i+1])+'.html>Next Galaxy</a></br /> \n') 
+            if i != (len(self.cutcat)-1):
+                html.write(f'<a href={str(self.cutcat["VFID"][i+1])}.html>Next Galaxy ({self.cutcat["VFID"][i+1]})</a></br /> \n')
+                 
             if i != 0:
-                html.write('<a href='+str(self.cutcat['VFID'][i-1])+'.html>Previous Galaxy</a></br /> \n')
+                html.write(f'<a href={str(self.cutcat["VFID"][i-1])}.html>Previous Galaxy ({self.cutcat["VFID"][i-1]})</a></br /> \n')
                         
             #add the LS mosaic
-            html.write('<div style="text-align: center;" class="img-container"> <!-- Block parent element --> <img src='+'"'+LS_path+'" height="45%" width="80%" /><br /> \n')
+            html.write(f'<div style="text-align: center;" class="img-container"> <!-- Block parent element --> <img src="{LS_path}" alt="{self.cutcat["VFID"][i]}" height="auto" width="auto" /><br /> \n')
+            
             html.write('</div> \n')
             for n in range(len(self.psf_indices)):
                 index = self.psf_indices[n]
@@ -665,7 +685,7 @@ class GalPage():
                     mosaic_path = self.pngnames[index]
                     params = self.page_params[n]
                     html.write(f'<font size="30"> GALFIT Output Mosaic {title_dictionary[index]}:</font><br /> \n')
-                    html.write('<div class='+'"'+'img-container'+'"> <!-- Block parent element --> <img src='+'"'+mosaic_path+'" height="45%" width="80%" /><br /> \n')
+                    html.write(f'<div class="img-container"> <!-- Block parent element --> <img src="{mosaic_path}" alt="GALFIT not run on {self.cutcat["VFID"][i]} " height="auto" width="auto" /><br /> \n')
                                         
                     html.write('<table><tr><th>VFID</th><th>Type</th><th>xc (px)</th><th>xc_err</th><th>yc (px)</th><th>yc_err</th><th>mag</th><th>mag_err</th><th>Re (px)</th><th>Re_err</th><th>nser</th><th>nser_err</th><th>BA</th><th>BA_err</th><th>PA</th><th>PA_err</th><th>Numerical_Error</th></tr> \n')
 
@@ -698,22 +718,24 @@ class GalPage():
                             num_err = single_param_ext[-1].data
                             num_err = num_err[0]
                             html.write(f'<td>{num_err}</td></tr> \n')   #error flag
-
-                    #I want a table for every nopsf/psf pair, so the table will finish if index is psf w3 or psf w1 (OR neither, in the case that I don't include any no-psf bands...). I would attempt to account for the case where I am only including nopsf tables, but I do not anticipate this condition being met. Ever.
                     
-                    #if (index==1)|(index==3)|(index==np.max(self.psf_indices)):
-                    #    html.write('</tr></table> \n')
-                    #    html.write('<br /><br />\n')
                     html.write('</tr></table> \n')
                     html.write('<br /><br />\n')
             
             html.write(f'<a href={self.homepage_name}>Return to Homepage</a></br /> \n')
            
-            if i != len(self.cutcat)-1:
-                html.write('<a href='+str(self.cutcat['VFID'][i+1])+'.html>Next Galaxy</a></br /> \n') 
+            if i != (len(self.cutcat)-1):
+                #if os.path.exists(self.path_to_galhtml+str(self.cutcat['VFID'][i+1])+'.html'):
+                html.write(f'<a href={str(self.cutcat["VFID"][i+1])}.html>Next Galaxy ({self.cutcat["VFID"][i+1]})</a></br /> \n')
+                #else:
+                #    html.write('Next Galaxy (broken)</br /> \n')
+                                 
             if i != 0:
-                html.write('<a href='+str(self.cutcat['VFID'][i-1])+'.html>Previous Galaxy</a></br /> \n')
-                
+                #if os.path.exists(self.path_to_galhtml+str(self.cutcat['VFID'][i-1])+'.html'):
+                html.write(f'<a href={str(self.cutcat["VFID"][i-1])}.html>Previous Galaxy ({self.cutcat["VFID"][i-1]})</a></br /> \n')
+                #else:
+                #    html.write('Previous Galaxy (broken)</br /> \n')
+                    
             html.write('</html></body>\n')     
 
             html.close()    
