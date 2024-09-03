@@ -1558,7 +1558,7 @@ class catalogs:
                 bound_flag_fall = (mass_data[1]>bound[0])&(mass_data[1]<=bound[1])
                 lower_fall, upper_fall = get_bootstrap_confint(data[1][bound_flag_fall],bootfunc=np.median,nboot=1000)
                 err_fall.append([lower_fall,upper_fall])
-
+  
         plt.figure(figsize=(8,6))
         
         plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Cluster & RG',zorder=1)
@@ -1576,7 +1576,7 @@ class catalogs:
             #create lower, upper caps on errorbars
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
-            
+                
         plt.ylabel(r'R$_{12}$/R$_{3.4}$',fontsize=18)
         plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
         

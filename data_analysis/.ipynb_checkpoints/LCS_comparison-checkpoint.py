@@ -39,6 +39,18 @@ def get_bootstrap_confint(d,bootfunc=np.median,nboot=100):
     # and err_upper = bootsamp[iupper] - actual_median
     return bootsamp[ilower],bootsamp[iupper]
 
+def get_confint_lower(d):
+
+    d_sorted = np.sort(d)
+    ilower = int((.5-.34)*len(d))
+    return d_sorted[ilower]
+
+def get_confint_upper(d):
+
+    d_sorted = np.sort(d)
+    iupper = int((.5+.34)*len(d))
+    return d_sorted[iupper]
+
 class catalogs:
     
     def __init__(self,MeanMedian='mean',cutAGN=False,W1=False):
@@ -412,12 +424,40 @@ class catalogs:
                 lower_fall, upper_fall = get_bootstrap_confint(data[1][bound_flag_fall],bootfunc=np.median,nboot=1000)
                 err_fall.append([lower_fall,upper_fall])
 
+        #add overlay of Rose's LCS+18 data
+        test = Table.read(os.getenv("HOME")+'/Desktop/LCS_paper1_final_sample.fits')
+        yvar = 'sizeratio_re'
+        
+        flags = [test['core'],~test['core']]#,(~test['core'] | ~test['infall'])]
+        labels = [r'<Core R$_{24}$/R$_{r}$ Finn+18>',r'<Infall R$_{24}$/R$_{r}$ Finn+18>']
+        colors = ['orange','cornflowerblue','g']
+                
         plt.figure(figsize=(8,6))
         
-        plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Cluster',zorder=1)
-        plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='External',zorder=1)
-        plt.scatter(bin_centers_clus, bin_med_clus, color='crimson', s=250, edgecolors='black', label='<Cluster>',zorder=3)
-        plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label='<External>',zorder=3)
+        for i,f in enumerate(flags):
+            x = test['logMstar'][f]
+            y = test[yvar][f]
+
+            bin_means, bin_edges, binnumber = binned_statistic(x,y,statistic='median', bins=5)
+            bin_centers = .5*(bin_edges[:-1]+bin_edges[1:])
+            
+            conf_lower, edges, binnumber = binned_statistic(x, y, statistic=get_confint_lower, bins=5)
+            conf_upper, edges, binnumber = binned_statistic(x, y, statistic=get_confint_upper, bins=5)
+            
+            plt.plot(bin_centers,bin_means,'k^',markersize=16,color=colors[i],label=labels[i])
+            plt.errorbar(bin_centers,bin_means,yerr=(bin_means-conf_lower,conf_upper-bin_means),
+                         ls='none',capsize=8,color=colors[i])
+            #plt.fill_between(bin_centers,conf_lower,conf_upper,alpha=0.1)
+            
+        #plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Cluster',zorder=1)
+        #plt.scatter(mass_data[1],data[1],color='blue',s=15,alpha=0.2,label='External',zorder=1)
+        
+        if self.W1:
+            plt.scatter(bin_centers_clus, bin_med_clus, color='crimson', s=250, edgecolors='black', label=r'<Cluster R$_{12}$/R$_{3.4}$>',zorder=3)
+            plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label=r'<External R$_{12}$/R$_{3.4}$>',zorder=3)
+        if not self.W1:
+            plt.scatter(bin_centers_clus, bin_med_clus, color='crimson', s=250, edgecolors='black', label=r'<Cluster R$_{12}$/R$_{r}$>',zorder=3)
+            plt.scatter(bin_centers_fall, bin_med_fall, color='blue', s=250, edgecolors='black', label=r'<External R$_{12}$/R$_{r}$>',zorder=3)
 
         for n in range(nbins):
             plt.plot([bin_centers_clus[n],bin_centers_clus[n]], [err_clus[n][0],err_clus[n][1]],color='crimson',zorder=2)
@@ -430,19 +470,16 @@ class catalogs:
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
             
-        if self.W1:
-            plt.ylabel(r'R$_{12}$/R$_{3.4}$',fontsize=18)
-        if not self.W1:
-            plt.ylabel(r'R$_{12}$/R$_r$',fontsize=18)
+        plt.ylabel(r'R$_{SFR}$/R$_{Stars}$',fontsize=18)    
         plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
         
         plt.xticks(fontsize=15)
         plt.yticks(fontsize=15)
         
         #plt.title('Median Re Size Ratios vs. Stellar Mass (VFS)',fontsize=20)
-        plt.ylim(0.3,1.6)
-        plt.xlim(8,11.)
-        plt.legend(fontsize=14)
+        plt.ylim(0,1.6)
+        #plt.xlim(8,11.)
+        plt.legend(fontsize=12)
         
         if savefig==True:
             plt.savefig(homedir+'/Desktop/wisesize_comp_mass.png', bbox_inches='tight', pad_inches=0.2, dpi=100)
