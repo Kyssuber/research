@@ -39,6 +39,15 @@ def get_bootstrap_confint(d,bootfunc=np.median,nboot=100):
     # and err_upper = bootsamp[iupper] - actual_median
     return bootsamp[ilower],bootsamp[iupper]
 
+def get_bootstrap_confint_lower(d):
+    lower,upper = get_bootstrap_confint(d,bootfunc=np.median,nboot=1000)
+    return lower
+
+def get_bootstrap_confint_upper(d):
+    lower,upper = get_bootstrap_confint(d,bootfunc=np.median,nboot=1000)
+    return upper
+
+#confidence intervals of DISTRIBUTION/SCATTER! NOT confidence intervals on the MEDIAN!
 def get_confint_lower(d):
 
     d_sorted = np.sort(d)
@@ -427,6 +436,7 @@ class catalogs:
         #add overlay of Rose's LCS+18 data
         test = Table.read(os.getenv("HOME")+'/Desktop/LCS_paper1_final_sample.fits')
         yvar = 'sizeratio_re'
+        #yvar = 'sizeratio_disk'
         
         flags = [test['core'],~test['core']]#,(~test['core'] | ~test['infall'])]
         labels = [r'<Core R$_{24}$/R$_{r}$ Finn+18>',r'<Infall R$_{24}$/R$_{r}$ Finn+18>']
@@ -436,13 +446,18 @@ class catalogs:
         
         for i,f in enumerate(flags):
             x = test['logMstar'][f]
-            y = test[yvar][f]
+            
+            #this ratio represents the SCALE FACTOR I find when comparing our GALFIT r-band Re to W1 Re. In order to correctly overlay LCS results with GALFIT 3.4-micron results, I use this scale factor to 
+            ratio = 0.32 * x - 1.66
+            y = test[yvar][f] * ratio
 
-            bin_means, bin_edges, binnumber = binned_statistic(x,y,statistic='median', bins=5)
+            nbins_lcs = 3
+            
+            bin_means, bin_edges, binnumber = binned_statistic(x,y,statistic='median', bins=nbins_lcs)
             bin_centers = .5*(bin_edges[:-1]+bin_edges[1:])
             
-            conf_lower, edges, binnumber = binned_statistic(x, y, statistic=get_confint_lower, bins=5)
-            conf_upper, edges, binnumber = binned_statistic(x, y, statistic=get_confint_upper, bins=5)
+            conf_lower, edges, binnumber = binned_statistic(x, y, statistic=get_bootstrap_confint_lower, bins=nbins_lcs)
+            conf_upper, edges, binnumber = binned_statistic(x, y, statistic=get_bootstrap_confint_upper, bins=nbins_lcs)
             
             plt.plot(bin_centers,bin_means,'k^',markersize=16,color=colors[i],label=labels[i])
             plt.errorbar(bin_centers,bin_means,yerr=(bin_means-conf_lower,conf_upper-bin_means),

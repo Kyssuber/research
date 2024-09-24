@@ -90,7 +90,6 @@ class catalogs:
         self.HI_tab = Table.read(path_to_dir+'vf_v2_CO_HI.fits')
         self.hyp_tab = Table.read(path_to_dir+'vf_v2_hyperleda.fits')
         self.altmagphys = Table.read(homedir+'/Desktop/galfit_files/vf-altphot.fits')
-        self.altfil = Table.read(homedir+'/Desktop/vf_disperse_filaments.fits')
         #self.sgaparams = Table.read(homedir+'/sgacut_SGAparams.fits')
         #self.sgaparams.sort('VFID_1')   #sort in ascending order all rows according to VFID
         self.MeanMedian = MeanMedian  #whether I plot median or mean size ratios for the self.env_means() figure
@@ -123,7 +122,6 @@ class catalogs:
         self.HI_tab = self.HI_tab[subsample_flag]
         self.hyp_tab = self.hyp_tab[subsample_flag]
         self.altmagphys_cut = self.altmagphys[subsample_flag]
-        self.altfil_cut = self.altfil[subsample_flag]
                 
         if self.W1:
             self.re_w1band = self.w1dat['CRE'][subsample_flag]
@@ -199,16 +197,13 @@ class catalogs:
         self.HI_tab_cut = self.HI_tab[self.cut_flags]
         self.hyp_tab_cut = self.hyp_tab[self.cut_flags]
         self.altmagphys_cut = self.altmagphys_cut[self.cut_flags]
-        self.altfil_cut = self.altfil_cut[self.cut_flags]
         
         #define env flags
         self.clusflag = self.v2_envcut['cluster_member']
         self.rgflag = self.v2_envcut['rich_group_memb']
         self.pgflag = self.v2_envcut['poor_group_memb']
-        #self.filflag = self.v2_envcut['filament_member']
-        #self.fieldflag = self.v2_envcut['pure_field']
-        self.filflag = self.altfil_cut['Filament_Memb_Disperse']
-        self.fieldflag = (~self.filflag) & (~self.clusflag) & (~self.rgflag) & (~self.pgflag)
+        self.filflag = self.v2_envcut['filament_member']
+        self.fieldflag = self.v2_envcut['pure_field']
         
         if self.W1:
             print(f'No GALFIT data for {n_fails_w3} w3 galaxies, {n_fails_w1} w1 galaxies, and {n_fails_r} r galaxies.')
@@ -224,15 +219,6 @@ class catalogs:
         else:
             self.sizerats = (self.re_w3band_cut*2.75)/(self.re_rband_cut*0.262)
             self.PArats = self.PA_w3band_cut/self.PA_rband_cut 
-    
-        print()
-        print('Environment Fractional Decomposition:')
-        print(f'Cluster: {len(self.sizerats[self.clusflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.clusflag])*100/len(self.sizerats),2)}%)')
-        print(f'RG: {len(self.sizerats[self.rgflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.rgflag])*100/len(self.sizerats),2)}%)')
-        print(f'PG: {len(self.sizerats[self.pgflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.pgflag])*100/len(self.sizerats),2)}%)')
-        print(f'Filament: {len(self.sizerats[self.filflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.filflag])*100/len(self.sizerats),2)}%)')
-        print(f'Field: {len(self.sizerats[self.fieldflag])}/{len(self.sizerats)} ({np.round(len(self.sizerats[self.fieldflag])*100/len(self.sizerats),2)}%)')
-        print()
         
     def mass_matching(self):
         
@@ -530,7 +516,7 @@ class catalogs:
         
         plt.plot([xplot[0],np.max(xplot)], [-11.5+xplot[0],-11.5+np.max(xplot)], color='red', linestyle=':', alpha=0.5, label='log(sSFR)>-11.5 limit',zorder=3)
         
-        plt.axhline(-1.014,color='blue',linestyle='-.',alpha=0.5,label='log(SFR)>-1.01 limit',zorder=3)
+        plt.axhline(-0.833,color='blue',linestyle='-.',alpha=0.5,label='log(SFR)>-0.833 limit',zorder=3)
         plt.axvline(8.26,color='green',linestyle='--',alpha=0.5,label=r'log(M$_*$)>8.26 limit',zorder=3)
         
         #plt.scatter(logmass_cut[((logsfr_cut-logmass_cut)<-11.5)], logsfr_cut[((logsfr_cut-logmass_cut)<-11.5)], color='crimson', facecolor='None',s=100,zorder=3)
@@ -1006,13 +992,13 @@ class catalogs:
         plt.grid(color='purple',alpha=0.2)
         
         print('Fractional Breakdown:')
-        print(f'Cluster: {round(len(self.v2_envcut[self.clusflag])/len(self.v2_envcut)*100,1)}%')
-        print(f'Rich Group: {round(len(self.v2_envcut[self.rgflag])/len(self.v2_envcut)*100,1)}%')
-        print(f'Poor Group: {round(len(self.v2_envcut[self.pgflag])/len(self.v2_envcut)*100,1)}%')
-        print(f'Filament: {round(len(self.v2_envcut[self.filflag])/len(self.v2_envcut)*100,1)}%')
-        print(f'Field: {round(len(self.v2_envcut[self.fieldflag])/len(self.v2_envcut)*100,1)}%')
-        print(f'RG+Filament: {round(len(self.v2_envcut[self.rgflag&self.filflag])/len(self.v2_envcut)*100,1)}%')
-        print(f'PG+Filament: {round(len(self.v2_envcut[self.pgflag&self.filflag])/len(self.v2_envcut)*100,1)}%')
+        print(f'Cluster: {round(len(self.v2_envcut[self.clusflag])/len(self.v2_envcut)*100,1)}% ({len(self.v2_envcut[self.clusflag])})')
+        print(f'Rich Group: {round(len(self.v2_envcut[self.rgflag])/len(self.v2_envcut)*100,1)}% ({len(self.v2_envcut[self.rgflag])})')
+        print(f'Poor Group: {round(len(self.v2_envcut[self.pgflag])/len(self.v2_envcut)*100,1)}% ({len(self.v2_envcut[self.pgflag])})')
+        print(f'Filament: {round(len(self.v2_envcut[self.filflag])/len(self.v2_envcut)*100,1)}% ({len(self.v2_envcut[self.filflag])})')
+        print(f'Field: {round(len(self.v2_envcut[self.fieldflag])/len(self.v2_envcut)*100,1)}% ({len(self.v2_envcut[self.fieldflag])})')
+        print(f'RG+Filament: {round(len(self.v2_envcut[self.rgflag&self.filflag])/len(self.v2_envcut)*100,1)}% ({len(self.v2_envcut[self.rgflag&self.filflag])})')
+        print(f'PG+Filament: {round(len(self.v2_envcut[self.pgflag&self.filflag])/len(self.v2_envcut)*100,1)}% ({len(self.v2_envcut[self.pgflag&self.filflag])})')
 
         if savefig==True:
             plt.savefig(homedir+'/Desktop/envbins.png', dpi=100)
@@ -1179,7 +1165,7 @@ class catalogs:
 
             plt.show()
 
-            #now re-define ra_data in order to plot 'just one' of the mass-matching iterations
+            #now re-define re_data in order to plot 'just one' of the mass-matching iterations
             re_data = [ratios[clusflag], np.asarray(self.matched_sizes[3]), np.asarray(self.matched_sizes[2]), 
                            np.asarray(self.matched_sizes[1]), np.asarray(self.matched_sizes[0])]
 
@@ -1211,8 +1197,8 @@ class catalogs:
             err_lower_bootstrap.append(lower_err)
         
         err_color = 'orangered'
-        plt.figure(figsize=(10,6))
-        plt.scatter(index,central_pts,color='blue',s=50,zorder=2,edgecolors='black',label=self.MeanMedian)
+        fig, ax = plt.subplots(1,1,figsize=(10,6))
+        ax.scatter(index,central_pts,color='blue',s=50,zorder=2,edgecolors='black',label=self.MeanMedian)
         
         #plt.scatter(index,low_25,color='green',s=30,edgecolors='black',label='25% value')
         #plt.plot(index,low_25,color='green',alpha=0.3,ls='--')
@@ -1220,38 +1206,47 @@ class catalogs:
         #plt.plot(index,high_75,color='green',alpha=0.3,ls='--')
        
         if errtype!='bootstrap':
-            plt.errorbar(index,central_pts,yerr=err,fmt='None',color=err_color,zorder=1)
+            ax.errorbar(index,central_pts,yerr=err,fmt='None',color=err_color,zorder=1)
 
-        xmin,xmax = plt.xlim()
+        xmin,xmax = ax.set_xlim()
         xfield = np.linspace(xmin,xmax,50)
         ymax = np.ones(50)*(central_pts[-1] + err[-1])
         ymin = np.ones(50)*(central_pts[-1] - err[-1])
         
+        ins = ax.inset_axes([0.536,0.533,0.46,0.46])
+        ins.scatter(index,central_pts,color='blue',s=20,zorder=2,edgecolors='black')
+        ins.grid(alpha=0.2)
+        ins.tick_params(axis='y',which='major',labelsize=15)
+        ins.tick_params(axis='x',which='both',bottom=False,labelbottom=False)
         
         if errtype=='bootstrap':
             for n in range(5):
-                plt.plot([index[n],index[n]], [err_lower_bootstrap[n],err_upper_bootstrap[n]],color='blue',zorder=1)
+                ax.plot([index[n],index[n]], [err_lower_bootstrap[n],err_upper_bootstrap[n]],color='blue',zorder=1)
+                ins.plot([index[n],index[n]], [err_lower_bootstrap[n],err_upper_bootstrap[n]],color='blue',zorder=1)
             ymax = np.ones(50)*(err_upper_bootstrap[-1])
             ymin = np.ones(50)*(err_lower_bootstrap[-1])
         
-        plt.fill_between(xfield,ymax,ymin,color=err_color,alpha=.1)
-        #plt.ylim(0.4,1.5)
+        ax.fill_between(xfield,ymax,ymin,color=err_color,alpha=.1)
+        ax.set_ylim(0.4,1.5)
         
-        plt.xticks(index, env_names, rotation=10, fontsize=22)
-        plt.tick_params(axis='both', which='major', labelsize=35)
-        plt.locator_params(axis='y', nbins=4)
-        plt.grid(alpha=0.2)
-        plt.xticks([])
-        #plt.ylabel(r'R$_{12}$/R$_r$',fontsize=24)
+        ins.fill_between(xfield,ymax,ymin,color=err_color,alpha=0.1)
+        
+        ax.set_xticks(index, env_names, rotation=10, fontsize=20)
+        ax.tick_params(axis='both', which='major', labelsize=15)
+        ax.grid(alpha=0.2)
+        ax.set_ylabel(r'R$_{12}$/R$_r$',fontsize=20)
+        
+        
+        
     
         if self.W1:
-            #plt.ylabel(r'R$_{12}$ / R$_{3.4}$',fontsize=24)
+            plt.ylabel(r'R$_{12}$ / R$_{3.4}$',fontsize=20)
             if r90:
-                plt.ylabel(r'R90$_{12}$ / R90$_{3.4}$',fontsize=24)
+                plt.ylabel(r'R90$_{12}$ / R90$_{3.4}$',fontsize=20)
         else:
-            plt.ylabel(r'R50$_{12}$ / R50$_r$',fontsize=24)
+            plt.ylabel(r'R50$_{12}$ / R50$_r$',fontsize=20)
             if r90:
-                plt.ylabel(r'R90$_{12}$ / R90$_r$',fontsize=24)
+                plt.ylabel(r'R90$_{12}$ / R90$_r$',fontsize=20)
         
         #plt.legend(fontsize=15)
         
@@ -1504,8 +1499,7 @@ class catalogs:
         for n in range(len(pairs)):
             pair = pairs[n]
             print(names[n])
-            print(anderson_ksamp([np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1])],method=method))
-            #print('%.5f'%(anderson_ksamp([np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1])])[1]))
+            print(anderson_ksamp([np.ndarray.tolist(pair[0]),np.ndarray.tolist(pair[1])],method=method).pvalue)
     
     def wisesize_mass(self, nbins=5, savefig=False):
 
@@ -1558,7 +1552,7 @@ class catalogs:
                 bound_flag_fall = (mass_data[1]>bound[0])&(mass_data[1]<=bound[1])
                 lower_fall, upper_fall = get_bootstrap_confint(data[1][bound_flag_fall],bootfunc=np.median,nboot=1000)
                 err_fall.append([lower_fall,upper_fall])
-  
+
         plt.figure(figsize=(8,6))
         
         plt.scatter(mass_data[0],data[0],color='crimson',s=15,alpha=0.2,label='Cluster & RG',zorder=1)
@@ -1576,7 +1570,7 @@ class catalogs:
             #create lower, upper caps on errorbars
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][0],err_fall[n][0]],color='blue',zorder=2)
             plt.plot([bin_centers_fall[n]-0.08,bin_centers_fall[n]+0.08],[err_fall[n][1],err_fall[n][1]],color='blue',zorder=2)
-                
+            
         plt.ylabel(r'R$_{12}$/R$_{3.4}$',fontsize=18)
         plt.xlabel(r'log$_{10}$(M$_*$/M$_\odot$)',fontsize=18)
         
